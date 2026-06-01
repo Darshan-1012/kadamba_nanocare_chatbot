@@ -1,0 +1,130 @@
+{
+  "patient": {
+    "name": "Amit",
+    "age": "21 years",
+    "date": "25 April 2026"
+  },
+  "metrics": {
+    "weight": 85.8,
+    "bmi": 25.6,
+    "bodyFat": 0.0,
+    "heartRate": 76,
+    "bioEnergy": 62.0,
+    "energyReserve": 100,
+    "lfhfRatio": 3.5,
+    "nadiPulse": 81
+  },
+  "dimensions": {
+    "physical": {
+      "score": 80,
+      "description": "BMI 25.6 kg/m2 -- Overweight: May indicate an increased risk for conditions like high blood pressure, diabetes, and heart disease. Heart Rate 76 bpm -- Normal."
+    },
+    "emotional": {
+      "score": 75,
+      "description": "Energy Reserve 100% -- Optimal. Strong adaptive capacity and emotional resilience. Nervous System score 82 -- Normal."
+    },
+    "psychological": {
+      "score": 67,
+      "description": "LF/HF Ratio 3.5 -- Stress level: High. Adaptation to some extreme conditions, or internal problems."
+    },
+    "spiritual": {
+      "score": 78,
+      "description": "BioWell Energy 62.0J -- Heightened energy. Significant tension in energy-supply systems. Energy Reserve 100% -- Strong spiritual energy reserves."
+    }
+  },
+  "systems": {
+    "nervous": {
+      "score": 82,
+      "status": "Normal",
+      "organ_count": 28,
+      "displayStatus": "Normal"
+    },
+    "cardiovascular": {
+      "score": 83,
+      "status": "Normal",
+      "organ_count": 14,
+      "displayStatus": "Normal"
+    },
+    "respiratory": {
+      "score": 82,
+      "status": "Normal",
+      "organ_count": 11,
+      "displayStatus": "Normal"
+    },
+    "musculoskeletal": {
+      "score": 82,
+      "status": "Normal",
+      "organ_count": 64,
+      "displayStatus": "Normal"
+    },
+    "digestive": {
+      "score": 82,
+      "status": "Normal",
+      "organ_count": 35,
+      "displayStatus": "Normal"
+    },
+    "integumentary": {
+      "score": 83,
+      "status": "Normal",
+      "organ_count": 7,
+      "displayStatus": "Normal"
+    },
+    "endocrine": {
+      "score": 83,
+      "status": "Normal",
+      "organ_count": 10,
+      "displayStatus": "Normal"
+    },
+    "urogenital": {
+      "score": 84,
+      "status": "Normal",
+      "organ_count": 4,
+      "displayStatus": "Normal"
+    },
+    "reproductive": {
+      "score": 84,
+      "status": "Normal",
+      "organ_count": 3,
+      "displayStatus": "Normal"
+    },
+    "immune": {
+      "score": 83,
+      "status": "Normal",
+      "organ_count": 9,
+      "displayStatus": "Normal"
+    }
+  },
+  "wellness": {
+    "diet": "Recommended: Moong Dal, Ghee, Khichdi, Coconut.",
+    "yoga": "Surya Namaskar, Anulom Vilom, Padmasana, Bhujangasana, Trikonasana",
+    "physicalActivity": "Walking, Cycling, Strength training, Jogging, Plank, Swimming",
+    "sleep": "Establish a consistent sleep schedule and aim for 7-8 hours of sleep each night. Create a relaxing bedtime routine to improve sleep quality.",
+    "stress": "Practice stress-reducing techniques, such as meditation or deep breathing exercises. Take regular breaks throughout the day to reduce stress levels.",
+    "supplements": "Amla, Shatavari, Omega-3, Multivitamin",
+    "medicine": "Chyawanprash, Giloy"
+  },
+  "interpretations": {
+    "heartRate": {
+      "status": "Normal",
+      "interpretation": "Within normal range",
+      "normal_range": "60-100 bpm"
+    },
+    "bmi": {
+      "status": "Overweight",
+      "interpretation": "May indicate an increased risk for conditions like high blood pressure, diabetes, and heart disease"
+    },
+    "bioEnergy": {
+      "status": "Heightened energy",
+      "risk": "Low risk to mild risk",
+      "interpretation": "Significant tension in energy-supply systems"
+    },
+    "lfhfRatio": {
+      "level": "High",
+      "interpretation": "Adaptation to some extreme conditions, or internal problems"
+    },
+    "energyReserve": {
+      "status": "Optimal",
+      "interpretation": "Strong energy reserves, healthy adaptation capacity"
+    }
+  }
+}

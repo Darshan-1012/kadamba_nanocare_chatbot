@@ -1,0 +1,268 @@
+{
+  "patient": {
+    "name": "Amit",
+    "age": "21 years",
+    "date": "1 June 2026",
+    "id": "PAT-99120"
+  },
+  "metrics": {
+    "weight": 85.8,
+    "bmi": 25.6,
+    "bodyFat": 0.0,
+    "heartRate": 76,
+    "bioEnergy": 62.0,
+    "energyReserve": 100,
+    "lfhfRatio": 3.5,
+    "nadiPulse": 81
+  },
+  "dimensions": {
+    "physical": {
+      "score": 80,
+      "description": "The patient shows a BMI of 25.6, categorizing them as overweight according to standard guidelines. Their heart rate is within the normal range at 76 bpm. The ECG rhythm is reported as normal, and the LF/HF ratio is elevated at 3.5, which may indicate sympathetic nervous system dominance."
+    },
+    "emotional": {
+      "score": 76,
+      "description": "The patient exhibits moderate emotional stability, as evidenced by an Energy Reserve of 100%, indicating a high level of resilience. However, the Bio-Energy reading of 62.0 Joules suggests that the patient's overall vital energy for emotional regulation is below average. The Nervous system status is reported as Normal, with an energy value of 6.62, which may indicate some compromise in emotional processing capacity."
+    },
+    "psychological": {
+      "score": 68,
+      "description": "The patient exhibits elevated sympathetic nervous system activity, as indicated by a LF/HF ratio of 3.5, which falls above the threshold for balanced autonomic nervous system (ANS) function. Additionally, the Nadi Stress and Nadi Overthinking indices are both classified as Medium, suggesting that the individual is experiencing moderate levels of physical stress and mental anxiety. The BioWell stress index value of 6.62 further supports this assessment, indicating heightened nervous system activation levels."
+    },
+    "spiritual": {
+      "score": 78,
+      "description": "The patient exhibits a stable and balanced spiritual profile, with all seven energy centers aligned in good condition. This suggests optimal flow of energy through the body's spiritual systems, supporting emotional resilience and connection to one's inner self. The bio-energy reading of 62.0 Joules indicates a moderate level of spiritual vitality, which may be influenced by factors such as lifestyle, environment, or personal practices. Overall, these findings indicate a strong foundation for spiritual well-being."
+    }
+  },
+  "systems": {
+    "nervous": {
+      "score": 87,
+      "status": "Normal",
+      "displayStatus": "Normal"
+    },
+    "cardiovascular": {
+      "score": 83,
+      "status": "Normal",
+      "displayStatus": "Normal"
+    },
+    "respiratory": {
+      "score": 82,
+      "status": "Normal",
+      "displayStatus": "Normal"
+    },
+    "musculoskeletal": {
+      "score": 82,
+      "status": "Normal",
+      "displayStatus": "Normal"
+    },
+    "digestive": {
+      "score": 84,
+      "status": "Normal",
+      "displayStatus": "Normal"
+    },
+    "integumentary": {
+      "score": 83,
+      "status": "Normal",
+      "displayStatus": "Normal"
+    },
+    "endocrine": {
+      "score": 83,
+      "status": "Normal",
+      "displayStatus": "Normal"
+    },
+    "urogenital": {
+      "score": 67,
+      "status": "Need Attention",
+      "displayStatus": "Need attention"
+    },
+    "reproductive": {
+      "score": 63,
+      "status": "Need Attention",
+      "displayStatus": "Need attention"
+    },
+    "immune": {
+      "score": 88,
+      "status": "Normal",
+      "displayStatus": "Normal"
+    }
+  },
+  "wellness": {
+    "diet": "Recommended: Moong Dal, Ghee, Khichdi, Coconut.",
+    "yoga": "Surya Namaskar, Anulom Vilom, Padmasana, Bhujangasana, Trikonasana",
+    "physicalActivity": "Walking, Cycling, Strength training, Jogging, Plank, Swimming",
+    "sleep": "Get at least 7-8 hours of sleep each night to help regulate emotional balance and reduce stress.",
+    "stress": "Practice stress-reducing techniques, such as meditation or deep breathing exercises, for at least 10 minutes a day. This will help improve emotional balance and reduce stress.",
+    "supplements": "Amla, Shatavari, Omega-3, Multivitamin",
+    "medicine": "Chyawanprash, Giloy"
+  },
+  "interpretations": {
+    "heartRate": {
+      "status": "Normal",
+      "interpretation": "Within normal range",
+      "normal_range": "60-100 bpm"
+    },
+    "pr_interval": {
+      "status": "Normal",
+      "interpretation": "Within normal range",
+      "normal_range": "100-200 ms"
+    },
+    "qrs_interval": {
+      "status": "Normal",
+      "interpretation": "Within normal range",
+      "normal_range": "60-120 ms"
+    },
+    "qt_interval": {
+      "status": "Normal",
+      "interpretation": "Within normal range",
+      "normal_range": "300-450 ms"
+    },
+    "qtc_interval": {
+      "status": "Normal",
+      "interpretation": "Within normal range",
+      "normal_range": "300-450 ms"
+    },
+    "bmi": {
+      "status": "Overweight",
+      "interpretation": "May indicate an increased risk for conditions like high blood pressure, diabetes, and heart disease"
+    },
+    "bioEnergy": {
+      "status": "Heightened energy",
+      "risk": "Low risk to mild risk",
+      "interpretation": "Significant tension in energy-supply systems"
+    },
+    "lfhfRatio": {
+      "level": "High",
+      "interpretation": "Adaptation to some extreme conditions, or internal problems"
+    },
+    "energyReserve": {
+      "status": "Optimal",
+      "interpretation": "Strong energy reserves, healthy adaptation capacity"
+    },
+    "nadi": {
+      "digestion": {
+        "level": "high",
+        "interpretation": "Excess of pitta (teeksnagni), hyper metabolism"
+      },
+      "toxin": {
+        "level": "low",
+        "interpretation": "Low toxin, balanced metabolic state"
+      },
+      "flexibility": {
+        "level": "medium",
+        "interpretation": "Moderate joint flexibility"
+      },
+      "overthinking": {
+        "level": "medium",
+        "interpretation": "Moderate mental activity"
+      },
+      "stress": {
+        "level": "medium",
+        "interpretation": "Moderate stress levels"
+      }
+    }
+  },
+  "system_summaries": {
+    "nervous": "The patient shows normal nervous system function with an overall score of 87% and a BioWell energy reading of 6.62, indicating balanced and optimal energy levels within the normal range.",
+    "cardiovascular": "Cardiovascular System shows normal function with score 83%.",
+    "respiratory": "Respiratory System shows normal function with score 82%.",
+    "musculoskeletal": "Musculoskeletal System shows normal function with score 82%.",
+    "digestive": "The patient shows normal digestive system function overall, with the exception of increased liver energy at 7.60, indicating potential overactivity in this organ.",
+    "integumentary": "Integumentary System shows normal function with score 83%.",
+    "endocrine": "Endocrine System shows normal function with score 83%.",
+    "urogenital": "The patient shows signs of increased urogenital system activity, with an overall score of 67% indicating a need for attention and specific areas of concern including the prostate, which is experiencing increased energy levels at 8.89.",
+    "reproductive": "The patient shows increased activity in the prostate and urogenital systems, with corresponding BioWell energy readings of 8.89 and 6.99 respectively, indicating a need for attention to maintain optimal reproductive system function.",
+    "immune": "The patient shows normal immune system function with an overall score of 88% and a BioWell energy reading of 6.78, indicating a balanced and healthy state."
+  },
+  "swot": {
+    "strengths": "• Highly Adjusting Nature\n• Team Oriented\n• Kind Hearted\n• Supportive\n• Interactive\n• Good Listener\n• Likes Stability",
+    "weaknesses": "• Need Rolemodel\n• Canbeexploited\n• Lackofindividualism\n• Easilyaffectedbyenvironment\n• Toowiderangeofinterests\n• Feelsinsecuretowardschallenges",
+    "opportunities": "• Need human capital for successful\n• Conducive for business environment\n• Best in handling conflict management",
+    "threats": "• Caringtoomuchforothers\n• Maylooseopportunities\n• Non Risk Taking Attitude\n• Indecisiveduringcrisis"
+  },
+  "dmit": {
+    "patient": {
+      "name": "Gurupriya",
+      "age": "24"
+    },
+    "brain_dominance": {
+      "left_pct": 55.12,
+      "right_pct": 44.88
+    },
+    "tfrc": {
+      "total": 205,
+      "ltrc": 113,
+      "rtrc": 92
+    },
+    "multiple_intelligences": {
+      "logical": 13.0,
+      "linguistic": 13.8,
+      "kinesthetic": 13.7,
+      "visual_spatial": 11.6,
+      "intrapersonal": 12.4,
+      "interpersonal": 9.9,
+      "naturalistic": 12.7,
+      "musical": 12.9
+    },
+    "brain_lobes": {
+      "pre_frontal": 30.0,
+      "frontal": 24.39,
+      "parietal": 25.0,
+      "temporal": 20.49,
+      "occipital": 20.0
+    },
+    "learning_styles": {
+      "visual": 27,
+      "auditory": 33,
+      "kinesthetic": 40
+    },
+    "personality": {
+      "primary": "Dove",
+      "secondary": "Eagle"
+    },
+    "planning": {
+      "doing_pct": 48.1,
+      "planning_pct": 51.9
+    },
+    "swot": {
+      "strengths": [
+        "Highly Adjusting Nature",
+        "Team Oriented",
+        "Kind Hearted",
+        "Supportive",
+        "Interactive",
+        "Good Listener",
+        "Likes Stability"
+      ],
+      "weaknesses": [
+        "Need Rolemodel",
+        "Canbeexploited",
+        "Lackofindividualism",
+        "Easilyaffectedbyenvironment",
+        "Toowiderangeofinterests",
+        "Feelsinsecuretowardschallenges"
+      ],
+      "opportunities": [
+        "Need human capital for successful",
+        "Conducive for business environment",
+        "Best in handling conflict management"
+      ],
+      "threats": [
+        "Caringtoomuchforothers",
+        "Maylooseopportunities",
+        "Non Risk Taking Attitude",
+        "Indecisiveduringcrisis"
+      ]
+    },
+    "neuron_distribution": {
+      "picture_smart": 4.9,
+      "people_smart": 7.3,
+      "emotion_smart": 10.2,
+      "word_smart": 10.2,
+      "self_smart": 11.2,
+      "number_smart": 10.2,
+      "nature_smart": 11.7,
+      "space_smart": 9.8,
+      "fine_motors_smart": 11.7,
+      "gross_motors_smart": 12.7
+    }
+  }
+}

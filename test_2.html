@@ -1,0 +1,530 @@
+
+<h2 class="sr-only">Kadamba Wellness Report Engine — enter values from 5 device reports to generate a unified patient summary</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.app{max-width:900px;margin:0 auto;padding:1.25rem}
+.hdr{text-align:center;margin-bottom:1.25rem}
+.hdr h1{font-size:19px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
+.hdr p{font-size:12px;color:var(--color-text-secondary)}
+.step-tabs{display:flex;gap:0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;margin-bottom:1.25rem}
+.step-tab{flex:1;padding:9px 4px;text-align:center;font-size:11px;cursor:pointer;border-right:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);background:var(--color-background-primary);transition:background 0.1s}
+.step-tab:last-child{border-right:none}
+.step-tab.active{background:#c47068;color:#fff}
+.step-tab.done{background:#4a9b8e14;color:#4a9b8e}
+.form-section{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem;margin-bottom:1rem}
+.section-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:8px}
+.device-badge{font-size:10px;padding:2px 8px;border-radius:100px;font-weight:500}
+.fields-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fields-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:var(--color-text-secondary)}
+.field input,.field select{padding:7px 10px;font-size:13px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);width:100%}
+.field input:focus,.field select:focus{outline:none;border-color:#c47068}
+.field textarea{padding:7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);width:100%;resize:vertical;line-height:1.5}
+.nav-btns{display:flex;gap:8px;justify-content:space-between;margin-top:1rem}
+.btn{padding:9px 22px;border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);color:var(--color-text-secondary)}
+.btn-primary{background:#c47068;color:#fff;border-color:#c47068;font-weight:500}
+.btn-primary:hover{opacity:0.9}
+.report-nav{display:flex;gap:8px;margin-bottom:1.25rem;justify-content:space-between;align-items:center}
+.nav-tabs{display:flex;gap:8px}
+.tab{padding:6px 16px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);font-size:13px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary)}
+.tab.active{background:#c47068;color:white;border-color:#c47068}
+.reset-btn{padding:6px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);font-size:12px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary)}
+.report-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:10px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:14px}
+.report-title{font-size:16px;font-weight:500;color:var(--color-text-primary)}
+.patient-info{text-align:right;font-size:13px;color:var(--color-text-secondary);line-height:1.5}
+.patient-name{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.metrics-row{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:1.25rem}
+.metric-box{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:8px 4px;text-align:center}
+.metric-val{font-size:15px;font-weight:500;color:var(--color-text-primary);line-height:1.2}
+.metric-unit{font-size:10px;color:var(--color-text-secondary)}
+.metric-label{font-size:9px;color:var(--color-text-secondary);margin-top:2px;text-transform:uppercase;letter-spacing:0.3px}
+.metric-src{font-size:8px;color:var(--color-text-tertiary);margin-top:1px}
+.dims-section{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;margin-bottom:1.25rem;align-items:center}
+.dims-col{display:flex;flex-direction:column;gap:14px}
+.dim-card{display:flex;align-items:flex-start;gap:10px}
+.dim-card.right{flex-direction:row-reverse;text-align:right}
+.dim-info{flex:1}
+.dim-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
+.dim-desc{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+.body-center{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.systems-section{padding-top:12px;border-top:0.5px solid var(--color-border-tertiary)}
+.systems-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px}
+.sys-card{display:flex;align-items:center;gap:8px;padding:7px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary)}
+.sys-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0}
+.sys-pct{font-size:13px;font-weight:500;color:var(--color-text-primary);line-height:1.1}
+.sys-status{font-size:9px;margin-top:1px}
+.sys-label{font-size:9px;color:var(--color-text-secondary);margin-top:1px}
+.status-normal{color:#3d9970}
+.status-attn{color:#c47068}
+.wellness-title{font-size:15px;font-weight:500;color:var(--color-text-primary);text-align:center;margin-bottom:1rem}
+.wellness-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.wellness-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px}
+.wellness-card-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px;padding-bottom:5px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.wellness-card-body{font-size:11px;color:var(--color-text-secondary);line-height:1.6}
+.wellness-full{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px}
+.donut-wrap{position:relative;flex-shrink:0}
+.donut-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--color-text-primary)}
+</style>
+
+<div class="app" id="app"></div>
+
+<script>
+const CORAL="#c47068",TEAL="#4a9b8e";
+
+const STEPS=[
+  {id:"patient", label:"Patient"},
+  {id:"inbody",  label:"InBody"},
+  {id:"ecg",     label:"ECG"},
+  {id:"nadi",    label:"Nadi"},
+  {id:"biowell", label:"Bio-Well"},
+  {id:"biores",  label:"Bioresn."},
+  {id:"generate",label:"Report"},
+];
+
+const SYSTEMS=[
+  {key:"nervous",        label:"Nervous",       abbr:"NS", color:"#8b7fd4"},
+  {key:"cardiovascular", label:"Cardiovascular",abbr:"CV", color:"#d47f7f"},
+  {key:"respiratory",    label:"Respiratory",   abbr:"RS", color:"#7fbfd4"},
+  {key:"musculoskeletal",label:"Muscle & Bone", abbr:"MB", color:"#d4b07f"},
+  {key:"digestive",      label:"Digestive",     abbr:"DG", color:"#7fbd8a"},
+  {key:"integumentary",  label:"Integumentary", abbr:"IT", color:"#d4c07f"},
+  {key:"endocrine",      label:"Endocrine",     abbr:"EN", color:"#d47fb0"},
+  {key:"urogenital",     label:"Urogenital",    abbr:"UG", color:"#7fc4d4"},
+  {key:"reproductive",   label:"Reproductive",  abbr:"RP", color:"#b0d47f"},
+  {key:"immune",         label:"Immune",        abbr:"IM", color:"#d4907f"},
+];
+
+const state={
+  step:"patient",
+  reportPage:1,
+  showReport:false,
+  d:{
+    patient:{name:"",age:"",gender:"",date:""},
+    inbody:{weight:"",bmi:"",bodyFat:"",smm:"",visceralFat:""},
+    ecg:{heartRate:"",prInterval:"",qrsInterval:"",qtInterval:"",riskLevel:"Low",overall:"Normal ECG",lfhfRatio:""},
+    nadi:{pulseRate:"",rhythm:"Regular",remark:"Good",prakruti:"",vikruti:"",
+      digestion:"",toxin:"",hydration:"",immunity:"",stress:"",overthinking:"",flexibility:"",
+      diet:"",yoga:"",physicalActivity:"",sleep:"",supplements:"",medicine:"",strongOrgans:"",weakOrgans:""},
+    biowell:{energy:"",energyReserve:"",stressIndex:"",chakraAlignment:"",
+      physicalActivity:"",nutrition:"",psychology:"",sleepRegime:"",hormones:"",environment:"",
+      lifestyle:""},
+    biores:{flaggedItems:"",generalNote:""},
+  }
+};
+
+function v(path){
+  const keys=path.split(".");
+  let o=state.d;
+  for(const k of keys) o=o?.[k];
+  return o??""
+}
+
+function set(path,val){
+  const keys=path.split(".");
+  let o=state.d;
+  for(let i=0;i<keys.length-1;i++) o=o[keys[i]];
+  o[keys[keys.length-1]]=val;
+}
+
+function field(label,path,type,opts){
+  type=type||"text";
+  const cur=v(path);
+  if(type==="select"){
+    const options=(opts||[]).map(o=>`<option value="${o}" ${cur===o?"selected":""}>${o}</option>`).join("");
+    return `<div class="field"><label>${label}</label><select onchange="set('${path}',this.value)">${options}</select></div>`;
+  }
+  if(type==="textarea"){
+    return `<div class="field" style="grid-column:1/-1"><label>${label}</label><textarea rows="3" oninput="set('${path}',this.value)">${cur}</textarea></div>`;
+  }
+  return `<div class="field"><label>${label}</label><input type="${type}" value="${cur}" oninput="set('${path}',this.value)" placeholder="${opts||""}"></div>`;
+}
+
+function donut(score,size){
+  size=size||70;const r=(size-10)/2,c=size/2,circ=2*Math.PI*r,prog=(Math.min(Number(score)||0,100)/100)*circ;
+  const color=Number(score)>=70?CORAL:"#e89060";
+  return `<div class="donut-wrap" style="width:${size}px;height:${size}px">
+    <svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
+      <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--color-border-tertiary)" stroke-width="6"/>
+      <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${color}" stroke-width="6"
+        stroke-dasharray="${prog.toFixed(1)} ${(circ-prog).toFixed(1)}" stroke-linecap="round"/>
+    </svg>
+    <div class="donut-center">${score||0}%</div>
+  </div>`;
+}
+
+function computeReport(){
+  const d=state.d;
+  const n=Number;
+  const clamp=(x,mn,mx)=>Math.max(mn,Math.min(mx,x));
+
+  // Physical score
+  const bmi=n(d.inbody.bmi)||23;
+  const bmiScore= bmi>=18.5&&bmi<=24.9?90: bmi>=25&&bmi<=29.9?65: bmi<18.5?60:45;
+  const bfat=n(d.inbody.bodyFat);
+  const bfScore= bfat<25?85: bfat<30?70:55;
+  const ecgOk= d.ecg.riskLevel==="Low"?90:60;
+  const visf=n(d.inbody.visceralFat)||5;
+  const visfScore= visf<10?90: visf<13?65:40;
+  const physicalScore=Math.round((bmiScore+bfScore+ecgOk+visfScore)/4);
+
+  // Emotional score
+  const nadiStress=100-(n(d.nadi.stress)||60);
+  const bwStress=n(d.biowell.stressIndex)||2.31;
+  const bwStressScore= bwStress<=2?90: bwStress<=3?80: bwStress<=4?65: bwStress<=6?50:35;
+  const vikruti=(d.nadi.vikruti||"").toLowerCase();
+  const vikrutiScore= vikruti.includes("vata")||vikruti.includes("pitta")?65:80;
+  const emotionalScore=Math.round((nadiStress+bwStressScore+vikrutiScore)/3);
+
+  // Psychological score
+  const bwPsych=n(d.biowell.psychology)||84;
+  const overthink=100-(n(d.nadi.overthinking)||30);
+  const psychScore=Math.round((bwPsych+overthink)/2);
+
+  // Spiritual score
+  const chakra=n(d.biowell.chakraAlignment)||87;
+  const er=n(d.biowell.energyReserve)||100;
+  const spiritualScore=Math.round((chakra+(er>60?90:er>20?70:50))/2);
+
+  // System scores
+  const lfhf=n(d.ecg.lfhfRatio)||2.97;
+  const nervous={score:Math.round(clamp(100-((lfhf-1)*15),40,95)), status:""};
+  nervous.status= nervous.score>=70?"Normal":"Need Attention";
+
+  const cvScore=Math.round(clamp((ecgOk*0.5)+(visfScore*0.5),40,95));
+  const cardiovascular={score:cvScore, status:cvScore>=70?"Normal":"Need Attention"};
+
+  const respScore=Math.round(clamp((n(d.biowell.environment)||85)*0.7+(100-(n(d.nadi.stress)||60))*0.3,40,95));
+  const respiratory={score:respScore, status:respScore>=70?"Normal":"Need Attention"};
+
+  const smm=n(d.inbody.smm)||28;
+  const smmScore= smm>=25?85: smm>=20?70:55;
+  const flex=n(d.nadi.flexibility)||50;
+  const musculoskeletal={score:Math.round((smmScore+flex)/2),status:""};
+  musculoskeletal.status= musculoskeletal.score>=70?"Normal":"Need Attention";
+
+  const dig=n(d.nadi.digestion)||30;
+  const tox=100-(n(d.nadi.toxin)||40);
+  const digestive={score:Math.round((dig+tox)/2),status:""};
+  digestive.status= digestive.score>=70?"Normal":"Need Attention";
+
+  const hyd=n(d.nadi.hydration)||80;
+  const integScore=Math.round(clamp((hyd*0.5)+(vikrutiScore*0.5),40,90));
+  const integumentary={score:integScore,status:integScore>=70?"Normal":"Need Attention"};
+
+  const horScore=Math.round(n(d.biowell.hormones)||62);
+  const endocrine={score:horScore,status:horScore>=70?"Normal":"Need Attention"};
+
+  const kidEnergy=Math.round((hyd*0.6)+(bwStressScore*0.4));
+  const urogenital={score:clamp(kidEnergy,40,95),status:""};
+  urogenital.status= urogenital.score>=70?"Normal":"Need Attention";
+
+  const repScore=Math.round(clamp((spiritualScore*0.5)+(horScore*0.5),40,90));
+  const reproductive={score:repScore,status:repScore>=70?"Normal":"Need Attention"};
+
+  const imm=n(d.nadi.immunity)||40;
+  const immuneScore=Math.round((imm*0.6)+(smmScore*0.4));
+  const immune={score:immuneScore,status:immuneScore>=70?"Normal":"Need Attention"};
+
+  // Physical dimension description
+  const physDesc= physicalScore>=70
+    ? `Body composition is within acceptable parameters. ECG readings are ${d.ecg.overall||"Normal"} with ${d.ecg.riskLevel||"Low"} cardiac risk.`
+    : `Body composition requires attention — focus on visceral fat reduction and muscle balance. Cardiac function is ${d.ecg.overall||"Normal"}.`;
+
+  const emDesc= emotionalScore>=70
+    ? `Bio-Well stress index is optimal at ${d.biowell.stressIndex||"—"}. Emotional regulation appears stable with current Vikruti of ${d.nadi.vikruti||"—"}.`
+    : `Vikruti shows ${d.nadi.vikruti||"imbalance"} affecting emotional stability. Stress level is ${n(d.nadi.stress)>=60?"elevated":"moderate"} at ${d.nadi.stress||"—"}% requiring active management.`;
+
+  const psyDesc= psychScore>=70
+    ? `Psychological state is balanced. Bio-Well psychology score of ${d.biowell.psychology||"—"}% reflects good cognitive resilience.`
+    : `Overthinking tendency at ${d.nadi.overthinking||"—"}% and Bio-Well psychology at ${d.biowell.psychology||"—"}% indicate cognitive overload needing structured intervention.`;
+
+  const spirDesc= spiritualScore>=70
+    ? `Chakra alignment at ${d.biowell.chakraAlignment||"—"}% indicates good energetic coherence. Energy reserves are robust.`
+    : `Chakra alignment at ${d.biowell.chakraAlignment||"—"}% needs improvement. Low energy reserve (${d.biowell.energyReserve||"—"}%) suggests depletion of vital essence.`;
+
+  return {
+    patient:{name:d.patient.name,age:d.patient.age+" · "+d.patient.gender,date:d.patient.date},
+    metrics:{
+      weight:d.inbody.weight, bmi:d.inbody.bmi, bodyFat:d.inbody.bodyFat,
+      heartRate:d.ecg.heartRate, bioEnergy:d.biowell.energy, energyReserve:d.biowell.energyReserve,
+      lfhfRatio:d.ecg.lfhfRatio, nadiPulse:d.nadi.pulseRate
+    },
+    dimensions:{
+      physical:{score:physicalScore,description:physDesc},
+      emotional:{score:emotionalScore,description:emDesc},
+      psychological:{score:psychScore,description:psyDesc},
+      spiritual:{score:spiritualScore,description:spirDesc},
+    },
+    systems:{nervous,cardiovascular,respiratory,musculoskeletal,digestive,integumentary,endocrine,urogenital,reproductive,immune},
+    wellness:{
+      diet:d.nadi.diet||"No dietary notes entered.",
+      yoga:d.nadi.yoga||"No yoga notes entered.",
+      physicalActivity:d.nadi.physicalActivity||"No activity notes entered.",
+      sleep:d.nadi.sleep||"No sleep notes entered.",
+      stress:`Stress index ${d.biowell.stressIndex||"—"} (Optimal ≤ 3.0). ${d.nadi.stress?"Nadi stress level "+d.nadi.stress+"%.":""}`,
+      supplements:d.nadi.supplements||"No supplement notes entered.",
+      medicine:d.nadi.medicine||"No medicine notes entered.",
+      bioresNote:d.biores.flaggedItems?"Bioresonance flagged: "+d.biores.flaggedItems:"",
+    }
+  };
+}
+
+function renderStepTabs(){
+  const si=STEPS.findIndex(s=>s.id===state.step);
+  return STEPS.map((s,i)=>{
+    const cls= s.id===state.step?"active": i<si?"done":"";
+    return `<div class="step-tab ${cls}" onclick="goStep('${s.id}')">${s.label}</div>`;
+  }).join("");
+}
+
+function renderPatient(){
+  return `<div class="form-section">
+    <div class="section-title">Patient Details</div>
+    <div class="fields-grid">
+      ${field("Full Name","patient.name","text","e.g. Achyutha Chandra")}
+      ${field("Age","patient.age","text","e.g. 21 years")}
+      ${field("Gender","patient.gender","select",["Male","Female","Other"])}
+      ${field("Date","patient.date","text","e.g. 11 Feb 2026")}
+    </div>
+  </div>`;
+}
+
+function renderInBody(){
+  return `<div class="form-section">
+    <div class="section-title">InBody <span class="device-badge" style="background:#7ab48e18;color:#3d7a55;border:0.5px solid #7ab48e44">Body Composition PNG</span></div>
+    <div class="fields-grid">
+      ${field("Weight (kg)","inbody.weight","number","65.2")}
+      ${field("BMI (kg/m²)","inbody.bmi","number","23.0")}
+      ${field("Body Fat (%)","inbody.bodyFat","number","22.2")}
+      ${field("Skeletal Muscle Mass (kg)","inbody.smm","number","28.1")}
+      ${field("Visceral Fat Level","inbody.visceralFat","number","5")}
+    </div>
+  </div>`;
+}
+
+function renderECG(){
+  return `<div class="form-section">
+    <div class="section-title">ECG Report <span class="device-badge" style="background:#c4706818;color:#8b3d3d;border:0.5px solid #c4706844">Spandan Pro PDF</span></div>
+    <div class="fields-grid">
+      ${field("Heart Rate (bpm)","ecg.heartRate","number","68")}
+      ${field("PR Interval (ms)","ecg.prInterval","number","158")}
+      ${field("QRS Interval (ms)","ecg.qrsInterval","number","120")}
+      ${field("QT Interval (ms)","ecg.qtInterval","number","377")}
+      ${field("LF/HF Ratio","ecg.lfhfRatio","number","2.97")}
+      ${field("Risk Level","ecg.riskLevel","select",["Low","Moderate","High"])}
+      ${field("Overall Result","ecg.overall","select",["Normal ECG","Borderline ECG","Abnormal ECG"])}
+    </div>
+  </div>`;
+}
+
+function renderNadi(){
+  return `<div>
+    <div class="form-section">
+      <div class="section-title">Nadi Tarangini — Pulse & Dosha <span class="device-badge" style="background:#4a9b8e18;color:#2d6b63;border:0.5px solid #4a9b8e44">Ground Truth Source</span></div>
+      <div class="fields-grid">
+        ${field("Pulse Rate (bpm)","nadi.pulseRate","number","79")}
+        ${field("Rhythm","nadi.rhythm","select",["Regular","Irregular"])}
+        ${field("Remark","nadi.remark","select",["Good","Fair","Poor"])}
+        ${field("Prakruti","nadi.prakruti","text","e.g. Pitta Kapha")}
+        ${field("Vikruti","nadi.vikruti","text","e.g. Vata")}
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="section-title">Health Parameters (% value from report)</div>
+      <div class="fields-grid">
+        ${field("Digestion Level (%)","nadi.digestion","number","30")}
+        ${field("Toxin Level (%)","nadi.toxin","number","40")}
+        ${field("Hydration Level (%)","nadi.hydration","number","80")}
+        ${field("Immunity Level (%)","nadi.immunity","number","40")}
+        ${field("Stress Level (%)","nadi.stress","number","60")}
+        ${field("Overthinking Level (%)","nadi.overthinking","number","30")}
+        ${field("Flexibility Level (%)","nadi.flexibility","number","50")}
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="section-title">Wellness Recommendations (from Nadi report)</div>
+      <div class="fields-grid">
+        ${field("Diet","nadi.diet","textarea","")}
+        ${field("Yoga & Exercise","nadi.yoga","textarea","")}
+        ${field("Physical Activity","nadi.physicalActivity","textarea","")}
+        ${field("Sleep","nadi.sleep","textarea","")}
+        ${field("Supplements","nadi.supplements","textarea","")}
+        ${field("Medicine & Herbs","nadi.medicine","textarea","")}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderBioWell(){
+  return `<div class="form-section">
+    <div class="section-title">Bio-Well GDV <span class="device-badge" style="background:#7a8fd418;color:#3d4e8b;border:0.5px solid #7a8fd444">GDV Energy PDF</span></div>
+    <div class="fields-grid">
+      ${field("Energy (Joules)","biowell.energy","number","57")}
+      ${field("Energy Reserve (%)","biowell.energyReserve","number","100")}
+      ${field("Stress Index","biowell.stressIndex","number","2.31")}
+      ${field("Chakra Alignment (%)","biowell.chakraAlignment","number","87")}
+      ${field("Physical Activity (%)","biowell.physicalActivity","number","57")}
+      ${field("Nutrition (%)","biowell.nutrition","number","67")}
+      ${field("Psychology (%)","biowell.psychology","number","84")}
+      ${field("Sleep Regime (%)","biowell.sleepRegime","number","80")}
+      ${field("Hormones (%)","biowell.hormones","number","62")}
+      ${field("Environment (%)","biowell.environment","number","85")}
+    </div>
+  </div>`;
+}
+
+function renderBioRes(){
+  return `<div class="form-section">
+    <div class="section-title">Bioresonance <span class="device-badge" style="background:#d4a07a18;color:#8b5e3d;border:0.5px solid #d4a07a44">Frequency Scan PDF</span></div>
+    <div class="fields-grid">
+      ${field("Flagged Items / Low E-Level","biores.flaggedItems","textarea","")}
+      ${field("General Note","biores.generalNote","textarea","")}
+    </div>
+  </div>`;
+}
+
+function renderPage1(r){
+  const m=r.metrics,dims=r.dimensions,sys=r.systems,p=r.patient;
+  const mBoxes=[
+    {val:m.weight,unit:"kg",label:"Weight",src:"InBody"},
+    {val:m.bodyFat,unit:"%",label:"Body Fat",src:"InBody"},
+    {val:m.bmi,unit:"",label:"BMI",src:"InBody"},
+    {val:m.heartRate,unit:"bpm",label:"Heart Rate",src:"ECG"},
+    {val:m.bioEnergy,unit:"J",label:"Bio-Energy",src:"BioWell"},
+    {val:m.energyReserve,unit:"%",label:"Energy Res.",src:"BioWell"},
+    {val:m.lfhfRatio,unit:"",label:"LF/HF",src:"HRV"},
+    {val:m.nadiPulse,unit:"bpm",label:"Nadi Pulse",src:"Nadi"},
+  ].map(b=>`<div class="metric-box">
+    <div class="metric-val">${b.val||"—"}<span class="metric-unit">${b.unit}</span></div>
+    <div class="metric-label">${b.label}</div>
+    <div class="metric-src">${b.src}</div>
+  </div>`).join("");
+
+  const dimData=[
+    {key:"physical",label:"Physical",side:"left"},
+    {key:"emotional",label:"Emotional",side:"right"},
+    {key:"psychological",label:"Psychological",side:"left"},
+    {key:"spiritual",label:"Spiritual",side:"right"},
+  ];
+  const leftH=dimData.filter(d=>d.side==="left").map(d=>{
+    const dv=dims[d.key];
+    return `<div class="dim-card">${donut(dv.score,64)}<div class="dim-info"><div class="dim-title">${d.label}</div><div class="dim-desc">${dv.description}</div></div></div>`;
+  }).join("");
+  const rightH=dimData.filter(d=>d.side==="right").map(d=>{
+    const dv=dims[d.key];
+    return `<div class="dim-card right">${donut(dv.score,64)}<div class="dim-info"><div class="dim-title">${d.label}</div><div class="dim-desc">${dv.description}</div></div></div>`;
+  }).join("");
+
+  const bodySVG=`<svg width="50" height="82" viewBox="0 0 50 82" fill="none" style="opacity:0.12">
+    <circle cx="25" cy="8" r="7" fill="var(--color-text-primary)"/>
+    <rect x="16" y="18" width="18" height="24" rx="4" fill="var(--color-text-primary)"/>
+    <rect x="5" y="19" width="9" height="20" rx="4" fill="var(--color-text-primary)"/>
+    <rect x="36" y="19" width="9" height="20" rx="4" fill="var(--color-text-primary)"/>
+    <rect x="16" y="44" width="8" height="28" rx="4" fill="var(--color-text-primary)"/>
+    <rect x="26" y="44" width="8" height="28" rx="4" fill="var(--color-text-primary)"/>
+  </svg>`;
+
+  const row1=SYSTEMS.slice(0,5).map(s=>{const sv=sys[s.key];const ok=sv.status==="Normal";
+    return `<div class="sys-card"><div class="sys-circle" style="background:${s.color}18;border:1.5px solid ${s.color}44;color:${s.color}">${s.abbr}</div>
+    <div><div class="sys-pct">${sv.score}%</div><div class="sys-status ${ok?"status-normal":"status-attn"}">${sv.status}</div><div class="sys-label">${s.label}</div></div></div>`;
+  }).join("");
+  const row2=SYSTEMS.slice(5).map(s=>{const sv=sys[s.key];const ok=sv.status==="Normal";
+    return `<div class="sys-card"><div class="sys-circle" style="background:${s.color}18;border:1.5px solid ${s.color}44;color:${s.color}">${s.abbr}</div>
+    <div><div class="sys-pct">${sv.score}%</div><div class="sys-status ${ok?"status-normal":"status-attn"}">${sv.status}</div><div class="sys-label">${s.label}</div></div></div>`;
+  }).join("");
+
+  return `<div class="report-header">
+    <div class="report-title">Wellness Report</div>
+    <div class="patient-info"><div class="patient-name">${p.name||"—"}</div><div>${p.age||""}</div><div>${p.date||""}</div></div>
+  </div>
+  <div class="metrics-row">${mBoxes}</div>
+  <div class="dims-section">
+    <div class="dims-col">${leftH}</div>
+    <div class="body-center">${bodySVG}</div>
+    <div class="dims-col">${rightH}</div>
+  </div>
+  <div class="systems-section">
+    <div class="systems-grid" style="margin-bottom:8px">${row1}</div>
+    <div class="systems-grid">${row2}</div>
+  </div>`;
+}
+
+function renderPage2(r){
+  const w=r.wellness,p=r.patient;
+  const cards=[
+    {key:"diet",label:"Diet"},
+    {key:"yoga",label:"Yoga Therapy"},
+    {key:"physicalActivity",label:"Physical Activity"},
+    {key:"sleep",label:"Sleep"},
+    {key:"stress",label:"Stress Management"},
+    {key:"supplements",label:"Supplements"},
+  ].map(c=>`<div class="wellness-card"><div class="wellness-card-title">${c.label}</div><div class="wellness-card-body">${w[c.key]||"—"}</div></div>`).join("");
+  return `<div class="report-header">
+    <div class="report-title">Wellness Report</div>
+    <div class="patient-info"><div class="patient-name">${p.name||"—"}</div><div>${p.age||""}</div></div>
+  </div>
+  <div class="wellness-title">Wellness Offerings</div>
+  <div class="wellness-grid">${cards}</div>
+  <div class="wellness-full"><div class="wellness-card-title">Medicine & Ayurvedic Herbs</div><div class="wellness-card-body">${w.medicine||"—"}${w.bioresNote?`<br><br><strong>Bioresonance Note:</strong> ${w.bioresNote}`:""}</div></div>`;
+}
+
+function renderApp(){
+  const app=document.getElementById("app");
+  if(state.showReport){
+    const r=computeReport();
+    app.innerHTML=`<div>
+      <div class="report-nav">
+        <div class="nav-tabs">
+          <button class="tab ${state.reportPage===1?"active":""}" onclick="setReportPage(1)">Overview</button>
+          <button class="tab ${state.reportPage===2?"active":""}" onclick="setReportPage(2)">Wellness Offerings</button>
+        </div>
+        <button class="reset-btn" onclick="backToForm()">← Edit</button>
+      </div>
+      ${state.reportPage===1?renderPage1(r):renderPage2(r)}
+    </div>`;
+    return;
+  }
+
+  const stepContent={
+    patient:renderPatient(),
+    inbody:renderInBody(),
+    ecg:renderECG(),
+    nadi:renderNadi(),
+    biowell:renderBioWell(),
+    biores:renderBioRes(),
+  }[state.step]||"";
+
+  const si=STEPS.findIndex(s=>s.id===state.step);
+  const isLast=state.step==="biores";
+
+  app.innerHTML=`<div>
+    <div class="hdr"><h1>Kadamba Wellness Report Engine</h1><p>Enter data from all 5 device reports, then generate the unified wellness summary</p></div>
+    <div class="step-tabs">${renderStepTabs()}</div>
+    ${stepContent}
+    <div class="nav-btns">
+      <button class="btn" onclick="prevStep()" ${si===0?"disabled":""}>← Back</button>
+      ${isLast
+        ? `<button class="btn btn-primary" onclick="generateReport()">Generate Report →</button>`
+        : `<button class="btn btn-primary" onclick="nextStep()">Next →</button>`
+      }
+    </div>
+  </div>`;
+}
+
+function goStep(id){state.step=id;renderApp()}
+function nextStep(){
+  const si=STEPS.findIndex(s=>s.id===state.step);
+  if(si<STEPS.length-2){state.step=STEPS[si+1].id;renderApp()}
+}
+function prevStep(){
+  const si=STEPS.findIndex(s=>s.id===state.step);
+  if(si>0){state.step=STEPS[si-1].id;renderApp()}
+}
+function generateReport(){state.showReport=true;state.reportPage=1;renderApp()}
+function setReportPage(p){state.reportPage=p;renderApp()}
+function backToForm(){state.showReport=false;state.step="biores";renderApp()}
+
+renderApp();
+</script>

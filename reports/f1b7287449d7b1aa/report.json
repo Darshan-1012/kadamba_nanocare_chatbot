@@ -1,0 +1,96 @@
+{
+  "patient": {
+    "name": "Chandra Achyutha",
+    "age": "21",
+    "date": ""
+  },
+  "metrics": {
+    "weight": 65.2,
+    "bmi": 23.0,
+    "bodyFat": 0.0,
+    "heartRate": 68,
+    "bioEnergy": 0.0,
+    "energyReserve": 0,
+    "lfhfRatio": 0.0,
+    "nadiPulse": 79
+  },
+  "dimensions": {
+    "physical": {
+      "score": 90,
+      "description": "InBody composition and ECG normality indicate a healthy physical state. Bioresonance physical findings support this assessment."
+    },
+    "emotional": {
+      "score": 77,
+      "description": "Bio-Well stress index indicates low/moderate stress levels. Nadi vikruti/pulse quality suggests a balanced emotional state."
+    },
+    "psychological": {
+      "score": 77,
+      "description": "Bio-Well psychology indicators suggest a normal psychological state. Nadi stress/overthinking parameters indicate no significant concerns."
+    },
+    "spiritual": {
+      "score": 60,
+      "description": "Bio-Well chakra alignment % and energy reserve % indicate good spiritual health."
+    }
+  },
+  "systems": {
+    "nervous": {
+      "score": 77,
+      "status": "Normal",
+      "organ_count": 28
+    },
+    "cardiovascular": {
+      "score": 78,
+      "status": "Normal",
+      "organ_count": 14
+    },
+    "respiratory": {
+      "score": 72,
+      "status": "Normal",
+      "organ_count": 11
+    },
+    "musculoskeletal": {
+      "score": 77,
+      "status": "Normal",
+      "organ_count": 61
+    },
+    "digestive": {
+      "score": 76,
+      "status": "Normal",
+      "organ_count": 33
+    },
+    "integumentary": {
+      "score": 74,
+      "status": "Normal",
+      "organ_count": 7
+    },
+    "endocrine": {
+      "score": 78,
+      "status": "Normal",
+      "organ_count": 10
+    },
+    "urogenital": {
+      "score": 79,
+      "status": "Normal",
+      "organ_count": 6
+    },
+    "reproductive": {
+      "score": 77,
+      "status": "Normal",
+      "organ_count": 3
+    },
+    "immune": {
+      "score": 75,
+      "status": "Normal",
+      "organ_count": 10
+    }
+  },
+  "wellness": {
+    "diet": "Eat a balanced diet that includes plenty of fruits and vegetables. Avoid spicy and heavy foods.",
+    "yoga": "Practice gentle yoga poses to improve flexibility and balance. Focus on deep breathing exercises.",
+    "physicalActivity": "Engage in regular physical activity, such as walking or jogging, for at least 30 minutes a day.",
+    "sleep": "Get 7-8 hours of sleep each night to help your body recover from the day's activities.",
+    "stress": "Practice stress-reducing techniques, such as meditation or deep breathing exercises, to manage stress levels.",
+    "supplements": "Consider taking supplements that support digestive health, such as probiotics or digestive enzymes.",
+    "medicine": "Consult with an Ayurvedic practitioner about potential medicines and herbs to support your overall health."
+  }
+}

@@ -1,0 +1,161 @@
+chandra achyutha 21 YEAR, 24 April 2004
+DATE TIME THUMB... PF NAME Sys COLOR KOD t E-level Shape
+11-Feb-26 17:08 CHOLESTERIN 0.232 80 % 2
+11-Feb-26 17:07 CORTISOL 0.236 80 % 2
+11-Feb-26 17:08 INSULIN 0.252 83 % 3
+11-Feb-26 17:08 GLYCOGEN 0.252 80 % 3
+11-Feb-26 17:07 ALDOSTERONUM 0.256 80 % 2
+11-Feb-26 17:08 HEPARINUM 0.265 80 % 3
+11-Feb-26 17:07 TESTOSTERONE 0.271 85 % 2
+11-Feb-26 17:08 HISTAMINE 0.276 82 % 2
+11-Feb-26 17:08 SEROTONIN 0.298 79 % 3
+11-Feb-26 17:07 NORADRENALINUM 0.358 79 % 3
+11-Feb-26 17:08 DNA 6 - 3 - 06 - 90 - 13 0.392 79 % 3
+11-Feb-26 17:07 ADRENALIN 0.399 79 % 3
+CLOSTRIDIUM
+11-Feb-26 17:08 0.558 80 % 3
+BOTULINUM
+11-Feb-26 17:04 EOSINOPHIL 0.6 82 % 2
+11-Feb-26 17:04 MONOCYTE 0.644 77 % 3
+11-Feb-26 17:04 LYMPHOCYTE 0.648 79 % 3
+BASOPHILIC
+11-Feb-26 17:04 0.649 5577 %% 6
+LEUKOCYTE
+11-Feb-26 17:08 CHROMOSOMES gr.G 0.654 79 % 3
+TRANSITION OF
+11-Feb-26 17:02 ESOPHAGUS TO 0.668 75 % 4
+STOMACH
+MUCOSA OF NASAL
+11-Feb-26 17:03 0.681 71 % 4
+CAVITY
+11-Feb-26 17:08 CHROMOSOMES gr.F 0.684 80 % 2
+11-Feb-26 17:04 NEUTROPHIL 0.686 70 % 4
+11-Feb-26 17:02 WALL OF RECTUM 0.726 78 % 4
+<Filter is Empty>
+[TABLE]
+chandra achyutha 21 YEAR, 24 April 2004 |  |  |  |  |  |  |  |  |  | 
+ |  |  |  |  |  |  |  |  |  | 
+DATE | TIME | THUM | B... PF | NAME | Sys | COLOR | KOD t |  | E-level | Shape
+11-Feb-26 17:08 CHOLESTERIN
+11-Feb-26 17:07 CORTISOL
+11-Feb-26 17:08 INSULIN
+11-Feb-26 17:08 GLYCOGEN
+11-Feb-26 17:07 ALDOSTERONUM
+11-Feb-26 17:08 HEPARINUM
+11-Feb-26 17:07 TESTOSTERONE
+11-Feb-26 17:08 HISTAMINE
+11-Feb-26 17:08 SEROTONIN
+11-Feb-26 17:07 NORADRENALINUM
+11-Feb-26 17:08 DNA 6 - 3 - 06 - 90 - 13
+11-Feb-26 17:07 ADRENALIN
+CLOSTRIDIUM
+11-Feb-26 17:08
+BOTULINUM
+11-Feb-26 17:04 EOSINOPHIL
+11-Feb-26 17:04 MONOCYTE
+11-Feb-26 17:04 LYMPHOCYTE
+BASOPHILIC
+11-Feb-26 17:04
+LEUKOCYTE
+11-Feb-26 17:08 CHROMOSOMES gr.G
+TRANSITION OF
+11-Feb-26 17:02 ESOPHAGUS TO
+STOMACH
+MUCOSA OF NASAL
+11-Feb-26 17:03
+CAVITY
+11-Feb-26 17:08 CHROMOSOMES gr.F
+11-Feb-26 17:04 NEUTROPHIL
+11-Feb-26 17:02 WALL OF RECTUM |  |  |  |  |  |  |  | 0.232
+0.236
+0.252
+0.252
+0.256
+0.265
+0.271
+0.276
+0.298
+0.358
+0.392
+0.399
+0.558
+0.6
+0.644
+0.648
+0.649
+0.654
+0.668
+0.681
+0.684
+0.686
+0.726 | 80 % | 
+ |  |  |  |  |  |  |  |  | 80 % | 
+ |  |  |  |  |  |  |  |  | 83 % | 
+ |  |  |  |  |  |  |  |  | 80 % | 
+ |  |  |  |  |  |  |  |  | 80 % | 
+ |  |  |  |  |  |  |  |  | 80 % | 
+ |  |  |  |  |  |  |  |  | 85 % | 
+ |  |  |  
+
+[... content trimmed ...]
+
+EM
+11-Feb-26 17:05 CEREBRUM, top view
+11-Feb-26 17:04 CEREBRUM, right side
+HORIZONTAL
+11-Feb-26 17:01
+THORACOTOMY AT THE...
+ORGANS OF MALE
+11-Feb-26 17:01
+SMALL PELVIS, right side
+11-Feb-26 17:04 CEREBRUM, left side
+PANCREAS AND
+11-Feb-26 17:01
+SPLEEN, front view
+ORGANS OF MALE
+11-Feb-26 17:01
+SMALL PELVIS; left side
+HORIZONTAL
+11-Feb-26 17:01
+CROSS-SECTION OF ...
+CEREBRUM MEDIAL
+11-Feb-26 17:05
+SURFACE; left side
+CORONAL
+11-Feb-26 17:01
+THORACOTOMY AT THE...
+CEREBRUM MEDIAL
+11-Feb-26 17:05
+SURFACE; right view
+HEAD LONGITUDINAL
+11-Feb-26 17:01
+CROSS-SECTION ,RIGHT
+ORGANS OF
+11-Feb-26 17:01 RETROPERITONEAL
+SPACE
+HEAD LONGITUDINAL
+11-Feb-26 17:01
+CROSS-SECTION, LEFT
+11-Feb-26 17:01 MIDRIFF |  |  |  |  |  |  | 2.08 |  | 79 % | 
+ |  |  |  |  |  |  | 2.092 |  | 80 % | 
+ |  |  |  |  |  |  | 2.1 |  | 78 % | 
+ |  |  |  |  |  |  | 2.104 |  | 81 % | 
+ |  |  |  |  |  |  | 2.131 |  | 83 % | 
+ |  |  |  |  |  |  | 2.142 |  | 80 % | 
+ |  |  |  |  |  |  | 2.144 |  | 79 % | 
+ |  |  |  |  |  |  | 2.177 |  | 75 % | 
+ |  |  |  |  |  |  | 2.216 |  | 71 % | 
+ |  |  |  |  |  |  | 2.223 |  | 80 % | 
+ |  |  |  |  |  |  | 2.226 |  | 77 % | 
+ |  |  |  |  |  |  | 2.228 |  | 75 % | 
+ |  |  |  |  |  |  | 2.255 |  | 72 % | 
+ |  |  |  |  |  |  | 2.298 |  | 78 % | 
+ |  |  |  |  |  |  | 2.314 |  | 72 % | 
+ |  |  |  |  |  |  | 2.35 |  | 79 % | 
+ |  |  |  |  |  |  | 2.387 |  | 5511 | 
+ |  |  |  |  |  |  | 2.478 |  | 80 % | 
+ |  |  |  |  |  |  | 2.562 |  | 79 % | 
+ |  |  |  |  |  |  | 2.663 |  | 77 % | 
+ |  |  |  |  |  |  |  |  |  | 
+<Filter is Empty> |  |  |  |  |  |  |  |  |  | 
+ |  |  |  |  |  |  |  |  |  |

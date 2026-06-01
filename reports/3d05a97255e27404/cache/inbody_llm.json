@@ -1,0 +1,11 @@
+{
+  "weight_kg": 85.8,
+  "skeletal_muscle_mass_kg": 33.1,
+  "body_fat_mass_kg": 26.9,
+  "bmi": 25.6,
+  "body_fat_percentage": null,
+  "visceral_fat_level": 12,
+  "basal_metabolic_rate_kcal": null,
+  "total_body_water_l": null,
+  "overall_assessment": "Under Normal Over"
+}

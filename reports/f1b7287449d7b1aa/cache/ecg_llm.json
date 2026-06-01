@@ -1,0 +1,16 @@
+{
+  "heart_rate_bpm": 68,
+  "rhythm": "Normal",
+  "hrv": {
+    "sdnn_ms": null,
+    "rmssd_ms": null,
+    "lf_power": null,
+    "hf_power": null,
+    "lf_hf_ratio": null,
+    "stress_index": null
+  },
+  "abnormalities": [
+    "QT Interval: 377 ms (outside normal range of 300-450 ms)"
+  ],
+  "overall_impression": "Normal ECG with slight anomalies in QT interval."
+}

@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+.env
+# reports/
+context/_extract_template.py
