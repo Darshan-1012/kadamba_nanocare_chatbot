@@ -181,6 +181,13 @@ async def generate_report(
         with open(dmit_pdf_path, "wb") as df:
             df.write(dmit_content)
 
+    biowell_pdf_path = None
+    biowell_content, _ = files.get("biowell", (None, None))
+    if biowell_content:
+        biowell_pdf_path = str(report_dir / "biowell_input.pdf")
+        with open(biowell_pdf_path, "wb") as bwf:
+            bwf.write(biowell_content)
+
     log.info(f"[{report_id}] Saved input PDFs for direct parsing")
 
     # ── 6. Synthesize (deterministic + LLM) ─────────────────────────
@@ -193,6 +200,7 @@ async def generate_report(
             ecg_pdf_path=ecg_pdf_path,
             hrv_pdf_path=hrv_pdf_path,
             dmit_pdf_path=dmit_pdf_path,
+            biowell_pdf_path=biowell_pdf_path,
         )
     except ValueError as e:
         raise HTTPException(500, f"Report synthesis failed: {e}")

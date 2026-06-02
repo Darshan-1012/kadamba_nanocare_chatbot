@@ -13,6 +13,8 @@ import logging
 import os
 import re
 import time
+
+from app.engine.biorhythm_extractor import extract_biorhythm_image
 from pathlib import Path
 from typing import Dict
 
@@ -54,6 +56,7 @@ async def synthesize_report(
     ecg_pdf_path: str | None = None,
     hrv_pdf_path: str | None = None,
     dmit_pdf_path: str | None = None,
+    biowell_pdf_path: str | None = None,
 ) -> dict:
     """Run the full pipeline with deterministic Bioresonance/ECG/HRV/Nadi scoring.
 
@@ -64,6 +67,7 @@ async def synthesize_report(
         ecg_pdf_path:     Path to the ECG PDF for direct parsing.
         hrv_pdf_path:     Path to the HRV PDF for direct parsing.
         dmit_pdf_path:    Path to the DMIT PDF for direct parsing.
+        biowell_pdf_path: Path to the BioWell PDF for biorhythm graph extraction.
 
     Returns:
         Validated wellness report dict with deterministic scores.
@@ -166,6 +170,20 @@ async def synthesize_report(
         dmit_data = json.loads(
             (cache_dir / "dmit_parsed.json").read_text(encoding="utf-8")
         )
+
+    # ── Step 1e: Extract Biorhythm graph image from BioWell PDF ──────
+    biorhythm_image_path = None
+    if biowell_pdf_path:
+        log.info("Step 1e: Extracting biorhythm graph from BioWell PDF...")
+        out_path = str(Path(report_dir) / "biorhythm_graph.png") if report_dir else None
+        biorhythm_image_path = extract_biorhythm_image(biowell_pdf_path, out_path)
+        if biorhythm_image_path:
+            log.info(f"  Biorhythm graph saved: {biorhythm_image_path}")
+        else:
+            log.warning("  Could not extract biorhythm graph")
+    elif report_dir and (Path(report_dir) / "biorhythm_graph.png").exists():
+        biorhythm_image_path = str(Path(report_dir) / "biorhythm_graph.png")
+        log.info("Step 1e: Using cached biorhythm graph")
 
     # ── Step 2: Cache raw extracted text ─────────────────────────────
     log.info("Step 2: Caching raw extracted text...")
@@ -479,6 +497,11 @@ async def synthesize_report(
         if dmit_data:
             final["dmit"] = dmit_data
             log.info("Step 8: DMIT data injected")
+
+        # Step 8b: Inject biorhythm graph path
+        if biorhythm_image_path:
+            final["biorhythm"] = {"image_path": biorhythm_image_path}
+            log.info(f"Step 8b: Biorhythm graph injected: {biorhythm_image_path}")
 
         # Cache final summaries
         if cache_dir:

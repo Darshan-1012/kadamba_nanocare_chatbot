@@ -61,6 +61,20 @@ def render_html(report_data: dict) -> str:
         "system_summaries": report_data.get("system_summaries", {}),
         "swot":       report_data.get("swot", {}),
     }
+
+    # Convert biorhythm image file to base64 data URI for inline embedding
+    bio = ctx["biorhythm"]
+    if bio.get("image_path"):
+        img_path = Path(bio["image_path"])
+        if img_path.exists():
+            import base64
+            img_bytes = img_path.read_bytes()
+            b64 = base64.b64encode(img_bytes).decode("ascii")
+            bio["image_data_uri"] = f"data:image/png;base64,{b64}"
+            log.info(f"Biorhythm image encoded as base64 ({len(img_bytes)} bytes)")
+        else:
+            log.warning(f"Biorhythm image not found: {img_path}")
+
     return template.render(**ctx)
 
 
