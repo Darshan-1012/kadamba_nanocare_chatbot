@@ -9,13 +9,13 @@ OCR fallback strategy:
 import io
 import logging
 import asyncio
-from functools import lru_cache
 
 import pdfplumber
 from PIL import Image, ImageEnhance
 import numpy as np
 
 from app.controllers.base import BaseExtractor, ExtractionResult
+from app.controllers.ocr_reader import get_easyocr_reader
 
 log = logging.getLogger(__name__)
 
@@ -31,16 +31,6 @@ MAX_OCR_PAGES = 15
 
 # Render resolution for OCR (lower = faster, less accurate)
 OCR_RENDER_DPI = 150
-
-
-@lru_cache(maxsize=1)
-def _get_ocr_reader():
-    """Lazy-load EasyOCR reader (shared with image_extractor). Uses GPU if available."""
-    import easyocr
-    import torch
-    use_gpu = torch.cuda.is_available()
-    log.info(f"EasyOCR: GPU={'yes' if use_gpu else 'no (CPU)'}")
-    return easyocr.Reader(["en"], gpu=use_gpu)
 
 
 class PDFExtractor(BaseExtractor):
@@ -175,7 +165,7 @@ class PDFExtractor(BaseExtractor):
 
         img_array = np.array(pil_img)
 
-        reader = _get_ocr_reader()
+        reader = get_easyocr_reader()
         results = reader.readtext(img_array, detail=1)
 
         # Sort top-to-bottom, left-to-right

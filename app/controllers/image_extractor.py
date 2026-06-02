@@ -1,21 +1,12 @@
 """Image → text extractor using EasyOCR (for InBody report)."""
 import io
 import asyncio
-from functools import lru_cache
 
 from PIL import Image, ImageEnhance
 import numpy as np
 
 from app.controllers.base import BaseExtractor, ExtractionResult
-
-
-@lru_cache(maxsize=1)
-def _get_reader():
-    """Lazy-load EasyOCR reader (heavy init, ~1-2 s first time). Uses GPU if available."""
-    import easyocr
-    import torch
-    use_gpu = torch.cuda.is_available()
-    return easyocr.Reader(["en"], gpu=use_gpu)
+from app.controllers.ocr_reader import get_easyocr_reader
 
 
 class ImageExtractor(BaseExtractor):
@@ -58,7 +49,7 @@ class ImageExtractor(BaseExtractor):
         img_array = np.array(img)
 
         # 2. Run OCR
-        reader = _get_reader()
+        reader = get_easyocr_reader()
         results = reader.readtext(img_array, detail=1)
 
         # 3. Sort by vertical position (top→bottom), then horizontal (left→right)

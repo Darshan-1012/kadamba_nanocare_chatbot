@@ -12,7 +12,7 @@ from app.config import DEVICE_KEYS, REPORTS_DIR
 from app.controllers.pipeline import extract_all
 from app.engine.synthesizer import synthesize_report
 from app.engine.llm_client import check_health
-from app.output.html_renderer import render_pdf as generate_pdf
+from app.output.html_renderer import render_pdf_async as generate_pdf
 
 log = logging.getLogger(__name__)
 router = APIRouter()
@@ -216,7 +216,7 @@ async def generate_report(
     # ── 7. Generate PDF ──────────────────────────────────────────────
     pdf_path = report_dir / "wellness_report.pdf"
     try:
-        generate_pdf(report_data, str(pdf_path))
+        await generate_pdf(report_data, str(pdf_path))
         log.info(f"[{report_id}] PDF generated: {pdf_path}")
     except Exception as e:
         log.error(f"[{report_id}] PDF generation failed: {e}")

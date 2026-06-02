@@ -1,98 +1,80 @@
 {
-  "overall_energy_joules": null,
+  "overall_energy_joules": 0.0,
   "energy_reserve_percent": null,
-  "stress_index": null,
+  "stress_index": 0.0,
   "stress_level": "Low/Moderate/High",
   "chakra_alignment": {
     "root": {
-      "energy": null,
+      "energy": 4.72,
       "alignment": "Good"
     },
     "sacral": {
-      "energy": null,
-      "alignment": "Good"
+      "energy": 4.7,
+      "alignment": "Moderate"
     },
     "solar_plexus": {
-      "energy": null,
+      "energy": 6.31,
       "alignment": "Good"
     },
     "heart": {
-      "energy": null,
-      "alignment": "Good"
+      "energy": 7.6,
+      "alignment": "High"
     },
     "throat": {
       "energy": null,
-      "alignment": "Good"
+      "alignment": null
     },
     "third_eye": {
       "energy": null,
-      "alignment": "Good"
+      "alignment": null
     },
     "crown": {
       "energy": null,
-      "alignment": "Good"
+      "alignment": null
     }
   },
   "organ_energy_levels": {
     "Colon - ascending": {
-      "energy level or status": "4.72",
-      "status": "Normal"
+      "energy level or status": 100.0
     },
     "Colon - transverse": {
-      "energy level or status": "4.70",
-      "status": "Normal"
+      "energy level or status": 95.53
     },
     "Duodenum": {
-      "energy level or status": "6.31",
-      "status": "Normal"
+      "energy level or status": 100.0
     },
     "Ileum": {
-      "energy level or status": "5.49",
-      "status": "Normal"
+      "energy level or status": 100.0
     },
     "Jejunum": {
-      "energy level or status": "6.42",
-      "status": "Normal"
+      "energy level or status": 100.0
     },
     "Liver": {
-      "energy level or status": "7.60",
-      "status": "Increased"
+      "energy level or status": 67.96
     },
     "Pancreas": {
-      "energy level or status": "6.75",
-      "status": "Normal"
+      "energy level or status": 59.19
     },
     "Gallbladder": {
-      "energy level or status": "6.79",
-      "status": "Normal"
+      "energy level or status": 100.0
     },
     "Appendix": {
-      "energy level or status": "6.94",
-      "status": "Normal"
+      "energy level or status": 100.0
     },
     "Abdominal zone": {
-      "energy level or status": "6.29",
-      "status": "Normal"
+      "energy level or status": 100.0
     },
     "Urogenital system": {
-      "energy level or status": "6.99",
-      "status": "Increased"
+      "energy level or status": 88.44
     },
     "Kidneys": {
-      "energy level or status": "6.71",
-      "status": "Normal"
+      "energy level or status": 84.57
     },
     "Prostate": {
-      "energy level or status": "8.89",
-      "status": "Increased"
+      "energy level or status": 89.97
     },
     "Nervous system": {
-      "energy level or status": "6.62",
-      "status": "Normal"
-    },
-    "Immune system": {
-      "energy level or status": "6.78",
-      "status": "Normal"
+      "energy level or status": 84.54
     }
   },
   "emotional_psychological": null,

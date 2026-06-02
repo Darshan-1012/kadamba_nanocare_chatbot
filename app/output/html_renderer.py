@@ -9,6 +9,8 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
+import shutil
 from pathlib import Path
 
 # pyrefly: ignore [missing-import]
@@ -66,7 +68,6 @@ async def _render_pdf_async(html: str, output_path: str) -> str:
     """Use Playwright to convert HTML to an A4 PDF."""
     # pyrefly: ignore [missing-import]
     from playwright.async_api import async_playwright
-    import tempfile, os
 
     # Write HTML to a temp file in the template dir so file:/// image
     # paths resolve correctly (same-origin as the SVG/PNG assets).
@@ -75,7 +76,17 @@ async def _render_pdf_async(html: str, output_path: str) -> str:
 
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
+            chrome_path = (
+                os.getenv("CHROME_PATH")
+                or shutil.which("google-chrome")
+                or shutil.which("google-chrome-stable")
+                or shutil.which("chromium")
+                or shutil.which("chromium-browser")
+            )
+            launch_options = {"headless": True}
+            if chrome_path:
+                launch_options["executable_path"] = chrome_path
+            browser = await p.chromium.launch(**launch_options)
             # Viewport = 210mm at 96 DPI ≈ 794px
             page = await browser.new_page(viewport={"width": 794, "height": 1123})
 
@@ -119,6 +130,12 @@ def render_pdf(report_data: dict, output_path: str) -> str:
     """
     html = render_html(report_data)
     return asyncio.run(_render_pdf_async(html, output_path))
+
+
+async def render_pdf_async(report_data: dict, output_path: str) -> str:
+    """Async wrapper: render report data to PDF from an existing event loop."""
+    html = render_html(report_data)
+    return await _render_pdf_async(html, output_path)
 
 
 def render_pdf_from_json(json_path: str, output_path: str) -> str:
