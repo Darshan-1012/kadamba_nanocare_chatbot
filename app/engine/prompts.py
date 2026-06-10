@@ -119,7 +119,15 @@ Return ONLY this JSON structure (use null for missing values):
     "third_eye": {{"energy": 0, "alignment": "Good/Moderate/Poor"}},
     "crown": {{"energy": 0, "alignment": "Good/Moderate/Poor"}}
   }},
-  "organ_energy_levels": {{"organ_name": "energy level or status"}},
+  "organ_energy_levels": [
+    {{
+      "system_group": "system heading from the table, e.g. Cardiovascular system",
+      "organ": "organ or system name exactly as shown in the Functional/energetic table",
+      "energy_joules": 0.0,
+      "balance_percent": 0.0,
+      "status": "Low/Optimal/Increased/Heightened if stated"
+    }}
+  ],
   "emotional_psychological": "summary of emotional/psychological indicators",
   "overall_impression": "1-2 sentence summary"
 }}"""
@@ -267,4 +275,3 @@ them into a single unified wellness report.
     "medicine": "ayurvedic medicines and herbs (2-3 sentences minimum)"
   }}
 }}"""
-

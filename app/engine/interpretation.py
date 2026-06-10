@@ -6,6 +6,8 @@ NO LLM calls — pure lookup tables and threshold comparisons.
 
 from __future__ import annotations
 
+import re
+
 
 # ╔══════════════════════════════════════════════════════════════════════╗
 # ║  NADI TARANGINI — Tables 1 & 2                                     ║
@@ -15,22 +17,22 @@ _NADI_PHYSICAL = {
     "digestion": {
         "high": "Excess of pitta (teeksnagni), hyper metabolism",
         "medium": "Moderate digestive capacity",
-        "low": "Mandagni (low digestive capacity), poor digestion",
+        "low": "Mandagni (low digestive capacity), poor nutrient absorption, bloating",
     },
     "toxin": {
         "high": "High accumulation of metabolic toxin, manda agni, systemic toxicity",
         "medium": "Moderate toxin levels",
-        "low": "Low toxin, balanced metabolic state",
+        "low": "Efficient metabolism",
     },
     "hydration": {
         "high": "Electrolyte balance, removal of ama (toxins), balanced agni and kapha",
         "medium": "Moderate hydration levels",
-        "low": "Dehydration risk, electrolyte imbalance",
+        "low": "Cellular dehydration, toxin accumulation",
     },
     "immunity": {
         "high": "Strong cellular resilience, strong agni and optimal ojas, positive psychological resilience",
         "medium": "Moderate immune function",
-        "low": "Weakened immunity, low ojas",
+        "low": "Tissue exhaustion, mental fatigue, depletion in ojas",
     },
     "flexibility": {
         "high": "Optimal lubricated joints",
@@ -380,6 +382,7 @@ def build_interpretations(
     biores_data: dict | None = None,
     ecg_data: dict | None = None,
     nadi_data: dict | None = None,
+    biowell_data: dict | None = None,
 ) -> dict:
     """Inject deterministic interpretations into the report dict.
 
@@ -392,6 +395,7 @@ def build_interpretations(
         biores_data: Parsed Bioresonance data (from bioresonance_parser).
         ecg_data:    Parsed ECG+HRV data (from ecg_parser).
         nadi_data:   Parsed Nadi data (from nadi_parser).
+        biowell_data: Parsed BioWell data.
     """
     metrics = report.get("metrics", {})
     systems = report.get("systems", {})
@@ -461,6 +465,19 @@ def build_interpretations(
         if nadi_interps:
             interps["nadi"] = nadi_interps
 
+    if biowell_data:
+        chakra_details = biowell_data.get("chakra_details", {})
+        if chakra_details:
+            interps["chakras"] = {
+                key: {
+                    **chakra,
+                    "status": chakra.get("status")
+                    or interpret_chakra(float(chakra.get("alignment_percent", 0))).get("status"),
+                    "description": chakra.get("description") or get_chakra_description(key),
+                }
+                for key, chakra in chakra_details.items()
+            }
+
     # -- Bioresonance system interpretations (Table 8) --
     if biores_data:
         sys_details = biores_data.get("system_details", {})
@@ -481,23 +498,29 @@ def build_interpretations(
     #  DIMENSION DESCRIPTIONS -- deterministic summaries from rules
     # ==================================================================
     dimensions.setdefault("physical", {})
-    dimensions["physical"]["description"] = _build_physical_description(
+    _set_dimension_summary(dimensions, "physical", _build_physical_description(
         metrics, ecg_data, nadi_data, biores_data, systems
-    )
+    ))
 
     dimensions.setdefault("psychological", {})
-    dimensions["psychological"]["description"] = _build_psychological_description(
-        metrics, ecg_data, nadi_data
-    )
+    _set_dimension_summary(dimensions, "psychological", _build_psychological_description(
+        metrics, ecg_data, nadi_data, biowell_data
+    ))
 
     dimensions.setdefault("emotional", {})
-    dimensions["emotional"]["description"] = _build_emotional_description(
-        metrics, nadi_data, systems
+    _set_dimension_summary(
+        dimensions,
+        "emotional",
+        _build_emotional_description(metrics, nadi_data, systems, biowell_data),
+        _build_emotional_summary_points(nadi_data, biowell_data),
     )
 
     dimensions.setdefault("spiritual", {})
-    dimensions["spiritual"]["description"] = _build_spiritual_description(
-        metrics, interps
+    _set_dimension_summary(
+        dimensions,
+        "spiritual",
+        _build_spiritual_description(metrics, interps),
+        _build_spiritual_summary_points(interps),
     )
 
     report["dimensions"] = dimensions
@@ -506,37 +529,130 @@ def build_interpretations(
 
 # -- Dimension description builders --
 
+def _status_for_dimension_score(score: float) -> str:
+    """Convert a dimension score into a reader-friendly Page 1 label."""
+    if score >= 80:
+        return "Good"
+    elif score >= 60:
+        return "Fair"
+    elif score >= 40:
+        return "Needs Attention"
+    return "Critical Attention"
+
+
+_CHAKRA_ORDER = [
+    "muladara",
+    "swadistana",
+    "manipura",
+    "anahatha",
+    "vishudda",
+    "agna",
+    "sahasrara",
+]
+
+
+def _split_summary_points(text: str, limit: int = 4) -> list[str]:
+    """Split deterministic rule prose into compact frontend bullet points."""
+    chunks = re.split(r"(?<=[.!?])\s+", text)
+    return [chunk.strip() for chunk in chunks if chunk.strip()][:limit]
+
+
+def _set_dimension_summary(
+    dimensions: dict,
+    key: str,
+    description: str,
+    summary_points: list[str] | None = None,
+) -> None:
+    """Store both prose and structured rule-backed points for a dimension."""
+    dim = dimensions.setdefault(key, {})
+    dim["description"] = description
+    dim["summary_points"] = summary_points or _split_summary_points(description)
+    dim["statusLabel"] = _status_for_dimension_score(float(dim.get("score", 0)))
+
+
+def _chakra_point(chakra: dict) -> str:
+    """Format a chakra line for Page 1 emotional/spiritual cards."""
+    return (
+        f"{chakra['name']} - {chakra['color']} "
+        f"{chakra['alignment_percent']:g}% ({chakra['status']}) -- "
+        f"{chakra['description']}."
+    )
+
+
+def _build_emotional_summary_points(nadi_data, biowell_data=None) -> list[str]:
+    """Build structured Page 1 emotional points."""
+    points: list[str] = []
+    nadi_stress_point: str | None = None
+
+    if nadi_data:
+        params = nadi_data.get("health_params", {})
+        stress_param = params.get("stress", {})
+        stress = stress_param.get("level", "")
+        pct = stress_param.get("percentage")
+        if stress:
+            value = float(pct) if pct is not None else _level_to_pct(stress)
+            r = interpret_nadi_param("stress", value)
+            points.append(
+                f"Nadi Emotional stress {value:g}% ({stress}) -- {r['interpretation']}."
+            )
+            nadi_stress_point = (
+                f"BioWell Stress level {value:g}% ({stress}) -- "
+                f"{r['interpretation']}."
+            )
+
+    biowell_stress_point = ""
+    if biowell_data:
+        stress_idx = biowell_data.get("stress_index")
+        stress_level = str(biowell_data.get("stress_level", "")).strip()
+        if stress_idx is not None and float(stress_idx) > 0:
+            value = float(stress_idx)
+            r = interpret_biowell_stress(value)
+            biowell_stress_point = (
+                f"BioWell Stress level {value:g}x10^-2 Joules -- "
+                f"{r['level']}: {r['interpretation']}."
+            )
+        elif stress_level and stress_level != "Low/Moderate/High":
+            biowell_stress_point = f"BioWell Stress level -- {stress_level}."
+
+        chakra = (biowell_data.get("chakra_details") or {}).get("anahatha")
+        if chakra:
+            points.append(_chakra_point(chakra))
+
+    if biowell_stress_point:
+        points.append(biowell_stress_point)
+    elif nadi_stress_point:
+        points.append(nadi_stress_point)
+
+    return points
+
+
+def _build_spiritual_summary_points(interps: dict) -> list[str]:
+    """Build structured Page 1 spiritual points from chakra data."""
+    chakra_info = interps.get("chakras", {})
+    points: list[str] = []
+    for key in _CHAKRA_ORDER:
+        chakra = chakra_info.get(key)
+        if chakra:
+            points.append(_chakra_point(chakra))
+    return points
+
 def _build_physical_description(metrics, ecg_data, nadi_data, biores_data, systems):
     """Build Physical dimension summary from doctor rule tables."""
     parts = []
 
-    bmi = metrics.get("bmi")
-    if bmi is not None:
-        r = interpret_inbody_bmi(float(bmi))
-        parts.append(f"BMI {bmi} kg/m2 -- {r['status']}: {r['interpretation']}.")
-
-    hr = metrics.get("heartRate")
-    if hr is not None:
-        r = interpret_ecg_param("heart_rate", float(hr))
-        parts.append(f"Heart Rate {hr} bpm -- {r['status']}.")
-        if r["status"] != "Normal":
-            parts.append(f"Possible cause: {r['interpretation']}.")
-
-    if ecg_data:
-        qtc = ecg_data.get("ecg", {}).get("qtc_interval_ms")
-        if qtc and float(qtc) > 0:
-            r = interpret_ecg_param("qtc_interval", float(qtc))
-            if r["status"] != "Normal":
-                parts.append(f"QTc {qtc} ms -- {r['status']}: {r['interpretation']}.")
-
     if nadi_data:
         params = nadi_data.get("health_params", {})
-        for p in ["digestion", "toxin", "hydration", "immunity", "flexibility"]:
+        for p in ["toxin", "hydration", "flexibility"]:
             param = params.get(p, {})
             level = param.get("level", "")
+            pct = param.get("percentage")
             if level:
-                r = interpret_nadi_param(p, _level_to_pct(level))
-                parts.append(f"Nadi {p.capitalize()} ({level}) -- {r['interpretation']}.")
+                value = float(pct) if pct is not None else _level_to_pct(level)
+                r = interpret_nadi_param(p, value)
+                parts.append(
+                    f"Nadi {p.capitalize()} {value:g}% ({level}) -- "
+                    f"{r['interpretation']}."
+                )
 
     if biores_data:
         sys_details = biores_data.get("system_details", {})
@@ -553,65 +669,69 @@ def _build_physical_description(metrics, ecg_data, nadi_data, biores_data, syste
     return " ".join(parts) if parts else "Physical assessment data unavailable."
 
 
-def _build_psychological_description(metrics, ecg_data, nadi_data):
+def _build_psychological_description(metrics, ecg_data, nadi_data, biowell_data=None):
     """Build Psychological dimension summary from doctor rule tables."""
     parts = []
 
-    lf_hf = metrics.get("lfhfRatio")
-    if lf_hf is not None:
-        r = interpret_biowell_stress(float(lf_hf))
-        parts.append(f"LF/HF Ratio {lf_hf} -- Stress level: {r['level']}. {r['interpretation']}.")
-
-    if ecg_data:
-        hrv = ecg_data.get("hrv", {})
-        sdnn = hrv.get("sdnn_ms")
-        if sdnn and float(sdnn) > 0:
-            v = float(sdnn)
-            if v < 50:
-                parts.append(f"SDNN {v} ms -- Low HRV, reduced autonomic flexibility and higher stress load.")
-            elif v <= 100:
-                parts.append(f"SDNN {v} ms -- Moderate HRV, adequate autonomic regulation.")
-            else:
-                parts.append(f"SDNN {v} ms -- Good HRV, strong autonomic nervous system adaptability.")
-
     if nadi_data:
         params = nadi_data.get("health_params", {})
-        for p in ["stress", "overthinking"]:
+        for p in ["overthinking", "stress"]:
             param = params.get(p, {})
             level = param.get("level", "")
+            pct = param.get("percentage")
             if level:
-                r = interpret_nadi_param(p, _level_to_pct(level))
-                parts.append(f"Nadi {p.capitalize()} ({level}) -- {r['interpretation']}.")
+                value = float(pct) if pct is not None else _level_to_pct(level)
+                r = interpret_nadi_param(p, value)
+                parts.append(
+                    f"Nadi {p.capitalize()} {value:g}% ({level}) -- "
+                    f"{r['interpretation']}."
+                )
+
+    if biowell_data:
+        stress_idx = biowell_data.get("stress_index")
+        if stress_idx is not None and float(stress_idx) > 0:
+            value = float(stress_idx)
+            r = interpret_biowell_stress(value)
+            parts.append(
+                f"BioWell Psychological balance between sympathetic/parasympathetic nervous system {value:g}x10^-2 Joules -- "
+                f"{r['level']}: {r['interpretation']}."
+            )
 
     return " ".join(parts) if parts else "Psychological assessment data unavailable."
 
 
-def _build_emotional_description(metrics, nadi_data, systems):
+def _build_emotional_description(metrics, nadi_data, systems, biowell_data=None):
     """Build Emotional dimension summary from doctor rule tables."""
     parts = []
 
-    er = metrics.get("energyReserve")
-    if er is not None:
-        er_val = float(er)
-        if er_val >= 80:
-            parts.append(f"Energy Reserve {er}% -- Optimal. Strong adaptive capacity and emotional resilience.")
-        elif er_val >= 50:
-            parts.append(f"Energy Reserve {er}% -- Moderate. Some emotional fatigue may be present.")
-        else:
-            parts.append(f"Energy Reserve {er}% -- Low. Significant emotional depletion and reduced coping.")
-
-    nervous = systems.get("nervous", {})
-    ns_score = nervous.get("score", 0)
-    if ns_score > 0:
-        ns_status = _status_for_system_score(ns_score)
-        parts.append(f"Nervous System score {ns_score} -- {ns_status}.")
-
     if nadi_data:
         params = nadi_data.get("health_params", {})
-        stress = params.get("stress", {}).get("level", "")
+        stress_param = params.get("stress", {})
+        stress = stress_param.get("level", "")
+        pct = stress_param.get("percentage")
         if stress:
-            r = interpret_nadi_param("stress", _level_to_pct(stress))
-            parts.append(f"Nadi Stress ({stress}) -- {r['interpretation']}.")
+            value = float(pct) if pct is not None else _level_to_pct(stress)
+            r = interpret_nadi_param("stress", value)
+            parts.append(f"Nadi Emotional stress {value:g}% ({stress}) -- {r['interpretation']}.")
+
+    if biowell_data:
+        stress_idx = biowell_data.get("stress_index")
+        if stress_idx is not None and float(stress_idx) > 0:
+            value = float(stress_idx)
+            r = interpret_biowell_stress(value)
+            parts.append(f"BioWell Stress level {value:g}x10^-2 Joules -- {r['level']}: {r['interpretation']}.")
+
+        stress_level = str(biowell_data.get("stress_level", "")).strip()
+        if stress_level and stress_level != "Low/Moderate/High":
+            parts.append(f"BioWell Stress level -- {stress_level}.")
+
+        emotional_text = biowell_data.get("emotional_psychological")
+        if emotional_text:
+            parts.append(f"BioWell Emotional level -- {emotional_text}.")
+
+        chakra = (biowell_data.get("chakra_details") or {}).get("anahatha")
+        if chakra:
+            parts.append(_chakra_point(chakra))
 
     return " ".join(parts) if parts else "Emotional assessment data unavailable."
 

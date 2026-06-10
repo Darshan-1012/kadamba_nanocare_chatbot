@@ -23,11 +23,33 @@
     "musical": 12.9
   },
   "brain_lobes": {
-    "pre_frontal": 30.0,
-    "frontal": 24.39,
-    "parietal": 25.0,
-    "temporal": 20.49,
-    "occipital": 20.0
+    "pre_frontal": 24.39,
+    "frontal": 20.49,
+    "parietal": 20.0,
+    "temporal": 18.54,
+    "occipital": 16.59
+  },
+  "brain_traits": {
+    "left": [
+      "Analytical brain, self-awareness and logic",
+      "Controls fine-motor skill based activities",
+      "Alphabets, words, language and grammar",
+      "Major role in academic performance",
+      "Convergent thinker; concentrates better",
+      "Responds to verbal instructions",
+      "Planning, organization and differentiation",
+      "Controlling feelings and emotions"
+    ],
+    "right": [
+      "Creative and emotional brain; interpersonal intelligence",
+      "Controls gross-motor skill based activities",
+      "Color, images, creativity, imagination and mental reading",
+      "Major role in creative activities",
+      "Divergent thinker; difficult to concentrate at one point",
+      "Physically present but mentally absent",
+      "Interpersonal, understanding others and team building",
+      "Full of feelings, emotions and creativity"
+    ]
   },
   "learning_styles": {
     "visual": 27,

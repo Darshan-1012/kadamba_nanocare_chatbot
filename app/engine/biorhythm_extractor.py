@@ -1,16 +1,36 @@
 """Extract the biorhythm graph image from a BioWell PDF using PyMuPDF.
 
-Scans pages for the one whose text starts with "Biorhythm", then extracts
-the largest embedded image (the sine-wave chart) and saves it as PNG.
+Scans pages for the BioWell biorhythm section, then extracts the embedded
+chart image and saves it as PNG.
 """
 from __future__ import annotations
 
 import logging
 from pathlib import Path
 
-import fitz  # PyMuPDF
+import pymupdf as fitz
 
 log = logging.getLogger(__name__)
+
+_MIN_CHART_AREA = 250_000
+_CHART_RATIO_MIN = 1.15
+_CHART_RATIO_MAX = 2.05
+
+
+def _biorhythm_image_score(img_info: tuple) -> tuple[int, int]:
+    """Score PDF images, preferring large wide chart-like images."""
+    width = int(img_info[2] or 0)
+    height = int(img_info[3] or 0)
+    if width <= 0 or height <= 0:
+        return (0, 0)
+
+    area = width * height
+    ratio = width / height
+    looks_like_chart = (
+        area >= _MIN_CHART_AREA
+        and _CHART_RATIO_MIN <= ratio <= _CHART_RATIO_MAX
+    )
+    return (1 if looks_like_chart else 0, area)
 
 
 def extract_biorhythm_image(
@@ -41,7 +61,7 @@ def extract_biorhythm_image(
         # ── 1. Find the biorhythm page ───────────────────────────────
         biorhythm_page = None
         for page in doc:
-            text = page.get_text("text", clip=None)[:200].lower()
+            text = page.get_text("text", clip=None)[:1000].lower()
             if "biorhythm" in text:
                 biorhythm_page = page
                 break
@@ -53,23 +73,24 @@ def extract_biorhythm_image(
         page_num = biorhythm_page.number + 1
         log.info(f"Biorhythm page found: page {page_num}")
 
-        # ── 2. Extract the largest image on that page ────────────────
+        # ── 2. Extract the chart image on that page ──────────────────
         images = biorhythm_page.get_images(full=True)
         if not images:
             log.info(f"Page {page_num} has no embedded images")
             return None
 
-        # Pick the image with the largest pixel area
         best_img = None
-        best_area = 0
+        best_score = (0, 0)
+        best_dimensions = (0, 0)
         for img_info in images:
             xref = img_info[0]
-            w = img_info[2]
-            h = img_info[3]
-            area = w * h
-            if area > best_area:
-                best_area = area
+            width = int(img_info[2] or 0)
+            height = int(img_info[3] or 0)
+            score = _biorhythm_image_score(img_info)
+            if score > best_score:
+                best_score = score
                 best_img = xref
+                best_dimensions = (width, height)
 
         if best_img is None:
             log.info("Could not identify biorhythm chart image")
@@ -93,9 +114,10 @@ def extract_biorhythm_image(
             pil_img.save(buf, format="PNG")
             img_bytes = buf.getvalue()
 
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         Path(output_path).write_bytes(img_bytes)
         log.info(
-            f"Biorhythm graph extracted: {best_area} px "
+            f"Biorhythm graph extracted: {best_dimensions[0] * best_dimensions[1]} px "
             f"({base_image.get('width', '?')}x{base_image.get('height', '?')}) "
             f"→ {output_path}"
         )

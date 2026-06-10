@@ -10,6 +10,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -25,10 +26,488 @@ _TEMPLATE_NAME = "report_template.html"
 
 def _build_jinja_env() -> Environment:
     """Create a Jinja2 environment with the template directory."""
-    return Environment(
+    env = Environment(
         loader=FileSystemLoader(str(_TEMPLATE_DIR)),
         autoescape=False,  # HTML is pre-authored; no double-escaping
     )
+    env.filters["dimension_status"] = _dimension_status
+    env.filters["dimension_status_class"] = _dimension_status_class
+    env.filters["summary_points"] = _summary_points
+    env.filters["system_summary_points"] = _system_summary_points
+    env.filters["dmit_personality_label"] = _dmit_personality_label
+    env.filters["dmit_phrase"] = _dmit_phrase
+    env.globals["metric_indicator"] = _metric_indicator
+    env.globals["physical_summary_signal"] = _physical_summary_signal
+    env.globals["missing_physical_signal"] = _missing_physical_signal
+    env.globals["psychological_summary_signal"] = _psychological_summary_signal
+    env.globals["emotional_summary_signal"] = _emotional_summary_signal
+    env.globals["emotional_biowell_stress_alias"] = _emotional_biowell_stress_alias
+    env.globals["missing_emotional_signal"] = _missing_emotional_signal
+    env.globals["spiritual_summary_signal"] = _spiritual_summary_signal
+    return env
+
+
+def _dimension_status(score) -> str:
+    """Return a compact score label for Page 1 summary badges."""
+    try:
+        value = float(score)
+    except (TypeError, ValueError):
+        value = 0
+    if value >= 80:
+        return "Good"
+    if value >= 60:
+        return "Fair"
+    if value >= 40:
+        return "Needs Attention"
+    return "Critical Attention"
+
+
+def _dimension_status_class(score) -> str:
+    """Return the CSS class suffix for a Page 1 score badge."""
+    try:
+        value = float(score)
+    except (TypeError, ValueError):
+        value = 0
+    if value >= 80:
+        return "good"
+    if value >= 60:
+        return "fair"
+    if value >= 40:
+        return "attention"
+    return "critical"
+
+
+def _summary_points(value, fallback: str = "", limit: int = 4) -> list[str]:
+    """Return structured summary points, falling back to sentence splitting."""
+    if isinstance(value, list):
+        points = [str(item).strip() for item in value if str(item).strip()]
+        return points[:limit]
+
+    text = str(fallback or value or "").strip()
+    if not text:
+        return []
+    chunks = re.split(r"(?<=[.!?])\s+", text)
+    points = [chunk.strip() for chunk in chunks if chunk.strip()]
+    return points[:limit]
+
+
+def _system_summary_points(value, limit: int = 2) -> list[str]:
+    """Return Page 2 bullets that always surface balance and energy meaning."""
+    text = str(value or "").strip()
+    if not text:
+        return []
+
+    sentences = [chunk.strip() for chunk in re.split(r"(?<=[.!?])\s+", text) if chunk.strip()]
+    preferred: list[str] = []
+
+    for keyword in ("balance", "energy"):
+        for sentence in sentences:
+            lower = sentence.lower()
+            if keyword in lower and sentence not in preferred:
+                preferred.append(sentence)
+                break
+
+    return preferred[:limit]
+
+
+def _dmit_personality_label(value) -> str:
+    """Convert DMIT bird labels into client-safe personality wording."""
+    label = str(value or "").strip().lower()
+    return {
+        "dove": "Calm",
+        "eagle": "Straight forward",
+        "peacock": "Expressive",
+        "owl": "Analytical",
+    }.get(label, str(value or "Not available").strip().title())
+
+
+def _dmit_phrase(value) -> str:
+    """Clean common DMIT PDF spacing artifacts for display."""
+    text = str(value or "").strip()
+    replacements = {
+        "Need Rolemodel": "Need role model",
+        "Canbeexploited": "Can be exploited",
+        "Lackofindividualism": "Lack of individualism",
+        "Easilyaffectedbyenvironment": "Easily affected by environment",
+        "Toowiderangeofinterests": "Too wide range of interests",
+        "Feelsinsecuretowardschallenges": "Feels insecure towards challenges",
+        "Caringtoomuchforothers": "Caring too much for others",
+        "Maylooseopportunities": "May lose opportunities",
+        "NonRiskTakingAttitude": "Non risk taking attitude",
+        "Indecisiveduringcrisis": "Indecisive during crisis",
+        "HighlyAdjustingNature": "Highly adjusting nature",
+        "TeamOriented": "Team oriented",
+        "KindHearted": "Kind hearted",
+        "GoodListener": "Good listener",
+        "LikesStability": "Likes stability",
+    }
+    for raw, clean in replacements.items():
+        text = text.replace(raw, clean)
+    text = re.sub(r"([a-z])([A-Z])", r"\1 \2", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def _metric_indicator(metric: str, value) -> dict:
+    """Return compact Page 1 physical metric indicator data."""
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        numeric = 0
+
+    def clamp(raw: float) -> float:
+        return max(0, min(100, raw))
+
+    if metric == "bmi":
+        if numeric < 18.5:
+            status, css, note = "Low", "attention", "Below ideal range"
+        elif numeric < 25:
+            status, css, note = "Normal", "good", "18.5-24.9 target"
+        elif numeric < 30:
+            status, css, note = "High", "attention", "Above ideal range"
+        else:
+            status, css, note = "Very high", "critical", "Obesity range"
+        return {
+            "label": "BMI",
+            "value": f"{numeric:.1f}",
+            "status": status,
+            "class": css,
+            "marker": clamp((numeric - 15) / 25 * 100),
+            "note": note,
+        }
+
+    if metric == "heart_rate":
+        if numeric < 60:
+            status, css, note = "Low", "attention", "Below 60 bpm"
+        elif numeric <= 100:
+            status, css, note = "Normal", "good", "60-100 bpm"
+        else:
+            status, css, note = "High", "critical", "Above 100 bpm"
+        return {
+            "label": "Heart rate",
+            "value": f"{numeric:.0f} bpm",
+            "status": status,
+            "class": css,
+            "marker": clamp((numeric - 45) / 75 * 100),
+            "note": note,
+        }
+
+    if metric == "lfhf":
+        if numeric < 0.8:
+            status, css, note = "Low", "attention", "Parasympathetic tilt"
+        elif numeric <= 2.5:
+            status, css, note = "Balanced", "good", "0.8-2.5 target"
+        elif numeric <= 4:
+            status, css, note = "Elevated", "attention", "Sympathetic load"
+        else:
+            status, css, note = "High", "critical", "High stress load"
+        return {
+            "label": "LF/HF",
+            "value": f"{numeric:.2f}",
+            "status": status,
+            "class": css,
+            "marker": clamp(numeric / 5 * 100),
+            "note": note,
+        }
+
+    if metric == "energy_reserve":
+        if numeric >= 80:
+            status, css, note = "Optimal", "good", "Strong reserve"
+        elif numeric >= 50:
+            status, css, note = "Moderate", "attention", "Support recovery"
+        else:
+            status, css, note = "Low", "critical", "Depleted reserve"
+        return {
+            "label": "Energy reserve",
+            "value": f"{numeric:.0f}%",
+            "status": status,
+            "class": css,
+            "marker": clamp(numeric),
+            "note": note,
+        }
+
+    return {
+        "label": metric.replace("_", " ").title(),
+        "value": str(value or "--"),
+        "status": "",
+        "class": "fair",
+        "marker": 0,
+        "note": "",
+    }
+
+
+def _physical_summary_signal(point: str) -> dict | None:
+    """Parse rule-backed physical summary points into Page 1 signal rows."""
+    text = str(point or "").strip()
+    if not text:
+        return None
+
+    if text.startswith("LF/HF Ratio"):
+        return None
+
+    nadi = re.match(r"Nadi\s+(Toxin|Hydration|Flexibility)\s+([0-9.]+)%\s+\(([^)]+)\)\s+--\s+(.+)", text)
+    if nadi:
+        param = nadi.group(1)
+        value = float(nadi.group(2))
+        level = nadi.group(3).strip().title()
+        note = nadi.group(4).rstrip(".").strip()
+    else:
+        legacy_nadi = re.match(r"Nadi\s+(Toxin|Hydration|Flexibility)\s+\(([^)]+)\)\s+--\s+(.+)", text)
+        if not legacy_nadi:
+            return None
+        param = legacy_nadi.group(1)
+        level = legacy_nadi.group(2).strip().title()
+        note = legacy_nadi.group(3).rstrip(".").strip()
+        value = {"High": 85.0, "Medium": 60.0, "Low": 25.0}.get(level, 50.0)
+
+    if not param:
+        return None
+
+    level_lower = level.lower()
+
+    if param.lower() == "toxin":
+        css = "good" if level_lower == "low" else "critical" if level_lower == "high" else "attention"
+    else:
+        css = "good" if level_lower == "high" else "critical" if level_lower == "low" else "attention"
+
+    return {
+        "label": f"{param} level",
+        "value": f"{value:g}%",
+        "status": level,
+        "class": css,
+        "marker": max(0, min(100, value)),
+        "note": note,
+    }
+
+
+def _missing_physical_signal(param: str) -> dict:
+    """Return a visible placeholder for unavailable physical Nadi signals."""
+    label = param.strip().title()
+    return {
+        "label": f"{label} level",
+        "value": "--",
+        "status": "Not available",
+        "class": "attention",
+        "marker": 0,
+        "note": "Not found in parsed Nadi data",
+    }
+
+
+def _psychological_summary_signal(point: str) -> dict | None:
+    """Parse rule-backed psychological summary points into signal rows."""
+    text = str(point or "").strip()
+    if not text:
+        return None
+
+    nadi = re.match(r"Nadi\s+(Overthinking|Stress)\s+([0-9.]+)%\s+\(([^)]+)\)\s+--\s+(.+)", text)
+    if nadi:
+        param = nadi.group(1)
+        value = float(nadi.group(2))
+        level = nadi.group(3).strip().title()
+        note = nadi.group(4).rstrip(".").strip()
+    else:
+        legacy_nadi = re.match(r"Nadi\s+(Overthinking|Stress)\s+\(([^)]+)\)\s+--\s+(.+)", text)
+        if legacy_nadi:
+            param = legacy_nadi.group(1)
+            level = legacy_nadi.group(2).strip().title()
+            note = legacy_nadi.group(3).rstrip(".").strip()
+            value = {"High": 85.0, "Medium": 60.0, "Low": 25.0}.get(level, 50.0)
+        else:
+            biowell = re.match(
+                r"BioWell\s+Psychological(?:\s+balance\s+between\s+sympathetic/parasympathetic\s+nervous\s+system)?\s+([0-9.]+)x10\^-2\s+Joules\s+--\s+([^:]+):\s+(.+)",
+                text,
+            )
+            if not biowell:
+                return None
+            value = float(biowell.group(1))
+            level = biowell.group(2).strip().title()
+            note = biowell.group(3).rstrip(".").strip()
+            css = "good" if level.lower() == "optimal" else "critical" if level.lower() == "high" else "attention"
+            return {
+                "label": "Sympathetic / parasympathetic balance",
+                "value": f"{value:g}x10^-2 J",
+                "status": level,
+                "class": css,
+                "marker": max(0, min(100, value / 3 * 100)),
+                "note": note,
+            }
+
+    css = "good" if level.lower() == "low" else "critical" if level.lower() == "high" else "attention"
+    return {
+        "label": f"{param} level",
+        "value": f"{value:g}%",
+        "status": level,
+        "class": css,
+        "marker": max(0, min(100, value)),
+        "note": note,
+    }
+
+
+def _emotional_summary_signal(point: str) -> dict | None:
+    """Parse emotional summary points into Page 1 signal rows."""
+    text = str(point or "").strip()
+    if not text:
+        return None
+
+    nadi = re.match(r"Nadi\s+Emotional\s+stress\s+([0-9.]+)%\s+\(([^)]+)\)\s+--\s+(.+)", text)
+    if not nadi:
+        nadi = re.match(r"Nadi\s+Stress\s+\(([^)]+)\)\s+--\s+(.+)", text)
+        if nadi:
+            level = nadi.group(1).strip().title()
+            note = nadi.group(2).rstrip(".").strip()
+            value = {"High": 85.0, "Medium": 60.0, "Low": 25.0}.get(level, 50.0)
+        else:
+            level = note = None
+            value = None
+    else:
+        value = float(nadi.group(1))
+        level = nadi.group(2).strip().title()
+        note = nadi.group(3).rstrip(".").strip()
+
+    if level and note is not None and value is not None:
+        css = "good" if level.lower() == "low" else "critical" if level.lower() == "high" else "attention"
+        return {
+            "label": "Nadi emotional stress",
+            "value": f"{value:g}%",
+            "status": level,
+            "class": css,
+            "marker": max(0, min(100, value)),
+            "note": note,
+        }
+
+    biowell = re.match(r"BioWell\s+Stress\s+level\s+([0-9.]+)x10\^-2\s+Joules\s+--\s+([^:]+):\s+(.+)", text)
+    if biowell:
+        value = float(biowell.group(1))
+        level = biowell.group(2).strip().title()
+        note = biowell.group(3).rstrip(".").strip()
+        css = "good" if level.lower() == "optimal" else "critical" if level.lower() == "high" else "attention"
+        return {
+            "label": "BioWell stress level",
+            "value": f"{value:g}x10^-2 J",
+            "status": level,
+            "class": css,
+            "marker": max(0, min(100, value / 3 * 100)),
+            "note": note,
+        }
+
+    biowell_pct = re.match(r"BioWell\s+Stress\s+level\s+([0-9.]+)%\s+\(([^)]+)\)\s+--\s+(.+)", text)
+    if biowell_pct:
+        value = float(biowell_pct.group(1))
+        level = biowell_pct.group(2).strip().title()
+        note = biowell_pct.group(3).rstrip(".").strip()
+        css = "good" if level.lower() == "low" else "critical" if level.lower() == "high" else "attention"
+        return {
+            "label": "BioWell stress level",
+            "value": f"{value:g}%",
+            "status": level,
+            "class": css,
+            "marker": max(0, min(100, value)),
+            "note": note,
+        }
+
+    biowell_level = re.match(r"BioWell\s+Stress\s+level\s+--\s+(.+)", text)
+    if biowell_level:
+        note = biowell_level.group(1).rstrip(".").strip()
+        return {
+            "label": "BioWell stress level",
+            "value": "--",
+            "status": "Observed",
+            "class": "attention",
+            "marker": 50,
+            "note": note,
+        }
+
+    emotional = re.match(r"BioWell\s+Emotional\s+level\s+--\s+(.+)", text)
+    if emotional:
+        note = emotional.group(1).rstrip(".").strip()
+        return {
+            "label": "BioWell emotional level",
+            "value": "--",
+            "status": "Observed",
+            "class": "attention",
+            "marker": 50,
+            "note": note,
+        }
+
+    chakra = _chakra_summary_signal(text)
+    if chakra:
+        return chakra
+
+    return None
+
+
+def _missing_emotional_signal(source: str) -> dict:
+    """Return a visible placeholder for unavailable emotional indicators."""
+    label = "BioWell stress level" if source.lower() == "biowell" else "Nadi emotional stress"
+    return {
+        "label": label,
+        "value": "--",
+        "status": "Not available",
+        "class": "attention",
+        "marker": 0,
+        "note": "Not found in parsed report data",
+    }
+
+
+def _emotional_biowell_stress_alias(signal: dict) -> dict:
+    """Mirror the parsed stress row under the BioWell stress label."""
+    alias = dict(signal or {})
+    alias["label"] = "BioWell stress level"
+    return alias
+
+
+def _chakra_summary_signal(point: str) -> dict | None:
+    """Parse chakra summary lines used by emotional/spiritual quadrants."""
+    text = str(point or "").strip()
+    if not text:
+        return None
+
+    chakra = re.match(
+        r"(?P<name>[A-Za-z]+)\s+-\s+(?P<color>[A-Za-z ]+)\s+"
+        r"(?P<value>[0-9.]+)%\s+\((?P<status>[^)]+)\)\s+--\s+(?P<note>.+)",
+        text,
+    )
+    if not chakra:
+        return None
+
+    status = chakra.group("status").strip()
+    status_lower = status.lower()
+    if status_lower == "normal":
+        css = "good"
+    elif status_lower == "mild deviation":
+        css = "attention"
+    else:
+        css = "critical"
+
+    color_name = chakra.group("color").strip().title()
+    color_key = color_name.lower()
+    accent = {
+        "red": "#cf3c34",
+        "orange": "#f18a1b",
+        "yellow": "#d6a400",
+        "green": "#239b56",
+        "azure": "#2d9cdb",
+        "blue": "#266dd3",
+        "violet": "#8e44ad",
+        "magenta": "#c4459a",
+        "light blue": "#2d9cdb",
+    }.get(color_key, "#1b5381")
+
+    value = float(chakra.group("value"))
+    return {
+        "label": f"{chakra.group('name').strip()} - {color_name}",
+        "value": f"{value:g}%",
+        "status": status,
+        "class": css,
+        "marker": max(0, min(100, value)),
+        "note": chakra.group("note").rstrip(".").strip(),
+        "accent": accent,
+    }
+
+
+def _spiritual_summary_signal(point: str) -> dict | None:
+    """Parse spiritual chakra lines into compact signal rows."""
+    return _chakra_summary_signal(point)
 
 
 def render_html(report_data: dict) -> str:

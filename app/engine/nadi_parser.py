@@ -117,6 +117,12 @@ _HEALTH_PARAM_RE = re.compile(
     r"\s+Level\s*\n?\s*(Low|Medium|High)\s*\n?\s*(\d{1,3})%",
     re.I,
 )
+_HEALTH_PARAM_INLINE_RE = re.compile(
+    r"(Low|Medium|High)\s+"
+    r"(Digestion|Toxin|Hydration|Immunity|Flexibility|Overthinking|[Ss]tress)"
+    r"\s+Level\s*\n?\s*(\d{1,3})%",
+    re.I,
+)
 
 # Organ insights: "Kidney; Your high hydration..."
 _ORGAN_RE = re.compile(
@@ -204,6 +210,14 @@ def parse_nadi_text(ocr_text: str) -> NadiResult:
     for m in _HEALTH_PARAM_RE.finditer(ocr_text):
         name = m.group(1).strip().lower()
         level = m.group(2).strip().title()
+        pct = int(m.group(3))
+        result.health_params[name] = HealthParam(
+            name=name, level=level, percentage=pct,
+        )
+
+    for m in _HEALTH_PARAM_INLINE_RE.finditer(ocr_text):
+        level = m.group(1).strip().title()
+        name = m.group(2).strip().lower()
         pct = int(m.group(3))
         result.health_params[name] = HealthParam(
             name=name, level=level, percentage=pct,

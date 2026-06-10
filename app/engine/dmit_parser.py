@@ -35,6 +35,9 @@ class DMITResult:
     # Brain lobe scores (name → percentage)
     brain_lobes: Dict[str, float] = field(default_factory=dict)
 
+    # Brain dominance traits from the DMIT brain dominance page
+    brain_traits: Dict[str, List[str]] = field(default_factory=dict)
+
     # Learning styles
     learning_styles: Dict[str, int] = field(default_factory=dict)
 
@@ -86,6 +89,7 @@ def parse_dmit_pdf(pdf_path: str) -> DMITResult:
     _parse_patient_info(full_text, result)
     _parse_brain_dominance(full_text, result)
     _parse_tfrc(full_text, result)
+    _parse_brain_traits(full_text, result)
     _parse_multiple_intelligences(full_text, result)
     _parse_brain_lobes(full_text, result)
     _parse_learning_styles(full_text, result)
@@ -139,6 +143,36 @@ def _parse_tfrc(text: str, result: DMITResult):
         log.debug(f"TFRC: L={result.ltrc} T={result.tfrc_total} R={result.rtrc}")
 
 
+# ── Brain dominance traits ───────────────────────────────────────────
+def _parse_brain_traits(text: str, result: DMITResult):
+    """Attach the standard left/right brain trait rows from the DMIT page."""
+    if not re.search(r"Brain\s+Dominance\s+of", text, re.IGNORECASE):
+        return
+
+    result.brain_traits = {
+        "left": [
+            "Analytical brain, self-awareness and logic",
+            "Controls fine-motor skill based activities",
+            "Alphabets, words, language and grammar",
+            "Major role in academic performance",
+            "Convergent thinker; concentrates better",
+            "Responds to verbal instructions",
+            "Planning, organization and differentiation",
+            "Controlling feelings and emotions",
+        ],
+        "right": [
+            "Creative and emotional brain; interpersonal intelligence",
+            "Controls gross-motor skill based activities",
+            "Color, images, creativity, imagination and mental reading",
+            "Major role in creative activities",
+            "Divergent thinker; difficult to concentrate at one point",
+            "Physically present but mentally absent",
+            "Interpersonal, understanding others and team building",
+            "Full of feelings, emotions and creativity",
+        ],
+    }
+
+
 # ── Multiple Intelligences ──────────────────────────────────────────
 def _parse_multiple_intelligences(text: str, result: DMITResult):
     """Parse MI from the overview page (Page 4 format)."""
@@ -180,12 +214,23 @@ def _parse_brain_lobes(text: str, result: DMITResult):
     )
     if lobe_section:
         section_text = lobe_section.group(0)
-        # Extract all percentages in order — they appear before labels
-        pct_values = re.findall(r"(\d+\.\d+)%", section_text)
+        # Extract percentages in order. The PDF text also includes chart-axis
+        # ticks (30, 25, 15, 10, 5, 0); filter those out so only patient
+        # lobe measurements remain.
+        filtered_values = [
+            float(value)
+            for value in re.findall(r"(\d+\.\d+)%", section_text)
+            if float(value) not in {30.0, 25.0, 15.0, 10.0, 5.0, 0.0}
+        ]
+        pct_values = []
+        for value in filtered_values:
+            if pct_values and pct_values[-1] == value:
+                continue
+            pct_values.append(value)
         lobe_names = ["pre_frontal", "frontal", "parietal", "temporal", "occipital"]
         for i, name in enumerate(lobe_names):
             if i < len(pct_values):
-                result.brain_lobes[name] = float(pct_values[i])
+                result.brain_lobes[name] = pct_values[i]
         if result.brain_lobes:
             return
 
@@ -398,6 +443,7 @@ def to_deterministic_dict(result: DMITResult) -> dict:
         },
         "multiple_intelligences": result.multiple_intelligences,
         "brain_lobes": result.brain_lobes,
+        "brain_traits": result.brain_traits,
         "learning_styles": result.learning_styles,
         "personality": {
             "primary": result.primary_personality,

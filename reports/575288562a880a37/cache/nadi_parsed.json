@@ -40,6 +40,11 @@
       "level": "Medium",
       "percentage": 40,
       "score": 65
+    },
+    "hydration": {
+      "level": "Medium",
+      "percentage": 50,
+      "score": 65
     }
   },
   "organ_insights": {

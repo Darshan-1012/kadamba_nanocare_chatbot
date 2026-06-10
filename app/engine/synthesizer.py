@@ -24,6 +24,10 @@ from app.engine.bioresonance_parser import (
     parse_bioresonance_pdf,
     to_deterministic_dict as biores_to_dict,
 )
+from app.engine.biowell_parser import (
+    parse_biowell_chakra_details,
+    parse_biowell_functional_table,
+)
 from app.engine.ecg_parser import (
     parse_ecg_pdf,
     parse_hrv_pdf,
@@ -82,6 +86,7 @@ async def synthesize_report(
     ecg_data = None
     nadi_data = None
     dmit_data = None
+    biowell_functional_data = None
 
     # 1a) Bioresonance
     if biores_pdf_path:
@@ -195,6 +200,38 @@ async def synthesize_report(
             log.info(
                 f"  {key}: {len(ext.raw_text)} chars, "
                 f"{ext.page_count} pages"
+            )
+
+    # ── Step 2b: Parse BioWell functional table deterministically ────
+    biowell_raw = ""
+    biowell_ext = extractions.get("biowell")
+    if biowell_ext and biowell_ext.raw_text:
+        biowell_raw = biowell_ext.raw_text
+    elif cache_dir and (cache_dir / "biowell_raw.txt").exists():
+        biowell_raw = (cache_dir / "biowell_raw.txt").read_text(encoding="utf-8")
+
+    biowell_chakra_data = {"chakra_details": {}}
+    if biowell_raw:
+        biowell_functional_data = parse_biowell_functional_table(biowell_raw)
+        row_count = len(biowell_functional_data.get("organ_energy_levels", []))
+        log.info(f"Step 2b: Parsed BioWell functional table rows={row_count}")
+        biowell_chakra_data = parse_biowell_chakra_details(biowell_raw)
+        chakra_count = len(biowell_chakra_data.get("chakra_details", {}))
+        log.info(f"Step 2c: Parsed BioWell chakra rows={chakra_count}")
+        if cache_dir:
+            (cache_dir / "biowell_functional_parsed.json").write_text(
+                json.dumps(biowell_functional_data, indent=2), encoding="utf-8"
+            )
+            (cache_dir / "biowell_chakra_parsed.json").write_text(
+                json.dumps(biowell_chakra_data, indent=2), encoding="utf-8"
+            )
+    elif cache_dir and (cache_dir / "biowell_functional_parsed.json").exists():
+        biowell_functional_data = json.loads(
+            (cache_dir / "biowell_functional_parsed.json").read_text(encoding="utf-8")
+        )
+        if (cache_dir / "biowell_chakra_parsed.json").exists():
+            biowell_chakra_data = json.loads(
+                (cache_dir / "biowell_chakra_parsed.json").read_text(encoding="utf-8")
             )
 
     # ── Step 3: Compress text for each device ────────────────────────
@@ -442,6 +479,18 @@ async def synthesize_report(
                 log.info("Loaded BioWell LLM data for system scoring")
             except Exception:
                 pass
+        if biowell_functional_data and biowell_functional_data.get("organ_energy_levels"):
+            biowell_data = biowell_data or {}
+            biowell_data["organ_energy_levels"] = biowell_functional_data.get(
+                "organ_energy_levels", []
+            )
+            log.info("Using deterministic BioWell Balance% rows for system scoring")
+        if biowell_chakra_data.get("chakra_details"):
+            biowell_data = biowell_data or {}
+            biowell_data["chakra_details"] = biowell_chakra_data.get(
+                "chakra_details", {}
+            )
+            log.info("Using deterministic BioWell chakra details for Page 1 summaries")
 
         scored = compute_scores(
             validated,
@@ -458,6 +507,7 @@ async def synthesize_report(
             biores_data=biores_data,
             ecg_data=ecg_data,
             nadi_data=nadi_data,
+            biowell_data=biowell_data,
         )
         log.info("Step 6: Done — all dimension descriptions are now deterministic")
 

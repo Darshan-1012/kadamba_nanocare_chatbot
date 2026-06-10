@@ -27,6 +27,8 @@ class Metrics(BaseModel):
 class Dimension(BaseModel):
     score: int = Field(0, ge=0, le=100)
     description: str = ""
+    summary_points: list[str] = Field(default_factory=list)
+    statusLabel: str = ""
 
 
 class Dimensions(BaseModel):

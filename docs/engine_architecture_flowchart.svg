@@ -1,0 +1,244 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Kadamba Nanocare Report Engine Architecture</title>
+  <desc id="desc">End to end flowchart showing upload, cache lookup, extraction, parsing, knowledge synthesis, HTML template rendering, and PDF generation.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f7f9fc; }
+      .title { font: 700 38px Arial, Helvetica, sans-serif; fill: #162033; }
+      .subtitle { font: 400 18px Arial, Helvetica, sans-serif; fill: #5c6678; }
+      .lane-title { font: 700 17px Arial, Helvetica, sans-serif; fill: #263248; letter-spacing: .4px; }
+      .box-title { font: 700 17px Arial, Helvetica, sans-serif; fill: #152033; }
+      .box-text { font: 400 14px Arial, Helvetica, sans-serif; fill: #39465c; }
+      .small { font: 400 12px Arial, Helvetica, sans-serif; fill: #556176; }
+      .pill-text { font: 700 13px Arial, Helvetica, sans-serif; fill: #ffffff; letter-spacing: .3px; }
+      .lane { fill: #ffffff; stroke: #d9e1ee; stroke-width: 1.5; }
+      .box { fill: #ffffff; stroke: #cbd5e4; stroke-width: 2; rx: 12; }
+      .api { fill: #eef6ff; stroke: #7ab3e8; }
+      .cache { fill: #fff7e8; stroke: #e4b75d; }
+      .extract { fill: #eefaf5; stroke: #67bd90; }
+      .parse { fill: #f1efff; stroke: #9587e8; }
+      .knowledge { fill: #fff0f3; stroke: #db7891; }
+      .output { fill: #eef8fb; stroke: #66b9c8; }
+      .store { fill: #f6f7fa; stroke: #aab5c6; }
+      .arrow { stroke: #566179; stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #8a94a6; stroke-width: 2; stroke-dasharray: 7 6; fill: none; marker-end: url(#arrow-muted); }
+      .hit { stroke: #2e8b57; stroke-width: 2.4; fill: none; marker-end: url(#arrow-green); }
+      .miss { stroke: #c17a19; stroke-width: 2.4; fill: none; marker-end: url(#arrow-orange); }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#566179"/>
+    </marker>
+    <marker id="arrow-muted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#8a94a6"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#2e8b57"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#c17a19"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1920" height="1080"/>
+
+  <text x="70" y="70" class="title">Kadamba Nanocare Wellness Report Engine</text>
+  <text x="70" y="102" class="subtitle">End-to-end flow: uploaded device files -> cache layers -> extraction/parsing -> knowledge synthesis -> HTML template -> PDF report</text>
+
+  <rect x="55" y="135" width="250" height="875" class="lane" rx="18"/>
+  <text x="80" y="170" class="lane-title">1. API + Cache Gate</text>
+
+  <rect x="335" y="135" width="300" height="875" class="lane" rx="18"/>
+  <text x="360" y="170" class="lane-title">2. Extraction Layer</text>
+
+  <rect x="665" y="135" width="330" height="875" class="lane" rx="18"/>
+  <text x="690" y="170" class="lane-title">3. Parsing + Intermediate Cache</text>
+
+  <rect x="1025" y="135" width="360" height="875" class="lane" rx="18"/>
+  <text x="1050" y="170" class="lane-title">4. Knowledge Layer</text>
+
+  <rect x="1415" y="135" width="450" height="875" class="lane" rx="18"/>
+  <text x="1440" y="170" class="lane-title">5. Template + Output Layer</text>
+
+  <rect x="85" y="205" width="190" height="94" class="box api"/>
+  <text x="105" y="235" class="box-title">Upload Reports</text>
+  <text x="105" y="260" class="box-text">ECG, HRV, Nadi</text>
+  <text x="105" y="280" class="box-text">BioWell, Bioresonance</text>
+  <text x="105" y="300" class="box-text">InBody, optional DMIT</text>
+
+  <rect x="85" y="335" width="190" height="86" class="box api"/>
+  <text x="105" y="366" class="box-title">FastAPI Route</text>
+  <text x="105" y="391" class="box-text">POST /generate</text>
+  <text x="105" y="411" class="small">app/routes/report.py</text>
+
+  <rect x="85" y="455" width="190" height="94" class="box cache"/>
+  <text x="105" y="486" class="box-title">File Hash</text>
+  <text x="105" y="511" class="box-text">SHA-256 of device key</text>
+  <text x="105" y="531" class="box-text">and uploaded bytes</text>
+
+  <rect x="85" y="585" width="190" height="112" class="box cache"/>
+  <text x="105" y="616" class="box-title">Cache Lookup</text>
+  <text x="105" y="641" class="box-text">Memory: _file_hash_cache</text>
+  <text x="105" y="661" class="box-text">Disk: hash_index.json</text>
+  <text x="105" y="681" class="box-text">Report: report.json</text>
+
+  <rect x="85" y="735" width="190" height="82" class="box store"/>
+  <text x="105" y="766" class="box-title">Cache Hit</text>
+  <text x="105" y="791" class="box-text">Return existing report</text>
+  <text x="105" y="811" class="box-text">Skip LLM and PDF</text>
+
+  <rect x="365" y="205" width="240" height="96" class="box extract"/>
+  <text x="390" y="236" class="box-title">Parallel Extraction</text>
+  <text x="390" y="261" class="box-text">asyncio.gather over files</text>
+  <text x="390" y="281" class="small">app/controllers/pipeline.py</text>
+
+  <rect x="365" y="335" width="240" height="116" class="box extract"/>
+  <text x="390" y="366" class="box-title">PDF Extractor</text>
+  <text x="390" y="391" class="box-text">pdfplumber text + tables</text>
+  <text x="390" y="411" class="box-text">If weak text: page OCR</text>
+  <text x="390" y="431" class="small">EasyOCR fallback</text>
+
+  <rect x="365" y="485" width="240" height="96" class="box extract"/>
+  <text x="390" y="516" class="box-title">Image Extractor</text>
+  <text x="390" y="541" class="box-text">InBody image preprocessing</text>
+  <text x="390" y="561" class="box-text">EasyOCR line grouping</text>
+
+  <rect x="365" y="615" width="240" height="96" class="box extract"/>
+  <text x="390" y="646" class="box-title">ExtractionResult</text>
+  <text x="390" y="671" class="box-text">raw_text, page_count</text>
+  <text x="390" y="691" class="box-text">metadata, error state</text>
+
+  <rect x="365" y="745" width="240" height="96" class="box store"/>
+  <text x="390" y="776" class="box-title">Save Inputs</text>
+  <text x="390" y="801" class="box-text">reports/{report_id}/</text>
+  <text x="390" y="821" class="box-text">device_input.pdf files</text>
+
+  <rect x="695" y="205" width="270" height="118" class="box parse"/>
+  <text x="720" y="236" class="box-title">Deterministic Parsers</text>
+  <text x="720" y="261" class="box-text">Bioresonance, ECG, HRV</text>
+  <text x="720" y="281" class="box-text">Nadi, DMIT, BioWell tables</text>
+  <text x="720" y="301" class="small">No LLM for these rule parses</text>
+
+  <rect x="695" y="357" width="270" height="124" class="box cache"/>
+  <text x="720" y="388" class="box-title">Intermediate Cache</text>
+  <text x="720" y="413" class="box-text">*_parsed.json</text>
+  <text x="720" y="433" class="box-text">*_raw.txt</text>
+  <text x="720" y="453" class="box-text">*_compressed.txt</text>
+
+  <rect x="695" y="515" width="270" height="100" class="box parse"/>
+  <text x="720" y="546" class="box-title">BioWell Assets</text>
+  <text x="720" y="571" class="box-text">Functional table + chakras</text>
+  <text x="720" y="591" class="box-text">Biorhythm graph PNG</text>
+
+  <rect x="695" y="650" width="270" height="112" class="box parse"/>
+  <text x="720" y="681" class="box-title">LLM Extraction</text>
+  <text x="720" y="706" class="box-text">InBody JSON summary</text>
+  <text x="720" y="726" class="box-text">BioWell JSON summary</text>
+  <text x="720" y="746" class="small">Cached as *_llm.json</text>
+
+  <rect x="695" y="800" width="270" height="82" class="box store"/>
+  <text x="720" y="831" class="box-title">Device Summaries</text>
+  <text x="720" y="856" class="box-text">Parsed + LLM data merged</text>
+  <text x="720" y="876" class="box-text">Ready for synthesis</text>
+
+  <rect x="1055" y="205" width="300" height="96" class="box knowledge"/>
+  <text x="1080" y="236" class="box-title">Unified Synthesis Prompt</text>
+  <text x="1080" y="261" class="box-text">Injects all device summaries</text>
+  <text x="1080" y="281" class="box-text">and exact deterministic scores</text>
+
+  <rect x="1055" y="335" width="300" height="96" class="box knowledge"/>
+  <text x="1080" y="366" class="box-title">LLM Base Report</text>
+  <text x="1080" y="391" class="box-text">Patient, metrics, systems</text>
+  <text x="1080" y="411" class="box-text">dimensions, wellness plan</text>
+
+  <rect x="1055" y="465" width="300" height="112" class="box knowledge"/>
+  <text x="1080" y="496" class="box-title">Validation + Injection</text>
+  <text x="1080" y="521" class="box-text">Fill defaults</text>
+  <text x="1080" y="541" class="box-text">Inject parsed metrics</text>
+  <text x="1080" y="561" class="box-text">Override patient form data</text>
+
+  <rect x="1055" y="610" width="300" height="118" class="box knowledge"/>
+  <text x="1080" y="641" class="box-title">Scoring + Rules</text>
+  <text x="1080" y="666" class="box-text">compute_scores()</text>
+  <text x="1080" y="686" class="box-text">build_interpretations()</text>
+  <text x="1080" y="706" class="small">Doctor-rule knowledge layer</text>
+
+  <rect x="1055" y="762" width="300" height="112" class="box knowledge"/>
+  <text x="1080" y="793" class="box-title">Clinical Summaries</text>
+  <text x="1080" y="818" class="box-text">Dimension summaries</text>
+  <text x="1080" y="838" class="box-text">System summaries + SWOT</text>
+  <text x="1080" y="858" class="small">summary_generator.py</text>
+
+  <rect x="1445" y="205" width="380" height="96" class="box store"/>
+  <text x="1470" y="236" class="box-title">Final report_data</text>
+  <text x="1470" y="261" class="box-text">Complete structured report dictionary</text>
+  <text x="1470" y="281" class="box-text">Includes DMIT + biorhythm path</text>
+
+  <rect x="1445" y="335" width="380" height="92" class="box store"/>
+  <text x="1470" y="366" class="box-title">Persist JSON</text>
+  <text x="1470" y="391" class="box-text">reports/{report_id}/report.json</text>
+  <text x="1470" y="411" class="box-text">source for retrieval endpoint</text>
+
+  <rect x="1445" y="460" width="380" height="112" class="box output"/>
+  <text x="1470" y="491" class="box-title">Jinja2 HTML Template</text>
+  <text x="1470" y="516" class="box-text">report_template.html</text>
+  <text x="1470" y="536" class="box-text">Filters + globals format indicators</text>
+  <text x="1470" y="556" class="box-text">Biorhythm image embedded as base64</text>
+
+  <rect x="1445" y="605" width="380" height="96" class="box output"/>
+  <text x="1470" y="636" class="box-title">Playwright Renderer</text>
+  <text x="1470" y="661" class="box-text">Headless Chromium</text>
+  <text x="1470" y="681" class="box-text">Print CSS, A4 PDF output</text>
+
+  <rect x="1445" y="735" width="380" height="92" class="box output"/>
+  <text x="1470" y="766" class="box-title">Wellness PDF</text>
+  <text x="1470" y="791" class="box-text">reports/{report_id}/wellness_report.pdf</text>
+  <text x="1470" y="811" class="box-text">Available via /report/{id}/pdf</text>
+
+  <rect x="1445" y="862" width="380" height="96" class="box cache"/>
+  <text x="1470" y="893" class="box-title">Update Caches</text>
+  <text x="1470" y="918" class="box-text">hash_index.json persisted</text>
+  <text x="1470" y="938" class="box-text">_file_hash_cache updated</text>
+
+  <path d="M180 299 L180 335" class="arrow"/>
+  <path d="M180 421 L180 455" class="arrow"/>
+  <path d="M180 549 L180 585" class="arrow"/>
+  <path d="M180 697 L180 735" class="hit"/>
+  <text x="197" y="721" class="small">hit</text>
+
+  <path d="M275 641 C310 641 310 253 365 253" class="miss"/>
+  <text x="295" y="615" class="small">miss</text>
+
+  <path d="M485 301 L485 335" class="arrow"/>
+  <path d="M485 451 L485 485" class="arrow"/>
+  <path d="M485 581 L485 615" class="arrow"/>
+  <path d="M485 711 L485 745" class="arrow"/>
+
+  <path d="M605 663 C635 663 635 264 695 264" class="arrow"/>
+  <path d="M605 663 C635 663 635 419 695 419" class="arrow"/>
+  <path d="M605 663 C635 663 635 565 695 565" class="arrow"/>
+  <path d="M605 663 C635 663 635 706 695 706" class="arrow"/>
+
+  <path d="M830 323 L830 357" class="dash"/>
+  <path d="M830 481 L830 515" class="dash"/>
+  <path d="M830 615 L830 650" class="arrow"/>
+  <path d="M830 762 L830 800" class="arrow"/>
+
+  <path d="M965 841 C1000 841 1000 253 1055 253" class="arrow"/>
+  <path d="M1205 301 L1205 335" class="arrow"/>
+  <path d="M1205 431 L1205 465" class="arrow"/>
+  <path d="M1205 577 L1205 610" class="arrow"/>
+  <path d="M1205 728 L1205 762" class="arrow"/>
+
+  <path d="M1355 818 C1390 818 1390 253 1445 253" class="arrow"/>
+  <path d="M1635 301 L1635 335" class="arrow"/>
+  <path d="M1635 427 L1635 460" class="arrow"/>
+  <path d="M1635 572 L1635 605" class="arrow"/>
+  <path d="M1635 701 L1635 735" class="arrow"/>
+  <path d="M1635 827 L1635 862" class="arrow"/>
+
+  <path d="M1445 910 C610 1010 290 910 180 817" class="dash"/>
+  <text x="650" y="1010" class="small">Next identical upload returns immediately from cache</text>
+
+  <rect x="70" y="1018" width="1780" height="1.5" fill="#d9e1ee"/>
+  <text x="70" y="1046" class="small">Main files: app/routes/report.py | app/controllers/pipeline.py | app/engine/synthesizer.py | app/engine/interpretation.py | app/output/html_renderer.py | app/frontend/template/report_template.html</text>
+</svg>

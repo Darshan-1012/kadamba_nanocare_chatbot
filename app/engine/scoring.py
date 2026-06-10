@@ -54,28 +54,122 @@ def _nadi_param_score(param_name: str, level: str) -> int:
 
 
 # ── BioWell organ-to-system mapping ──────────────────────────────────
-# BioWell energy levels range ~2-10; we normalize to 0-100 score.
-# Energy 5-7 = Normal (70-85), <4 = Low (30-55), >8 = Increased (55-70)
+# BioWell Page 2 scores use the Functional/energetic table Balance%.
+# If Balance% is unavailable, the Energy Joules value is interpreted via
+# the BioWell energy rules from summary_requirement.docx.
 BIOWELL_ORGAN_SYSTEM_MAP = {
-    "nervous": ["Nervous system"],
-    "cardiovascular": ["Cardiovascular system", "Heart"],
-    "respiratory": ["Respiratory system", "Trachea", "Larynx", "Bronchi"],
+    "nervous": [
+        "Nervous system", "Head", "Eyes", "Ears, nose, maxillary sinus",
+        "Jaw, Teeth", "Cerebral zone (cortex)", "Cerebral zone (vessels)",
+        "Hypothalamus", "Epiphysis", "Pituitary gland",
+    ],
+    "cardiovascular": [
+        "Cardiovascular system", "Heart", "Cerebral zone (vessels)",
+        "Coronary vessels",
+    ],
+    "respiratory": [
+        "Respiratory system", "Throat, larynx, trachea", "Trachea",
+        "Larynx", "Bronchi", "Thorax zone",
+    ],
     "musculoskeletal": ["Musculoskeletal system", "Spine - cervical zone",
-                         "Spine - thorax zone", "Spine - lumbar zone", "Sacrum"],
+                         "Spine - thorax zone", "Spine - lumbar zone", "Sacrum",
+                         "Coccyx, Pelvis minor zone"],
     "digestive": ["Digestive system", "Colon - ascending", "Colon - transverse",
                    "Colon - descending", "Colon - sigmoid", "Duodenum", "Ileum",
                    "Jejunum", "Liver", "Pancreas", "Gallbladder", "Appendix",
                    "Abdominal zone", "Rectum", "Blind gut"],
-    "integumentary": ["Head", "Coccyx, Pelvis minor zone"],
-    "endocrine": ["Endocrine system", "Thyroid", "Hypothalamus", "Hypophysis"],
-    "urogenital": ["Urogenital system", "Kidneys", "Prostate"],
-    "reproductive": ["Prostate", "Urogenital system"],
+    "integumentary": ["Head"],
+    "endocrine": ["Endocrine system", "Thyroid", "Thyroid gland",
+                  "Hypothalamus", "Hypophysis", "Pituitary gland",
+                  "Epiphysis", "Pancreas", "Adrenals", "Spleen"],
+    "urogenital": ["Urogenital system", "Kidneys"],
+    "reproductive": ["Urogenital system", "Kidneys", "Prostate"],
+    "immune": ["Immune system"],
+}
+
+BIOWELL_SYSTEM_GROUP_MAP = {
+    "nervous": ["Nervous system"],
+    "cardiovascular": ["Cardiovascular system"],
+    "respiratory": ["Respiratory system"],
+    "musculoskeletal": ["Musculoskeletal system"],
+    "digestive": ["Digestive system"],
+    "integumentary": ["Head"],
+    "endocrine": ["Endocrine system"],
+    "urogenital": ["Urogenital system"],
+    "reproductive": ["Reproductive system"],
     "immune": ["Immune system"],
 }
 
 
+def _biowell_balance_to_score(balance_percent: float) -> int:
+    """Convert BioWell Balance% into a Page 2 system score."""
+    return max(1, min(100, int(round(balance_percent))))
+
+
+def _iter_biowell_organ_rows(organ_energies):
+    """Yield BioWell organ rows from old dict or new list extraction shapes."""
+    if isinstance(organ_energies, dict):
+        for organ_name, entry in organ_energies.items():
+            yield organ_name, entry
+        return
+
+    if isinstance(organ_energies, list):
+        for entry in organ_energies:
+            if not isinstance(entry, dict):
+                continue
+            organ_name = (
+                entry.get("organ")
+                or entry.get("organ_name")
+                or entry.get("name")
+                or entry.get("system")
+                or ""
+            )
+            if organ_name:
+                yield organ_name, entry
+
+
+def _biowell_entry_balance(entry) -> float | None:
+    """Return Balance% for BioWell score calculation."""
+    if isinstance(entry, dict):
+        value = (
+            entry.get("balance_percent")
+            or entry.get("balance")
+            or entry.get("balance_pct")
+        )
+        if value is None:
+            # Backward compatibility: old LLM cache put Balance% into this key.
+            legacy_value = entry.get("energy level or status")
+            if legacy_value is not None and float(legacy_value) > 10:
+                value = legacy_value
+        return float(value) if value is not None else None
+
+    value = float(entry)
+    return value if value > 10 else None
+
+
+def _biowell_entry_energy(entry) -> float | None:
+    """Return Energy Joules x10-2 for summary interpretation only."""
+    if not isinstance(entry, dict):
+        value = float(entry)
+        return value if value <= 10 else None
+    value = entry.get("energy_joules") or entry.get("energy")
+    return float(value) if value is not None else None
+
+
+def _biowell_entry_group(entry) -> str:
+    """Return the BioWell table system group, if extraction preserved it."""
+    if not isinstance(entry, dict):
+        return ""
+    return (
+        entry.get("system_group")
+        or entry.get("system")
+        or entry.get("group")
+        or ""
+    )
+
+
 def _biowell_energy_to_score(energy: float) -> int:
-    """Convert BioWell organ energy level (1-12 scale) to 0-100 score.
+    """Convert BioWell organ energy level (0-10 Joules x10-2) to 0-100 score.
 
     Normal range: 4.0–7.0 → 70-90
     Low (<4.0): proportionally lower
@@ -101,26 +195,48 @@ def _compute_biowell_system_scores(biowell_data: dict) -> dict:
     if not organ_energies:
         return {}
 
+    rows = list(_iter_biowell_organ_rows(organ_energies))
     scores = {}
     for sys_key, organ_names in BIOWELL_ORGAN_SYSTEM_MAP.items():
         energy_values = []
-        for organ_name in organ_names:
-            if organ_name in organ_energies:
-                entry = organ_energies[organ_name]
+        group_names = set(BIOWELL_SYSTEM_GROUP_MAP.get(sys_key, []))
+
+        # Preferred path for new extraction: use the table's own system group.
+        for _, entry in rows:
+            if _biowell_entry_group(entry) in group_names:
                 try:
-                    if isinstance(entry, dict):
-                        e = float(entry.get("energy level or status",
-                                            entry.get("energy", 0)))
-                    else:
-                        e = float(entry)
-                    if e > 0:
+                    e = _biowell_entry_balance(entry)
+                    if e is not None and e > 0:
                         energy_values.append(e)
                 except (ValueError, TypeError):
                     pass
 
+        # Fallback for old cached dict extraction: match by organ name.
+        if not energy_values:
+            for organ_name, entry in rows:
+                if organ_name in organ_names:
+                    try:
+                        e = _biowell_entry_balance(entry)
+                        if e is not None and e > 0:
+                            energy_values.append(e)
+                    except (ValueError, TypeError):
+                        pass
+
+        # Reproductive is not always a first-class BioWell table group.
+        # If absent, use prostate/reproductive markers from urogenital rows.
+        if not energy_values and sys_key == "reproductive":
+            for organ_name, entry in rows:
+                if organ_name == "Prostate":
+                    try:
+                        e = _biowell_entry_balance(entry)
+                        if e is not None and e > 0:
+                            energy_values.append(e)
+                    except (ValueError, TypeError):
+                        pass
+
         if energy_values:
-            avg_energy = sum(energy_values) / len(energy_values)
-            scores[sys_key] = _biowell_energy_to_score(avg_energy)
+            avg_value = sum(energy_values) / len(energy_values)
+            scores[sys_key] = _biowell_balance_to_score(avg_value)
 
     return scores
 

@@ -395,7 +395,8 @@
       align-items: center;
       justify-content: center;
       font-family: var(--font-h);
-      font-size: 8pt;
+      font-size: 10.5pt;
+      font-weight: 700;
       color: var(--black);
     }
 
@@ -404,7 +405,7 @@
       display: grid;
       grid-template-columns: 175pt 1fr 175pt;
       gap: 0;
-      padding: 0 16pt;
+      padding: 0 12pt;
       align-items: start;
       position: relative;
       z-index: 1;
@@ -415,7 +416,7 @@
     }
 
     .quad-cards-row--bot {
-      flex: 2;
+      flex: 3;
     }
 
     /* summary cards inside quadrant */
@@ -434,18 +435,208 @@
     }
 
     .summary-card .card__body {
-      padding: 5pt 7pt;
+      padding: 6pt 7pt 7pt;
       flex: 1;
       overflow: hidden;
     }
 
+    .summary-card__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3pt;
+      max-width: 100%;
+      margin-bottom: 5pt;
+      padding: 2.5pt 6pt;
+      border-radius: 999pt;
+      font-size: 7pt;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .summary-card__badge--good {
+      background: #e2f7ef;
+      color: #0f6e56;
+    }
+
+    .summary-card__badge--fair {
+      background: #eaf3fb;
+      color: #1b5381;
+    }
+
+    .summary-card__badge--attention {
+      background: #fff3d8;
+      color: #9a5b00;
+    }
+
+    .summary-card__badge--critical {
+      background: #fde9e7;
+      color: #a23a31;
+    }
+
+    .summary-card__list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4pt;
+      margin: 0;
+      padding: 0;
+    }
+
+    .summary-card__list li {
+      position: relative;
+      padding-left: 9pt;
+      font-size: 7pt;
+      line-height: 1.38;
+      color: #1a1a1a;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+
+    .summary-card__list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4pt;
+      width: 4pt;
+      height: 4pt;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
     .summary-card__text {
-      font-size: 6.3pt;
+      font-size: 7pt;
       line-height: 1.45;
       color: #1a1a1a;
       word-wrap: break-word;
       overflow-wrap: break-word;
       hyphens: auto;
+    }
+
+    .physical-signals {
+      margin-top: 6pt;
+      display: flex;
+      flex-direction: column;
+      gap: 4pt;
+    }
+
+    .physical-signal {
+      padding: 4pt 5pt;
+      border: .6pt solid #d9e8f0;
+      border-radius: 5pt;
+      background: #fbfdfe;
+    }
+
+    .physical-signal__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4pt;
+      margin-bottom: 3pt;
+    }
+
+    .physical-signal__label {
+      font-size: 6.3pt;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1;
+    }
+
+    .physical-signal__value {
+      font-size: 6.1pt;
+      font-weight: 800;
+      color: #0f6e56;
+      white-space: nowrap;
+    }
+
+    .physical-signal__line {
+      position: relative;
+      height: 4pt;
+      border-radius: 999pt;
+      background: linear-gradient(to right, #e6a442 0 24%, #209d79 24% 68%, #d85f53 68% 100%);
+    }
+
+    .physical-signal__mark {
+      position: absolute;
+      top: -2.5pt;
+      width: 2pt;
+      height: 9pt;
+      border-radius: 999pt;
+      background: #102f4c;
+      box-shadow: 0 0 0 1pt #fff;
+    }
+
+    .physical-signal__foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4pt;
+      margin-top: 3pt;
+      font-size: 5.6pt;
+      line-height: 1.1;
+      color: #53626d;
+    }
+
+    .physical-signal__status {
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .physical-signal__status--good {
+      color: #0f6e56;
+    }
+
+    .physical-signal__status--attention {
+      color: #9a5b00;
+    }
+
+    .physical-signal__status--critical {
+      color: #a23a31;
+    }
+
+    .summary-card--spiritual .physical-signals {
+      margin-top: 1.5pt;
+      gap: 2pt;
+    }
+
+    .summary-card--spiritual {
+      height: 252pt;
+    }
+
+    .summary-card--spiritual .summary-card__badge {
+      margin-bottom: 2pt;
+    }
+
+    .summary-card--spiritual .physical-signal {
+      padding: 2.2pt 3.5pt;
+    }
+
+    .summary-card--spiritual .physical-signal__top {
+      margin-bottom: 1.5pt;
+    }
+
+    .summary-card--spiritual .physical-signal__label {
+      font-size: 5.5pt;
+    }
+
+    .summary-card--spiritual .physical-signal__value {
+      font-size: 5.4pt;
+    }
+
+    .summary-card--spiritual .physical-signal__foot {
+      margin-top: 1.5pt;
+      font-size: 4.7pt;
+      line-height: 1;
+    }
+
+    .summary-card--spiritual .physical-signal__line {
+      height: 3pt;
+    }
+
+    .summary-card--spiritual .physical-signal__mark {
+      top: -2pt;
+      height: 7pt;
     }
 
     /* body figure — absolutely centred, spanning full quadrant */
@@ -545,6 +736,37 @@
       white-space: nowrap;
     }
 
+    .sys-card__bar {
+      width: 100%;
+      height: 4pt;
+      margin-top: 3pt;
+      border-radius: 999pt;
+      background: #e6eef3;
+      overflow: hidden;
+    }
+
+    .sys-card__bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--grad-lr);
+    }
+
+    .sys-card__bar-fill--good {
+      background: linear-gradient(to right, #209d79, #5ac09c);
+    }
+
+    .sys-card__bar-fill--fair {
+      background: linear-gradient(to right, #2a77b5, #5ac09c);
+    }
+
+    .sys-card__bar-fill--attention {
+      background: linear-gradient(to right, #e4a22d, #f0c66b);
+    }
+
+    .sys-card__bar-fill--critical {
+      background: linear-gradient(to right, #c85b4d, #e48a70);
+    }
+
     .sys-card__summary {
       font-size: 6pt;
       line-height: 1.4;
@@ -581,6 +803,170 @@
       flex: 1;
       min-height: 80pt;
     }
+
+    .sys-summary-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 8pt;
+      row-gap: 6pt;
+      padding: 8pt 10pt 7pt;
+    }
+
+    .sys-summary-item {
+      display: grid;
+      grid-template-columns: 18pt 1fr;
+      column-gap: 6pt;
+      min-height: 46pt;
+      padding: 6pt 7pt;
+      border: 0.6pt solid #d6e7ef;
+      border-left-width: 3pt;
+      border-radius: 6pt;
+      background: #fbfdfe;
+      color: #222;
+      break-inside: avoid;
+    }
+
+    .sys-summary-item--good {
+      border-left-color: #209d79;
+    }
+
+    .sys-summary-item--fair {
+      border-left-color: #2a77b5;
+    }
+
+    .sys-summary-item--attention {
+      border-left-color: #d99a22;
+    }
+
+    .sys-summary-item--critical {
+      border-left-color: #c85b4d;
+    }
+
+    .sys-summary-icon {
+      width: 17pt;
+      height: 17pt;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-h);
+      font-size: 7.5pt;
+      font-weight: 800;
+      color: #fff;
+      background: var(--grad-lr);
+    }
+
+    .sys-summary-main {
+      min-width: 0;
+    }
+
+    .sys-summary-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4pt;
+      margin-bottom: 2pt;
+    }
+
+    .sys-summary-item strong {
+      color: var(--navy);
+      font-weight: 800;
+      font-size: 7.5pt;
+      line-height: 1.1;
+    }
+
+    .sys-summary-score {
+      flex-shrink: 0;
+      padding: 1.5pt 4pt;
+      border-radius: 999pt;
+      background: #e8f5f0;
+      color: #0f6e56;
+      font-size: 8pt;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .sys-summary-meter {
+      width: 100%;
+      height: 3.5pt;
+      margin-bottom: 4pt;
+      border-radius: 999pt;
+      background: #e6eef3;
+      overflow: hidden;
+    }
+
+    .sys-summary-meter span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--grad-lr);
+    }
+
+    .sys-summary-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5pt;
+      margin: 0;
+      padding: 0;
+    }
+
+    .sys-summary-points li {
+      position: relative;
+      padding-left: 8pt;
+      font-size: 8pt;
+      line-height: 1.28;
+      color: #333;
+      overflow-wrap: break-word;
+    }
+
+    .sys-summary-points li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 3.4pt;
+      width: 3.6pt;
+      height: 3.6pt;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    /* .energy-legend {
+      margin: 1pt 10pt 8pt;
+      border: 0.6pt solid #c7dbe8;
+      border-radius: 6pt;
+      overflow: hidden;
+    }
+
+    .energy-legend__title {
+      padding: 4pt 7pt;
+      background: #edf6fb;
+      color: var(--navy);
+      font-size: 7.2pt;
+      font-weight: 800;
+    }
+
+    .energy-legend__grid {
+      display: grid;
+      grid-template-columns: 55pt 1fr 88pt;
+    }
+
+    .energy-legend__grid span {
+      padding: 3pt 5pt;
+      border-top: 0.5pt solid #dce9f0;
+      font-size: 5.9pt;
+      line-height: 1.2;
+      color: #222;
+    }
+
+    .energy-legend__grid span:nth-child(3n + 1) {
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .energy-legend__grid span:nth-child(3n + 2) {
+      font-weight: 800;
+    } */
 
     /* ============================================================
        PAGE 4 — BRAIN ANALYSIS (absolute layout per Figma)
@@ -628,6 +1014,211 @@
 
     .brain-score-bar__body {
       padding: 8pt;
+    }
+
+    .brain-score-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr 1fr 1.05fr 1.05fr 1.25fr;
+      gap: 6pt;
+      padding: 6pt 8pt;
+      align-items: stretch;
+    }
+
+    .brain-score-tile {
+      min-width: 0;
+      border: .65pt solid #d6e7ef;
+      border-radius: 6pt;
+      background: #fbfdfe;
+      padding: 5pt 5pt 4pt;
+      box-shadow: 0 2pt 6pt rgba(18, 78, 130, .08);
+    }
+
+    .brain-score-tile--active {
+      border-color: #9fd7c5;
+      background: #effaf6;
+    }
+
+    .brain-score-label {
+      display: block;
+      font-size: 5.7pt;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--navy);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .brain-score-value {
+      display: block;
+      margin-top: 3pt;
+      font-family: var(--font-h);
+      font-size: 13pt;
+      font-weight: 800;
+      line-height: 1;
+      color: #111;
+    }
+
+    .brain-score-value--small {
+      font-size: 9.5pt;
+      line-height: 1.15;
+      color: #0f6e56;
+    }
+
+    .brain-score-meter {
+      width: 100%;
+      height: 4pt;
+      margin-top: 4pt;
+      border-radius: 999pt;
+      background: #e5eef4;
+      overflow: hidden;
+    }
+
+    .brain-score-meter span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--grad-lr);
+    }
+
+    .brain-score-meter--right span {
+      background: var(--grad-rl);
+    }
+
+    .brain-score-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 100%;
+      margin-top: 5pt;
+      padding: 3pt 6pt;
+      border-radius: 999pt;
+      background: #e2f7ef;
+      color: #0f6e56;
+      font-size: 6.4pt;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .dmit-profile-strip {
+      display: grid;
+      grid-template-columns: 1.1fr 1.35fr .75fr .75fr;
+      gap: 6pt;
+      margin-bottom: 5pt;
+      padding-bottom: 5pt;
+      border-bottom: .5pt solid #d9e2ec;
+    }
+
+    .dmit-profile-item {
+      min-width: 0;
+      padding: 4pt 5pt;
+      border: .6pt solid #d6e7ef;
+      border-radius: 6pt;
+      background: #fbfdfe;
+      font-size: 6.4pt;
+    }
+
+    .dmit-profile-item strong {
+      display: block;
+      margin-bottom: 3pt;
+      color: var(--navy);
+      font-size: 6.6pt;
+      line-height: 1;
+    }
+
+    .dmit-personality-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3pt;
+    }
+
+    .dmit-personality-chip {
+      display: inline-flex;
+      padding: 2.3pt 5pt;
+      border-radius: 999pt;
+      background: #e2f7ef;
+      color: #0f6e56;
+      font-size: 6.2pt;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .swot-quadrant {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      height: 174pt;
+      border: .7pt solid #c9dce8;
+      border-radius: 8pt;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .swot-quadrant::before,
+    .swot-quadrant::after {
+      content: '';
+      position: absolute;
+      z-index: 2;
+      background: #9bbdd0;
+    }
+
+    .swot-quadrant::before {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: .8pt;
+    }
+
+    .swot-quadrant::after {
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: .8pt;
+    }
+
+    .swot-cell {
+      min-width: 0;
+      padding: 6pt 8pt;
+      background: #fbfdfe;
+    }
+
+    .swot-cell--strengths {
+      background: #f2fbf7;
+    }
+
+    .swot-cell--weaknesses {
+      background: #fff6f4;
+    }
+
+    .swot-cell--opportunities {
+      background: #f3f8fd;
+    }
+
+    .swot-cell--threats {
+      background: #fff8ec;
+    }
+
+    .swot-cell strong {
+      display: block;
+      margin-bottom: 4pt;
+      font-size: 7.4pt;
+      line-height: 1;
+    }
+
+    .swot-cell ul {
+      display: flex;
+      flex-direction: column;
+      gap: 2pt;
+      margin: 0;
+      padding-left: 9pt;
+    }
+
+    .swot-cell li {
+      font-size: 6pt;
+      line-height: 1.15;
+      color: #222;
     }
 
     /* Brain figure: centered behind the two cards, opacity 0.11 */
@@ -719,6 +1310,11 @@
       border-radius: 10pt 10pt 0 0;
     }
 
+    #page4 .corr-box .corr-box__body {
+      flex: 1;
+      min-height: 0;
+    }
+
     /* ============================================================
        PAGE 5 — WELLNESS OFFERINGS
        Reference: A4 - 5.svg viewBox 0 0 595 842
@@ -763,45 +1359,257 @@
     }
 
     /* ============================================================
-       PAGE 5 — BIORYTHM
+       PAGE 3 — BIORHYTHM
     ============================================================ */
-    .bio-box {
+    #page3 .bio-box {
       border: 1pt solid var(--border);
       border-radius: var(--r-card);
       box-shadow: var(--shadow);
       overflow: hidden;
     }
 
-    .bio-box__hd {
+    #page3 .bio-box__hd {
       background: var(--grad-lr);
       border-radius: var(--r-head);
       padding: 7pt 12pt;
     }
 
-    .bio-box__title {
+    #page3 .bio-box__title {
       font-family: var(--font-h);
       font-size: 10.5pt;
       color: var(--white);
       text-align: center;
     }
 
-    .bio-box__body {
-      padding: 10pt 8pt;
+    #page3 .bio-box__body {
+      padding: 8pt;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 164pt;
+      height: 300pt;
       flex-basis: auto;
     }
 
-    .bio-svg {
+    #page3 .bio-box__body img {
       width: 100%;
-      height: 120pt;
+      height: 100%;
+      object-fit: contain;
+      display: block;
     }
   </style>
 </head>
 
 <body>
+  {% macro dimension_card(title, dim, header_class) -%}
+  <div class="summary-card">
+    <div class="card__hd {{ header_class }}"><span class="card__hd-title">{{ title }}</span></div>
+    <div class="card__body">
+      <div class="summary-card__badge summary-card__badge--{{ dim.score|dimension_status_class }}">
+        {{ dim.score }}% - {{ dim.statusLabel|default(dim.score|dimension_status) }}
+      </div>
+      {% set points = dim.summary_points|summary_points(dim.description) %}
+      {% if points %}
+      <ul class="summary-card__list">
+        {% for point in points %}
+        <li>{{ point }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="summary-card__text">{{ dim.description }}</p>
+      {% endif %}
+    </div>
+  </div>
+  {%- endmacro %}
+
+  {% macro physical_card(dim, metrics) -%}
+  <div class="summary-card summary-card--physical">
+    <div class="card__hd card__hd--lr"><span class="card__hd-title">Physical Health</span></div>
+    <div class="card__body">
+      <div class="summary-card__badge summary-card__badge--{{ dim.score|dimension_status_class }}">
+        {{ dim.score }}% - {{ dim.statusLabel|default(dim.score|dimension_status) }}
+      </div>
+
+      <div class="physical-signals">
+        {% set signals = [] %}
+        {% set signal_labels = [] %}
+        {% for point in dim.summary_points|summary_points(dim.description, 6) %}
+          {% set signal = physical_summary_signal(point) %}
+          {% if signal %}
+            {% set _ = signals.append(signal) %}
+            {% set _ = signal_labels.append(signal.label) %}
+          {% endif %}
+        {% endfor %}
+        {% if 'Hydration level' not in signal_labels %}
+          {% set _ = signals.append(missing_physical_signal('hydration')) %}
+        {% endif %}
+        {% for signal in signals %}
+        <div class="physical-signal">
+          <div class="physical-signal__top">
+            <span class="physical-signal__label">{{ signal.label }}</span>
+            <span class="physical-signal__value">{{ signal.value }}</span>
+          </div>
+          <div class="physical-signal__line">
+            <span class="physical-signal__mark" style="left: {{ signal.marker }}%;"></span>
+          </div>
+          <div class="physical-signal__foot">
+            <span>{{ signal.note }}</span>
+            <span class="physical-signal__status physical-signal__status--{{ signal.class }}">{{ signal.status }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {%- endmacro %}
+
+  {% macro psychological_card(dim) -%}
+  <div class="summary-card summary-card--psychological">
+    <div class="card__hd card__hd--db"><span class="card__hd-title">Psychological</span></div>
+    <div class="card__body">
+      <div class="summary-card__badge summary-card__badge--{{ dim.score|dimension_status_class }}">
+        {{ dim.score }}% - {{ dim.statusLabel|default(dim.score|dimension_status) }}
+      </div>
+
+      <div class="physical-signals">
+        {% set signals = [] %}
+        {% for point in dim.summary_points|summary_points(dim.description, 6) %}
+          {% set signal = psychological_summary_signal(point) %}
+          {% if signal %}
+            {% set _ = signals.append(signal) %}
+          {% endif %}
+        {% endfor %}
+        {% for signal in signals %}
+        <div class="physical-signal">
+          <div class="physical-signal__top">
+            <span class="physical-signal__label">{{ signal.label }}</span>
+            <span class="physical-signal__value">{{ signal.value }}</span>
+          </div>
+          <div class="physical-signal__line">
+            <span class="physical-signal__mark" style="left: {{ signal.marker }}%;"></span>
+          </div>
+          <div class="physical-signal__foot">
+            <span>{{ signal.note }}</span>
+            <span class="physical-signal__status physical-signal__status--{{ signal.class }}">{{ signal.status }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {%- endmacro %}
+
+  {% macro emotional_card(dim) -%}
+  <div class="summary-card summary-card--emotional">
+    <div class="card__hd card__hd--db"><span class="card__hd-title">Emotional</span></div>
+    <div class="card__body">
+      <div class="summary-card__badge summary-card__badge--{{ dim.score|dimension_status_class }}">
+        {{ dim.score }}% - {{ dim.statusLabel|default(dim.score|dimension_status) }}
+      </div>
+
+      <div class="physical-signals">
+        {% set signals = [] %}
+        {% set signal_labels = [] %}
+        {% for point in dim.summary_points|summary_points(dim.description, 6) %}
+          {% set signal = emotional_summary_signal(point) %}
+          {% if signal %}
+            {% set _ = signals.append(signal) %}
+            {% set _ = signal_labels.append(signal.label) %}
+          {% endif %}
+        {% endfor %}
+        {% if 'BioWell stress level' not in signal_labels and 'BioWell emotional level' not in signal_labels %}
+          {% set ns = namespace(alias=none) %}
+          {% for signal in signals %}
+            {% if signal.label == 'Nadi emotional stress' %}
+              {% set ns.alias = emotional_biowell_stress_alias(signal) %}
+            {% endif %}
+          {% endfor %}
+          {% if ns.alias %}
+            {% set _ = signals.append(ns.alias) %}
+          {% else %}
+            {% set _ = signals.append(missing_emotional_signal('biowell')) %}
+          {% endif %}
+        {% endif %}
+        {% for signal in signals %}
+        <div class="physical-signal">
+          <div class="physical-signal__top">
+            <span class="physical-signal__label"{% if signal.accent %} style="color: {{ signal.accent }};"{% endif %}>{{ signal.label }}</span>
+            <span class="physical-signal__value"{% if signal.accent %} style="color: {{ signal.accent }};"{% endif %}>{{ signal.value }}</span>
+          </div>
+          <div class="physical-signal__line">
+            <span class="physical-signal__mark" style="left: {{ signal.marker }}%;"></span>
+          </div>
+          <div class="physical-signal__foot">
+            <span>{{ signal.note }}</span>
+            <span class="physical-signal__status physical-signal__status--{{ signal.class }}">{{ signal.status }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {%- endmacro %}
+
+  {% macro spiritual_card(dim) -%}
+  <div class="summary-card summary-card--spiritual">
+    <div class="card__hd card__hd--gr"><span class="card__hd-title">Spiritual</span></div>
+    <div class="card__body">
+      <div class="summary-card__badge summary-card__badge--{{ dim.score|dimension_status_class }}">
+        {{ dim.score }}% - {{ dim.statusLabel|default(dim.score|dimension_status) }}
+      </div>
+
+      {% set signals = [] %}
+      {% for point in dim.summary_points|summary_points(dim.description, 8) %}
+        {% set signal = spiritual_summary_signal(point) %}
+        {% if signal %}
+          {% set _ = signals.append(signal) %}
+        {% endif %}
+      {% endfor %}
+
+      {% if signals %}
+      <div class="physical-signals">
+        {% for signal in signals %}
+        <div class="physical-signal">
+          <div class="physical-signal__top">
+            <span class="physical-signal__label" style="color: {{ signal.accent }};">{{ signal.label }}</span>
+            <span class="physical-signal__value" style="color: {{ signal.accent }};">{{ signal.value }}</span>
+          </div>
+          <div class="physical-signal__line">
+            <span class="physical-signal__mark" style="left: {{ signal.marker }}%;"></span>
+          </div>
+          <div class="physical-signal__foot">
+            <span>{{ signal.note }}</span>
+            <span class="physical-signal__status physical-signal__status--{{ signal.class }}">{{ signal.status }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="summary-card__text">{{ dim.description }}</p>
+      {% endif %}
+    </div>
+  </div>
+  {%- endmacro %}
+
+  {% macro system_summary_item(title, code, sys, summary) -%}
+  {% if summary %}
+  <div class="sys-summary-item sys-summary-item--{{ sys.score|dimension_status_class }}">
+    <div class="sys-summary-icon">{{ code }}</div>
+    <div class="sys-summary-main">
+      <div class="sys-summary-head">
+        <strong>{{ title }}</strong>
+        <span class="sys-summary-score">{{ sys.score }}% · {{ sys.displayStatus|default(sys.status) }}</span>
+      </div>
+      <div class="sys-summary-meter"><span style="width: {{ sys.score }}%;"></span></div>
+      {% set points = summary|system_summary_points(2) %}
+      <ul class="sys-summary-points">
+        {% for point in points %}
+        <li>{{ point }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+  {%- endmacro %}
 
   <!-- SVG gradient defs -->
   <svg width="0" height="0" style="position:absolute;overflow:hidden">
@@ -959,19 +1767,9 @@
 
         <!-- Top cards -->
         <div class="quad-cards-row quad-cards-row--top">
-          <div class="summary-card">
-            <div class="card__hd card__hd--lr"><span class="card__hd-title">Physical Health</span></div>
-            <div class="card__body">
-              <p class="summary-card__text">{{ dimensions.physical.description }}</p>
-            </div>
-          </div>
+          {{ physical_card(dimensions.physical, metrics) }}
           <div></div><!-- empty center — body shows through -->
-          <div class="summary-card">
-            <div class="card__hd card__hd--db"><span class="card__hd-title">Psychological</span></div>
-            <div class="card__body">
-              <p class="summary-card__text">{{ dimensions.psychological.description }}</p>
-            </div>
-          </div>
+          {{ psychological_card(dimensions.psychological) }}
         </div>
 
 
@@ -1010,19 +1808,9 @@
 
         <!-- Bottom cards -->
         <div class="quad-cards-row quad-cards-row--bot">
-          <div class="summary-card">
-            <div class="card__hd card__hd--db"><span class="card__hd-title">Emotional</span></div>
-            <div class="card__body">
-              <p class="summary-card__text">{{ dimensions.emotional.description }}</p>
-            </div>
-          </div>
+          {{ emotional_card(dimensions.emotional) }}
           <div></div><!-- empty center — body shows through -->
-          <div class="summary-card">
-            <div class="card__hd card__hd--gr"><span class="card__hd-title">Spiritual</span></div>
-            <div class="card__body">
-              <p class="summary-card__text">{{ dimensions.spiritual.description }}</p>
-            </div>
-          </div>
+          {{ spiritual_card(dimensions.spiritual) }}
         </div>
 
       </div><!-- /quad-section -->
@@ -1065,7 +1853,7 @@
               <span class="sys-card__stat">{{ systems.nervous.displayStatus|default(systems.nervous.status) }}</span>
             </div>
           </div>
-          {% if system_summaries.nervous %}<p class="sys-card__summary">{{ system_summaries.nervous }}</p>{% endif %}
+          <div class="sys-card__bar"><div class="sys-card__bar-fill sys-card__bar-fill--{{ systems.nervous.score|dimension_status_class }}" style="width: {{ systems.nervous.score }}%;"></div></div>
         </div>
         <div class="sys-card">
           <p class="sys-card__title">Cardiovascular system</p>
@@ -1081,7 +1869,7 @@
                 systems.cardiovascular.displayStatus|default(systems.cardiovascular.status) }}</span>
             </div>
           </div>
-          {% if system_summaries.cardiovascular %}<p class="sys-card__summary">{{ system_summaries.cardiovascular }}</p>{% endif %}
+          <div class="sys-card__bar"><div class="sys-card__bar-fill sys-card__bar-fill--{{ systems.cardiovascular.score|dimension_status_class }}" style="width: {{ systems.cardiovascular.score }}%;"></div></div>
         </div>
 
         <div class="sys-card">
@@ -1098,7 +1886,7 @@
                 }}</span>
             </div>
           </div>
-          {% if system_summaries.respiratory %}<p class="sys-card__summary">{{ system_summaries.respiratory }}</p>{% endif %}
+          <div class="sys-card__bar"><div class="sys-card__bar-fill sys-card__bar-fill--{{ systems.respiratory.score|dimension_status_class }}" style="width: {{ systems.respiratory.score }}%;"></div></div>
         </div>
         <div class="sys-card">
           <p class="sys-card__title">Muscle and bone</p>
@@ -1114,7 +1902,7 @@
                 systems.musculoskeletal.displayStatus|default(systems.musculoskeletal.status) }}</span>
             </div>
           </div>
-          {% if system_summaries.musculoskeletal %}<p class="sys-card__summary">{{ system_summaries.musculoskeletal }}</p>{% endif %}
+          <div class="sys-card__bar"><div class="sys-card__bar-fill sys-card__bar-fill--{{ systems.musculoskeletal.score|dimension_status_class }}" style="width: {{ systems.musculoskeletal.score }}%;"></div></div>
         </div>
         <!-- Row 2 -->
         <div class="sys-card">
@@ -1131,7 +1919,7 @@
                 }}</span>
             </div>
           </div>
-          {% if system_summaries.digestive %}<p class="sys-card__summary">{{ system_summaries.digestive }}</p>{% endif %}
+          <div class="sys-card__bar"><div class="sys-card__bar-fill sys-card__bar-fill--{{ systems.digestive.score|dimension_status_class }}" style="width: {{ systems.digestive.score }}%;"></div></div>
         </div>
         <div class="sys-card">
           <p class="sys-card__title">Integumentary system</p>
@@ -1147,7 +1935,7 @@
                 }}</span>
             </div>
           </div>
-          {% if system_summaries.integumentary %}<p class="sys-card__summary">{{ system_summaries.integumentary }}</p>{% endif %}
+          <div class="sys-card__bar"><div class="sys-card__bar-fill sys-card__bar-fill--{{ systems.integumentary.score|dimension_status_class }}" style="width: {{ systems.integumentary.score }}%;"></div></div>
         </div>
         <div class="sys-card">
           <p class="sys-card__title">Endocrine system</p>
@@ -1163,7 +1951,7 @@
                 }}</span>
             </div>
           </div>
-          {% if system_summaries.endocrine %}<p class="sys-card__summary">{{ system_summaries.endocrine }}</p>{% endif %}
+          <div class="sys-card__bar"><div class="sys-card__bar-fill sys-card__bar-fill--{{ systems.endocrine.score|dimension_status_class }}" style="width: {{ systems.endocrine.score }}%;"></div></div>
         </div>
         <div class="sys-card">
           <p class="sys-card__title">Urogenital system</p>
@@ -1179,7 +1967,7 @@
                 }}</span>
             </div>
           </div>
-          {% if system_summaries.urogenital %}<p class="sys-card__summary">{{ system_summaries.urogenital }}</p>{% endif %}
+          <div class="sys-card__bar"><div class="sys-card__bar-fill sys-card__bar-fill--{{ systems.urogenital.score|dimension_status_class }}" style="width: {{ systems.urogenital.score }}%;"></div></div>
         </div>
         <!-- Row 3 — centred pair -->
         <div></div><!-- spacer col 1 -->
@@ -1198,7 +1986,7 @@
                 }}</span>
             </div>
           </div>
-          {% if system_summaries.reproductive %}<p class="sys-card__summary">{{ system_summaries.reproductive }}</p>{% endif %}
+          <div class="sys-card__bar"><div class="sys-card__bar-fill sys-card__bar-fill--{{ systems.reproductive.score|dimension_status_class }}" style="width: {{ systems.reproductive.score }}%;"></div></div>
         </div>
 
         <div class="sys-card">
@@ -1214,18 +2002,41 @@
               <span class="sys-card__stat">{{ systems.immune.displayStatus|default(systems.immune.status) }}</span>
             </div>
           </div>
-          {% if system_summaries.immune %}<p class="sys-card__summary">{{ system_summaries.immune }}</p>{% endif %}
+          <div class="sys-card__bar"><div class="sys-card__bar-fill sys-card__bar-fill--{{ systems.immune.score|dimension_status_class }}" style="width: {{ systems.immune.score }}%;"></div></div>
         </div>
 
         <div></div><!-- spacer col 4 -->
       </div><!-- /sys-grid -->
 
       <!-- Correlation box -->
-      <div class="corr-box" style="flex:1;display:flex;flex-direction:column;">
+      <div class="corr-box" style="flex:1.25;display:flex;flex-direction:column;">
         <div class="corr-box__hd">
-          <h3 class="corr-box__title">Current and future reports corelation summary with infographics</h3>
+          <h3 class="corr-box__title">Body system functional summary</h3>
         </div>
-        <div class="corr-box__body"></div>
+        <div class="corr-box__body">
+          <div class="sys-summary-list">
+            {{ system_summary_item('Nervous System', 'NS', systems.nervous, system_summaries.nervous) }}
+            {{ system_summary_item('Cardiovascular System', 'CV', systems.cardiovascular, system_summaries.cardiovascular) }}
+            {{ system_summary_item('Respiratory System', 'RS', systems.respiratory, system_summaries.respiratory) }}
+            {{ system_summary_item('Muscle and Bone', 'MB', systems.musculoskeletal, system_summaries.musculoskeletal) }}
+            {{ system_summary_item('Digestive System', 'DG', systems.digestive, system_summaries.digestive) }}
+            {{ system_summary_item('Integumentary System', 'IN', systems.integumentary, system_summaries.integumentary) }}
+            {{ system_summary_item('Endocrine System', 'EN', systems.endocrine, system_summaries.endocrine) }}
+            {{ system_summary_item('Urogenital System', 'UG', systems.urogenital, system_summaries.urogenital) }}
+            {{ system_summary_item('Reproductive System', 'RP', systems.reproductive, system_summaries.reproductive) }}
+            {{ system_summary_item('Immune System', 'IM', systems.immune, system_summaries.immune) }}
+          </div>
+          <!-- <div class="energy-legend">
+            <div class="energy-legend__title">BioWell Energy Legend — Joules (×10^-2)</div>
+            <div class="energy-legend__grid">
+              <span>0-2</span><span>Very low energy</span><span>Mild to moderate risk</span>
+              <span>2-4</span><span>Low energy</span><span>Mild to moderate risk</span>
+              <span>4-6</span><span>Optimal energy</span><span>Normal</span>
+              <span>6-8</span><span>Increased energy</span><span>Low to mild risk</span>
+              <span>8-10</span><span>Heightened energy</span><span>Low to mild risk</span>
+            </div>
+          </div> -->
+        </div>
       </div>
 
     </div><!-- /pc -->
@@ -1234,14 +2045,14 @@
   </div><!-- /page2 -->
 
   <!-- ============================================================
-       PAGE 3 — BIORYTHM
+       PAGE 3 — BIORHYTHM
   ============================================================ -->
   <div class="page" id="page3">
 
     <header class="ph">
       <img class="ph__logo" src="/home/darsh/Darshan/Darshan_Kadamba/Python/kadamba_nanocare_chatbot/app/frontend/static/images/logo.png"
         alt="Kadamba Nanocare logo" />
-      <h2 class="ph__title">Biorythm</h2>
+      <h2 class="ph__title">Biorhythm</h2>
       <div class="ph__patient">
         Patient Name:&nbsp;<strong>{{ patient.name }}</strong><br>Age:&nbsp;<strong>{{ patient.age
           }}</strong><br>Patient
@@ -1253,12 +2064,11 @@
 
       <div class="bio-box">
         <div class="bio-box__hd">
-          <h3 class="bio-box__title">Biorythm Graph</h3>
+          <h3 class="bio-box__title">Biorhythm Graph</h3>
         </div>
         <div class="bio-box__body">
           {% if biorhythm.image_data_uri %}
-          <img src="{{ biorhythm.image_data_uri }}" alt="Biorhythm graph — Physical, Emotional, Intellectual cycles"
-            style="width:100%;height:100%;object-fit:contain;" />
+          <img src="{{ biorhythm.image_data_uri }}" alt="Biorhythm graph — Physical, Emotional, Intellectual cycles" />
           {% else %}
           <p style="color:#999;font-size:9pt;text-align:center;">Biorhythm graph not available — BioWell PDF required.</p>
           {% endif %}
@@ -1267,7 +2077,7 @@
 
       <div class="corr-box" style="flex:1;display:flex;flex-direction:column;">
         <div class="corr-box__hd">
-          <h3 class="corr-box__title">Current and future reports corelation summary with infographics</h3>
+          <h3 class="corr-box__title">Current and future reports correlation summary with infographics</h3>
         </div>
         <div class="corr-box__body"></div>
       </div>
@@ -1294,20 +2104,72 @@
     </header>
 
     <div class="pc">
+      {% set left_traits = dmit.brain_traits.left if (dmit and dmit.brain_traits and dmit.brain_traits.left) else [
+        'Analytical brain, self-awareness and logic',
+        'Controls fine-motor skill based activities',
+        'Alphabets, words, language and grammar',
+        'Major role in academic performance',
+        'Convergent thinker; concentrates better',
+        'Responds to verbal instructions',
+        'Planning, organization and differentiation',
+        'Controlling feelings and emotions'
+      ] %}
+      {% set right_traits = dmit.brain_traits.right if (dmit and dmit.brain_traits and dmit.brain_traits.right) else [
+        'Creative and emotional brain; interpersonal intelligence',
+        'Controls gross-motor skill based activities',
+        'Color, images, creativity, imagination and mental reading',
+        'Major role in creative activities',
+        'Divergent thinker; difficult to concentrate at one point',
+        'Physically present but mentally absent',
+        'Interpersonal, understanding others and team building',
+        'Full of feelings, emotions and creativity'
+      ] %}
 
       <!-- Top score bar -->
       <div class="brain-score-bar">
         <div class="brain-score-bar__hd">
           <p class="brain-score-bar__title">Analysed scores (ridged count / brain dominance score)</p>
         </div>
-        <div class="brain-score-bar__body" style="display:flex;justify-content:space-around;align-items:center;padding:6pt 12pt;font-size:8pt;color:#194c8e;">
+        <div class="brain-score-bar__body">
           {% if dmit %}
-          <div style="text-align:center;"><strong>TFRC</strong><br>{{ dmit.tfrc.total|default('—') }}</div>
-          <div style="text-align:center;"><strong>L-TRC</strong><br>{{ dmit.tfrc.ltrc|default('—') }}</div>
-          <div style="text-align:center;"><strong>R-TRC</strong><br>{{ dmit.tfrc.rtrc|default('—') }}</div>
-          <div style="text-align:center;"><strong>Left Brain</strong><br>{{ dmit.brain_dominance.left_pct|default('—') }}%</div>
-          <div style="text-align:center;"><strong>Right Brain</strong><br>{{ dmit.brain_dominance.right_pct|default('—') }}%</div>
-          <div style="text-align:center;"><strong>Personality</strong><br>{{ dmit.personality.primary|default('—') }}</div>
+          {% set tfrc_total = dmit.tfrc.total|default(0) %}
+          {% set ltrc = dmit.tfrc.ltrc|default(0) %}
+          {% set rtrc = dmit.tfrc.rtrc|default(0) %}
+          {% set left_pct = dmit.brain_dominance.left_pct|default(0) %}
+          {% set right_pct = dmit.brain_dominance.right_pct|default(0) %}
+          {% set dominant_side = 'Left Brain' if left_pct >= right_pct else 'Right Brain' %}
+          <div class="brain-score-grid">
+            <div class="brain-score-tile">
+              <span class="brain-score-label">TFRC</span>
+              <span class="brain-score-value">{{ tfrc_total|default('—') }}</span>
+              <div class="brain-score-meter"><span style="width:100%;"></span></div>
+            </div>
+            <div class="brain-score-tile">
+              <span class="brain-score-label">L-TRC</span>
+              <span class="brain-score-value">{{ ltrc|default('—') }}</span>
+              <div class="brain-score-meter"><span style="width:{% if tfrc_total %}{{ ((ltrc / tfrc_total) * 100)|round(1) }}{% else %}0{% endif %}%;"></span></div>
+            </div>
+            <div class="brain-score-tile">
+              <span class="brain-score-label">R-TRC</span>
+              <span class="brain-score-value">{{ rtrc|default('—') }}</span>
+              <div class="brain-score-meter brain-score-meter--right"><span style="width:{% if tfrc_total %}{{ ((rtrc / tfrc_total) * 100)|round(1) }}{% else %}0{% endif %}%;"></span></div>
+            </div>
+            <div class="brain-score-tile{% if dominant_side == 'Left Brain' %} brain-score-tile--active{% endif %}">
+              <span class="brain-score-label">Left Brain</span>
+              <span class="brain-score-value">{{ left_pct|default('—') }}%</span>
+              <div class="brain-score-meter"><span style="width:{{ left_pct }}%;"></span></div>
+            </div>
+            <div class="brain-score-tile{% if dominant_side == 'Right Brain' %} brain-score-tile--active{% endif %}">
+              <span class="brain-score-label">Right Brain</span>
+              <span class="brain-score-value">{{ right_pct|default('—') }}%</span>
+              <div class="brain-score-meter brain-score-meter--right"><span style="width:{{ right_pct }}%;"></span></div>
+            </div>
+            <div class="brain-score-tile brain-score-tile--active">
+              <span class="brain-score-label">Dominance</span>
+              <span class="brain-score-value brain-score-value--small">{{ dominant_side }}</span>
+              <span class="brain-score-pill">{{ left_pct }}% / {{ right_pct }}%</span>
+            </div>
+          </div>
           {% else %}
           <span style="color:#999;">DMIT data not available</span>
           {% endif %}
@@ -1323,49 +2185,87 @@
       <!-- Left Brain card -->
       <div class="brain-card--left">
         <div class="brain-card__hd card__hd--lr"><span class="card__hd-title">Left Brain — {{ dmit.brain_dominance.left_pct if (dmit and dmit.brain_dominance) else '—' }}%</span></div>
-        <div class="brain-card__body" style="font-size:7.5pt;color:#333;line-height:1.7;padding:8pt;">
-          {% if dmit and dmit.brain_lobes %}
-          <p><strong>Lobe Distribution:</strong></p>
-          <p>Pre-Frontal: {{ dmit.brain_lobes.pre_frontal|default('—') }}% · Frontal: {{ dmit.brain_lobes.frontal|default('—') }}%</p>
-          <p>Parietal: {{ dmit.brain_lobes.parietal|default('—') }}% · Temporal: {{ dmit.brain_lobes.temporal|default('—') }}%</p>
-          <p>Occipital: {{ dmit.brain_lobes.occipital|default('—') }}%</p>
-          {% endif %}
-          {% if dmit and dmit.learning_styles %}
-          <p style="margin-top:6pt;"><strong>Learning Style:</strong></p>
-          <p>Visual: {{ dmit.learning_styles.visual|default('—') }}% · Auditory: {{ dmit.learning_styles.auditory|default('—') }}% · Kinesthetic: {{ dmit.learning_styles.kinesthetic|default('—') }}%</p>
-          {% endif %}
+        <div class="brain-card__body" style="font-size:7.2pt;color:#333;line-height:1.45;padding:8pt;">
+          <p style="margin-bottom:5pt;"><strong>Dominance interpretation</strong></p>
+          <ul style="margin:0;padding-left:11pt;">
+            {% for trait in left_traits %}
+            <li style="margin-bottom:2.5pt;">{{ trait }}</li>
+            {% endfor %}
+          </ul>
         </div>
       </div>
 
       <!-- Right Brain card -->
       <div class="brain-card--right">
         <div class="brain-card__hd card__hd--rl"><span class="card__hd-title">Right Brain — {{ dmit.brain_dominance.right_pct if (dmit and dmit.brain_dominance) else '—' }}%</span></div>
-        <div class="brain-card__body" style="font-size:7.5pt;color:#333;line-height:1.7;padding:8pt;">
-          {% if dmit and dmit.multiple_intelligences %}
-          <p><strong>Multiple Intelligences:</strong></p>
-          {% for key, val in dmit.multiple_intelligences.items() %}
-          <p>{{ key|replace('_',' ')|title }}: {{ val }}%</p>
-          {% endfor %}
-          {% endif %}
-          {% if dmit and dmit.planning %}
-          <p style="margin-top:6pt;"><strong>Planning:</strong> {{ dmit.planning.planning_pct|default('—') }}% · <strong>Doing:</strong> {{ dmit.planning.doing_pct|default('—') }}%</p>
-          {% endif %}
+        <div class="brain-card__body" style="font-size:7.2pt;color:#333;line-height:1.45;padding:8pt;">
+          <p style="margin-bottom:5pt;"><strong>Dominance interpretation</strong></p>
+          <ul style="margin:0;padding-left:11pt;">
+            {% for trait in right_traits %}
+            <li style="margin-bottom:2.5pt;">{{ trait }}</li>
+            {% endfor %}
+          </ul>
         </div>
       </div>
 
       <!-- Bottom SWOT box -->
       <div class="corr-box">
         <div class="corr-box__hd">
-          <h3 class="corr-box__title">SWOT Analysis (from DMIT)</h3>
+          <h3 class="corr-box__title">DMIT Profile and SWOT Analysis</h3>
         </div>
-        <div class="corr-box__body" style="padding:8pt;font-size:7.5pt;color:#333;line-height:1.6;display:grid;grid-template-columns:1fr 1fr;gap:8pt;">
-          {% if swot.strengths %}
-          <div><strong style="color:#209d79;">Strengths</strong><br>{{ swot.strengths|default('—') }}</div>
-          <div><strong style="color:#c0392b;">Weaknesses</strong><br>{{ swot.weaknesses|default('—') }}</div>
-          <div><strong style="color:#2a77b5;">Opportunities</strong><br>{{ swot.opportunities|default('—') }}</div>
-          <div><strong style="color:#e67e22;">Threats</strong><br>{{ swot.threats|default('—') }}</div>
+        <div class="corr-box__body" style="padding:8pt;font-size:7.2pt;color:#333;line-height:1.45;">
+          {% if dmit %}
+          <div class="dmit-profile-strip">
+            <div class="dmit-profile-item">
+              <strong>Personality</strong>
+              <div class="dmit-personality-chips">
+                <span class="dmit-personality-chip">Primary: {{ dmit.personality.primary|dmit_personality_label }}</span>
+                <span class="dmit-personality-chip">Secondary: {{ dmit.personality.secondary|dmit_personality_label }}</span>
+              </div>
+            </div>
+            <div class="dmit-profile-item"><strong>Learning Style</strong>Visual: {{ dmit.learning_styles.visual|default('—') }}% · Auditory: {{ dmit.learning_styles.auditory|default('—') }}% · Kinesthetic: {{ dmit.learning_styles.kinesthetic|default('—') }}%</div>
+            <div class="dmit-profile-item"><strong>Planning</strong>{{ dmit.planning.planning_pct|default('—') }}%</div>
+            <div class="dmit-profile-item"><strong>Doing</strong>{{ dmit.planning.doing_pct|default('—') }}%</div>
+          </div>
+          {% endif %}
+          {% set swot_data = dmit.swot if (dmit and dmit.swot) else none %}
+          {% if swot_data and swot_data.strengths %}
+          <div class="swot-quadrant">
+            <div class="swot-cell swot-cell--strengths">
+              <strong style="color:#209d79;">Strengths</strong>
+              <ul>
+                {% for item in swot_data.strengths %}
+                <li>{{ item|dmit_phrase }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="swot-cell swot-cell--weaknesses">
+              <strong style="color:#c0392b;">Weaknesses</strong>
+              <ul>
+                {% for item in swot_data.weaknesses %}
+                <li>{{ item|dmit_phrase }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="swot-cell swot-cell--opportunities">
+              <strong style="color:#2a77b5;">Opportunities</strong>
+              <ul>
+                {% for item in swot_data.opportunities %}
+                <li>{{ item|dmit_phrase }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="swot-cell swot-cell--threats">
+              <strong style="color:#e67e22;">Threats</strong>
+              <ul>
+                {% for item in swot_data.threats %}
+                <li>{{ item|dmit_phrase }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
           {% else %}
-          <div style="grid-column:1/-1;color:#999;">SWOT analysis not available — DMIT report required.</div>
+          <div style="color:#999;">SWOT analysis not available — DMIT report required.</div>
           {% endif %}
         </div>
       </div>

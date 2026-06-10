@@ -1,0 +1,334 @@
+{
+  "organ_energy_levels": [
+    {
+      "system_group": "Head",
+      "organ": "Head",
+      "energy_joules": 5.91,
+      "balance_percent": 93.3
+    },
+    {
+      "system_group": "Head",
+      "organ": "Eyes",
+      "energy_joules": 5.48,
+      "balance_percent": 92.7
+    },
+    {
+      "system_group": "Head",
+      "organ": "Ears, nose, maxillary sinus",
+      "energy_joules": 5.97,
+      "balance_percent": 97.28
+    },
+    {
+      "system_group": "Head",
+      "organ": "Jaw, Teeth",
+      "energy_joules": 6.77,
+      "balance_percent": 79.79
+    },
+    {
+      "system_group": "Head",
+      "organ": "Cerebral zone (cortex)",
+      "energy_joules": 5.38,
+      "balance_percent": 82.35
+    },
+    {
+      "system_group": "Head",
+      "organ": "Cerebral zone (vessels)",
+      "energy_joules": 4.55,
+      "balance_percent": 94.21
+    },
+    {
+      "system_group": "Head",
+      "organ": "Hypothalamus",
+      "energy_joules": 7.22,
+      "balance_percent": 99.43
+    },
+    {
+      "system_group": "Head",
+      "organ": "Epiphysis",
+      "energy_joules": 5.0,
+      "balance_percent": 90.49
+    },
+    {
+      "system_group": "Head",
+      "organ": "Pituitary gland",
+      "energy_joules": 6.89,
+      "balance_percent": 99.52
+    },
+    {
+      "system_group": "Cardiovascular system",
+      "organ": "Cardiovascular system",
+      "energy_joules": 5.42,
+      "balance_percent": 98.23
+    },
+    {
+      "system_group": "Cardiovascular system",
+      "organ": "Cardiovascular system",
+      "energy_joules": 6.52,
+      "balance_percent": 83.02
+    },
+    {
+      "system_group": "Cardiovascular system",
+      "organ": "Heart",
+      "energy_joules": 5.81,
+      "balance_percent": 88.48
+    },
+    {
+      "system_group": "Cardiovascular system",
+      "organ": "Cerebral zone (vessels)",
+      "energy_joules": 4.55,
+      "balance_percent": 94.21
+    },
+    {
+      "system_group": "Cardiovascular system",
+      "organ": "Coronary vessels",
+      "energy_joules": 4.79,
+      "balance_percent": 88.37
+    },
+    {
+      "system_group": "Respiratory system",
+      "organ": "Respiratory system",
+      "energy_joules": 7.11,
+      "balance_percent": 97.2
+    },
+    {
+      "system_group": "Respiratory system",
+      "organ": "Throat, larynx, trachea",
+      "energy_joules": 8.5,
+      "balance_percent": 90.46
+    },
+    {
+      "system_group": "Respiratory system",
+      "organ": "Respiratory system",
+      "energy_joules": 6.66,
+      "balance_percent": 92.76
+    },
+    {
+      "system_group": "Respiratory system",
+      "organ": "Thorax zone",
+      "energy_joules": 6.17,
+      "balance_percent": 84.98
+    },
+    {
+      "system_group": "Endocrine system",
+      "organ": "Endocrine system",
+      "energy_joules": 6.62,
+      "balance_percent": 88.87
+    },
+    {
+      "system_group": "Endocrine system",
+      "organ": "Hypothalamus",
+      "energy_joules": 7.22,
+      "balance_percent": 99.43
+    },
+    {
+      "system_group": "Endocrine system",
+      "organ": "Epiphysis",
+      "energy_joules": 5.0,
+      "balance_percent": 90.49
+    },
+    {
+      "system_group": "Endocrine system",
+      "organ": "Pituitary gland",
+      "energy_joules": 6.89,
+      "balance_percent": 99.52
+    },
+    {
+      "system_group": "Endocrine system",
+      "organ": "Thyroid gland",
+      "energy_joules": 7.94,
+      "balance_percent": 87.18
+    },
+    {
+      "system_group": "Endocrine system",
+      "organ": "Pancreas",
+      "energy_joules": 6.75,
+      "balance_percent": 59.19
+    },
+    {
+      "system_group": "Endocrine system",
+      "organ": "Adrenals",
+      "energy_joules": 6.3,
+      "balance_percent": 77.4
+    },
+    {
+      "system_group": "Endocrine system",
+      "organ": "Spleen",
+      "energy_joules": 6.25,
+      "balance_percent": 91.77
+    },
+    {
+      "system_group": "Musculoskeletal system",
+      "organ": "Musculoskeletal system",
+      "energy_joules": 6.98,
+      "balance_percent": 98.17
+    },
+    {
+      "system_group": "Musculoskeletal system",
+      "organ": "Spine - cervical zone",
+      "energy_joules": 5.54,
+      "balance_percent": 95.01
+    },
+    {
+      "system_group": "Musculoskeletal system",
+      "organ": "Spine - thorax zone",
+      "energy_joules": 4.87,
+      "balance_percent": 80.71
+    },
+    {
+      "system_group": "Musculoskeletal system",
+      "organ": "Spine - lumbar zone",
+      "energy_joules": 5.95,
+      "balance_percent": 95.92
+    },
+    {
+      "system_group": "Musculoskeletal system",
+      "organ": "Sacrum",
+      "energy_joules": 9.36,
+      "balance_percent": 76.99
+    },
+    {
+      "system_group": "Musculoskeletal system",
+      "organ": "Coccyx, Pelvis minor zone",
+      "energy_joules": 9.18,
+      "balance_percent": 73.65
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Digestive system",
+      "energy_joules": 6.29,
+      "balance_percent": 80.68
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Colon - descending",
+      "energy_joules": 4.29,
+      "balance_percent": 100.0
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Colon - sigmoid",
+      "energy_joules": 5.17,
+      "balance_percent": 100.0
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Rectum",
+      "energy_joules": 6.93,
+      "balance_percent": 100.0
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Blind gut",
+      "energy_joules": 10.06,
+      "balance_percent": 100.0
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Colon - ascending",
+      "energy_joules": 4.72,
+      "balance_percent": 100.0
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Colon - transverse",
+      "energy_joules": 4.7,
+      "balance_percent": 95.53
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Duodenum",
+      "energy_joules": 6.31,
+      "balance_percent": 100.0
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Ileum",
+      "energy_joules": 5.49,
+      "balance_percent": 100.0
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Jejunum",
+      "energy_joules": 6.42,
+      "balance_percent": 100.0
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Liver",
+      "energy_joules": 7.6,
+      "balance_percent": 67.96
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Pancreas",
+      "energy_joules": 6.75,
+      "balance_percent": 59.19
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Gallbladder",
+      "energy_joules": 6.79,
+      "balance_percent": 100.0
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Appendix",
+      "energy_joules": 6.94,
+      "balance_percent": 100.0
+    },
+    {
+      "system_group": "Digestive system",
+      "organ": "Abdominal zone",
+      "energy_joules": 6.29,
+      "balance_percent": 100.0
+    },
+    {
+      "system_group": "Urogenital system",
+      "organ": "Urogenital system",
+      "energy_joules": 6.99,
+      "balance_percent": 88.44
+    },
+    {
+      "system_group": "Urogenital system",
+      "organ": "Urogenital system",
+      "energy_joules": 5.37,
+      "balance_percent": 90.75
+    },
+    {
+      "system_group": "Urogenital system",
+      "organ": "Kidneys",
+      "energy_joules": 6.71,
+      "balance_percent": 84.57
+    },
+    {
+      "system_group": "Urogenital system",
+      "organ": "Prostate",
+      "energy_joules": 8.89,
+      "balance_percent": 89.97
+    },
+    {
+      "system_group": "Nervous system",
+      "organ": "Nervous system",
+      "energy_joules": 6.62,
+      "balance_percent": 84.54
+    },
+    {
+      "system_group": "Nervous system",
+      "organ": "Nervous system",
+      "energy_joules": 6.62,
+      "balance_percent": 84.54
+    },
+    {
+      "system_group": "Immune system",
+      "organ": "Immune system",
+      "energy_joules": 6.78,
+      "balance_percent": 94.76
+    },
+    {
+      "system_group": "Immune system",
+      "organ": "Immune system",
+      "energy_joules": 6.78,
+      "balance_percent": 94.76
+    }
+  ]
+}
