@@ -46,6 +46,7 @@ from app.engine.prompts import DEVICE_PROMPTS, SYNTHESIS_PROMPT, SYSTEM_PROMPT
 from app.engine.scoring import compute_scores
 from app.engine.interpretation import build_interpretations
 from app.engine.summary_generator import generate_all_summaries
+from app.engine.food_knowledge import generate_recommendations
 
 log = logging.getLogger(__name__)
 
@@ -552,6 +553,25 @@ async def synthesize_report(
         if biorhythm_image_path:
             final["biorhythm"] = {"image_path": biorhythm_image_path}
             log.info(f"Step 8b: Biorhythm graph injected: {biorhythm_image_path}")
+
+        # Step 9: Generate food & supplement recommendations (deterministic)
+        log.info("Step 9: Generating food & supplement recommendations...")
+        try:
+            food_recs = generate_recommendations(
+                systems=final.get("systems", {}),
+                metrics=final.get("metrics", {}),
+                nadi_data=nadi_data,
+                dimensions=final.get("dimensions", {}),
+            )
+            final["food_recommendations"] = food_recs
+            log.info(
+                f"Step 9: Done — {len(food_recs.get('priority_systems', []))} priority systems, "
+                f"{len(food_recs.get('medicines', []))} medicines, "
+                f"{len(food_recs.get('functional_foods', []))} foods"
+            )
+        except Exception as e:
+            log.warning(f"Step 9: Food recommendations failed (non-fatal): {e}")
+            final["food_recommendations"] = {}
 
         # Cache final summaries
         if cache_dir:

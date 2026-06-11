@@ -13,9 +13,16 @@ from app.controllers.pipeline import extract_all
 from app.engine.synthesizer import synthesize_report
 from app.engine.llm_client import check_health
 from app.output.html_renderer import render_pdf_async as generate_pdf
+from app.engine.patient_history import ensure_table, save_visit, get_history, get_chart_data, get_latest_visit
 
 log = logging.getLogger(__name__)
 router = APIRouter()
+
+# ── Ensure MySQL table exists on module load ─────────────────────────
+try:
+    ensure_table()
+except Exception as _e:
+    logging.getLogger(__name__).warning(f"MySQL table init deferred: {_e}")
 
 # ── In-memory hash→report_id map for cache lookups ──────────────────
 _file_hash_cache: dict[str, str] = {}
@@ -222,7 +229,7 @@ async def generate_report(
         json.dump(report_data, f, indent=2, ensure_ascii=False)
 
     # ── 7. Generate PDF ──────────────────────────────────────────────
-    pdf_path = report_dir / "wellness_report.pdf"
+    pdf_path = report_dir / "summary_wellness_report.pdf"
     try:
         await generate_pdf(report_data, str(pdf_path))
         log.info(f"[{report_id}] PDF generated: {pdf_path}")
@@ -232,6 +239,21 @@ async def generate_report(
     # ── 8. Save hash index for persistence ───────────────────────────
     _save_hash_index(file_hash, report_id)
 
+    # ── 9. Save to patient history (MySQL) ───────────────────────────
+    history_data = {}
+    if patient_id:
+        try:
+            save_visit(
+                patient_id=patient_id,
+                visit_date=date or "",
+                report_hash=report_id,
+                report_data=report_data,
+            )
+            history_data = get_chart_data(patient_id)
+            log.info(f"[{report_id}] Patient history saved for {patient_id}")
+        except Exception as e:
+            log.warning(f"[{report_id}] Patient history save failed (non-fatal): {e}")
+
     log.info(f"[{report_id}] Report generation complete")
 
     return {
@@ -239,6 +261,7 @@ async def generate_report(
         "report": report_data,
         "cached": False,
         "extraction_summary": extraction_summary,
+        "history": history_data,
     }
 
 
@@ -256,12 +279,69 @@ async def get_report(report_id: str):
 @router.get("/report/{report_id}/pdf")
 async def get_report_pdf(report_id: str):
     """Download the PDF version of a report."""
-    pdf_path = REPORTS_DIR / report_id / "wellness_report.pdf"
+    pdf_path = REPORTS_DIR / report_id / "summary_wellness_report.pdf"
+    # Fallback to old name for backward compatibility
+    if not pdf_path.exists():
+        pdf_path = REPORTS_DIR / report_id / "wellness_report.pdf"
     if not pdf_path.exists():
         raise HTTPException(404, f"PDF for report {report_id} not found")
 
     return FileResponse(
         path=str(pdf_path),
         media_type="application/pdf",
-        filename=f"wellness_report_{report_id}.pdf",
+        filename=f"summary_wellness_report_{report_id}.pdf",
     )
+
+
+# ── Patient History Endpoints ────────────────────────────────────────
+
+@router.get("/patient/{patient_id}/history")
+async def patient_history(patient_id: str, limit: int = 10):
+    """Get all visit history for a patient."""
+    try:
+        rows = get_history(patient_id, limit=limit)
+        return {"patient_id": patient_id, "visits": rows, "total": len(rows)}
+    except Exception as e:
+        raise HTTPException(500, f"Failed to retrieve history: {e}")
+
+
+@router.get("/patient/{patient_id}/history/chart")
+async def patient_history_chart(patient_id: str, limit: int = 10):
+    """Get chart-ready arrays for frontend charting."""
+    try:
+        chart = get_chart_data(patient_id, limit=limit)
+        return {"patient_id": patient_id, **chart}
+    except Exception as e:
+        raise HTTPException(500, f"Failed to retrieve chart data: {e}")
+
+
+@router.get("/patient/{patient_id}/history/latest")
+async def patient_history_latest(patient_id: str):
+    """Get the most recent visit for a patient."""
+    try:
+        latest = get_latest_visit(patient_id)
+        if not latest:
+            raise HTTPException(404, f"No history found for patient {patient_id}")
+        return {"patient_id": patient_id, "visit": latest}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Failed to retrieve latest visit: {e}")
+
+
+# ── Recommendations Endpoint ────────────────────────────────────────
+
+@router.get("/report/{report_id}/recommendations")
+async def get_recommendations(report_id: str):
+    """Get food/medicine/lifestyle recommendations for a report."""
+    json_path = REPORTS_DIR / report_id / "report.json"
+    if not json_path.exists():
+        raise HTTPException(404, f"Report {report_id} not found")
+
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    recs = data.get("food_recommendations", {})
+    if not recs:
+        raise HTTPException(404, f"No recommendations found for report {report_id}")
+    return {"report_id": report_id, "recommendations": recs}
