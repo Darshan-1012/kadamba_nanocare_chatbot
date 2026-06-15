@@ -7,6 +7,7 @@
   },
   "metrics": {
     "weight": 85.8,
+    "visceralFat": 12,
     "bmi": 25.6,
     "bodyFat": 26.9,
     "heartRate": 76,
@@ -18,7 +19,7 @@
   "dimensions": {
     "physical": {
       "score": 78,
-      "description": "The patient's physical health is currently in balance, with an LF/HF ratio of 3.5 indicating a moderate sympathetic load. The low Nadi toxin level at 20% suggests efficient metabolism and minimal accumulation of metabolic toxins. However, moderate hydration levels at 50% indicate that the body may be experiencing some cellular dehydration, potentially affecting overall electrolyte balance and toxin removal. Moderate joint flexibility at 70% indicates adequate lubrication and range of motion, but may suggest a slight restriction in movement compared to optimal levels.",
+      "description": "The patient's physical health appears to be in a state of moderate balance, with an LF/HF ratio of 3.5 indicating a slight increase in sympathetic load, suggesting that the autonomic nervous system is slightly overactive. However, this finding does not appear to have resulted in significant physiological stress, as evidenced by low levels of Nadi toxin at 20%. Moderate hydration levels, as indicated by an Nadi Hydration score of 50%, suggest that the patient's cellular environment is neither excessively dehydrated nor overly hydrated, allowing for efficient toxin removal and electrolyte balance. Overall, moderate joint flexibility, with an Nadi Flexibility score of 70%, indicates a relatively optimal range of motion, but suggests that the patient may benefit from additional lubrication to maintain full mobility.",
       "summary_points": [
         "Nadi Toxin 20% (Low) -- Efficient metabolism.",
         "Nadi Hydration 50% (Medium) -- Moderate hydration levels.",
@@ -38,7 +39,7 @@
     },
     "psychological": {
       "score": 68,
-      "description": "The patient's psychological health is characterized by moderate levels of mental activity, as indicated by a Nadi Overthinking score of 40%, which falls within the \"Moderate\" range. This suggests that the individual's nervous system is experiencing some level of hyperactivity, potentially contributing to feelings of anxiety. Additionally, the patient's Nadi Stress score also indicates moderate stress levels, with a value of 40% in the \"Medium\" category. Overall, these findings suggest that the patient may be experiencing some degree of mental and emotional strain, warranting further evaluation and support.",
+      "description": "The patient's psychological health is characterized by moderate levels of mental activity, as indicated by their Nadi Overthinking score of 40%, which falls within the medium range. This suggests that the patient's nervous system is moderately active, potentially contributing to feelings of anxiety or unease. Additionally, the patient's Nadi Stress level also registers at 40%, indicating moderate stress levels, further supporting this interpretation.",
       "summary_points": [
         "Nadi Overthinking 40% (Medium) -- Moderate mental activity.",
         "Nadi Stress 40% (Medium) -- Moderate stress levels."
@@ -47,7 +48,7 @@
     },
     "spiritual": {
       "score": 78,
-      "description": "The patient's Spiritual health assessment reveals a complex energetic profile. The overall Bio-Energy reading of 62.0 Joules indicates heightened energy, with significant tension in the energy-supply systems, suggesting a dynamic and possibly intense spiritual experience. Notably, the Energy Reserve is at 100%, indicating strong spiritual energy reserves that can be tapped into. However, the chakras reveal areas of imbalance, particularly the Solar Plexus Chakra alignment, which indicates poor balance and potential overactivation, while the Root and Throat Chakras show good alignment, suggesting stability and effective communication.",
+      "description": "The patient's Spiritual health assessment reveals a complex energy profile with notable tensions in the energy-supply systems. Despite this, their BioWell Energy reading of 62.0 Joules indicates heightened spiritual vitality and life force, suggesting strong reserves of spiritual energy. The patient's chakras are mostly aligned within the healthy range, with only the Root and Crown Chakras displaying moderate misalignment, while the Sacral and Solar Plexus Chakras show poor alignment. Overall, this suggests a dynamic interplay between blocked and unbalanced energies, warranting further exploration to optimize spiritual well-being.",
       "summary_points": [
         "Muladara - Red 84% (Normal) -- Self-confidence, sexual power.",
         "Swadistana - Orange 88% (Normal) -- Material work, job or home.",
@@ -154,6 +155,10 @@
     "bodyFat": {
       "status": "High Fat",
       "interpretation": "Associated with increased systemic inflammation, joint stress, and metabolic strain"
+    },
+    "visceralFat": {
+      "status": "Elevated / Early Warning",
+      "interpretation": "Borderline cardiovascular risk"
     },
     "bioEnergy": {
       "status": "Heightened energy",

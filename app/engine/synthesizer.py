@@ -336,6 +336,29 @@ async def synthesize_report(
     results = await asyncio.gather(*tasks)
     for dk, result_json in results:
         device_summaries[dk] = result_json
+
+    inbody_raw = _device_raw_text(extractions, cache_dir, "inbody")
+    if inbody_raw and device_summaries.get("inbody"):
+        try:
+            inbody_summary = json.loads(device_summaries["inbody"])
+            deterministic_inbody = _parse_inbody_ocr_text(inbody_raw)
+            if deterministic_inbody:
+                inbody_summary.update({
+                    key: value
+                    for key, value in deterministic_inbody.items()
+                    if value not in (None, 0, 0.0, "")
+                })
+                device_summaries["inbody"] = json.dumps(inbody_summary, indent=2)
+                if cache_dir:
+                    (cache_dir / "inbody_llm.json").write_text(
+                        device_summaries["inbody"], encoding="utf-8"
+                    )
+                log.info(
+                    "  inbody: Applied deterministic OCR corrections "
+                    f"{deterministic_inbody}"
+                )
+        except Exception as e:
+            log.warning(f"  inbody: deterministic OCR correction skipped: {e}")
     log.info(
         f"Step 4: All LLM extractions done in {time.time() - step4_start:.1f}s"
     )
@@ -401,6 +424,17 @@ async def synthesize_report(
 
         # Inject ECG/HRV metrics
         metrics = validated.get("metrics", {})
+        inbody_data = {}
+        try:
+            inbody_data = json.loads(device_summaries.get("inbody", "{}"))
+        except Exception:
+            inbody_data = {}
+        if inbody_data:
+            _inject_metric(metrics, "weight", inbody_data.get("weight_kg"))
+            _inject_metric(metrics, "visceralFat", inbody_data.get("visceral_fat_level"))
+            _inject_metric(metrics, "bmi", inbody_data.get("bmi"))
+            _inject_metric(metrics, "bodyFat", inbody_data.get("body_fat_mass_kg"))
+
         if ecg_data:
             ecg_vals = ecg_data.get("ecg", {})
             if ecg_vals.get("heart_rate_bpm") and not metrics.get("heartRate"):
@@ -605,12 +639,91 @@ def _compress_text(raw: str, max_chars: int) -> str:
     return raw[:head] + "\n\n[... content trimmed ...]\n\n" + raw[-tail:]
 
 
+def _device_raw_text(
+    extractions: Dict[str, ExtractionResult],
+    cache_dir: Path | None,
+    device_key: str,
+) -> str:
+    """Return raw extracted text from current extraction or cache."""
+    ext = extractions.get(device_key)
+    if ext and ext.raw_text:
+        return ext.raw_text
+    if cache_dir and (cache_dir / f"{device_key}_raw.txt").exists():
+        return (cache_dir / f"{device_key}_raw.txt").read_text(encoding="utf-8")
+    return ""
+
+
+def _to_number(value):
+    """Convert simple numeric OCR/LLM values to int/float."""
+    if value in (None, ""):
+        return None
+    try:
+        number = float(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+    return int(number) if number.is_integer() else number
+
+
+def _inject_metric(metrics: dict, key: str, value):
+    """Inject a metric when a deterministic parsed value is available."""
+    number = _to_number(value)
+    if number is not None:
+        metrics[key] = number
+
+
+def _parse_inbody_ocr_text(raw_text: str) -> dict:
+    """Extract InBody metrics deterministically from OCR text.
+
+    InBody screenshots often put the overall score beside the visceral section:
+    "Visceral Fat Level 61Points" followed by "12". The Lv value is 12, while
+    61 is the InBody score, so the parser deliberately prefers the number after
+    a "Points" token.
+    """
+    text = re.sub(r"[ \t]+", " ", str(raw_text or ""))
+    parsed = {}
+
+    patterns = {
+        "weight_kg": r"Weight\s+(?:InBody\s+)?(\d+(?:\.\d+)?)\s*kg",
+        "skeletal_muscle_mass_kg": r"Skeletal\s+Muscle\s+Mass\s+(\d+(?:\.\d+)?)",
+        "body_fat_mass_kg": r"Body\s+Fat\s+Mass\s+(\d+(?:\.\d+)?)",
+        "bmi": r"\bBMI\s+(\d+(?:\.\d+)?)",
+    }
+    for key, pattern in patterns.items():
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            parsed[key] = _to_number(match.group(1))
+
+    visceral_match = re.search(
+        r"Visceral\s+Fat\s+Level(?P<section>.*?)(?:Top\b|Low\b|High\b|$)",
+        text,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if visceral_match:
+        section = visceral_match.group("section")
+        lv_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:Lv|LV)\b", section)
+        if lv_match:
+            parsed["visceral_fat_level"] = _to_number(lv_match.group(1))
+        else:
+            numbers = re.findall(r"\d+(?:\.\d+)?", section)
+            points_first = re.match(r"\s*\d+(?:\.\d+)?\s*Points?\b", section, re.IGNORECASE)
+            if points_first and len(numbers) >= 2:
+                parsed["visceral_fat_level"] = _to_number(numbers[1])
+            elif numbers:
+                parsed["visceral_fat_level"] = _to_number(numbers[0])
+
+    score_match = re.search(r"\b(\d+(?:\.\d+)?)\s*Points\b", text, flags=re.IGNORECASE)
+    if score_match:
+        parsed["inbody_score_points"] = _to_number(score_match.group(1))
+
+    return parsed
+
+
 def _validate_and_fill(report: dict) -> dict:
     """Ensure all required keys exist with sensible defaults."""
     defaults = {
         "patient": {"name": "Unknown", "age": "", "date": ""},
         "metrics": {
-            "weight": 0.0, "bmi": 0.0, "bodyFat": 0.0,
+            "weight": 0.0, "visceralFat": 0.0, "bmi": 0.0, "bodyFat": 0.0,
             "heartRate": 0, "bioEnergy": 0.0, "energyReserve": 0,
             "lfhfRatio": 0.0, "nadiPulse": 0,
         },

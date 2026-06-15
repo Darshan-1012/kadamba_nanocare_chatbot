@@ -79,6 +79,8 @@ Return ONLY this JSON structure (use null for missing values):
 
 INBODY_EXTRACT_PROMPT = """Analyze the following InBody body composition data (extracted via OCR from an image).
 Some values may be partially readable — extract what you can.
+Important: "Visceral Fat Level" is the Lv value. Do not confuse it with the InBody score shown as "Points" on the right side.
+Example: if OCR says "Visceral Fat Level 61Points" followed by "12", return visceral_fat_level = 12 and not 61.
 
 --- BEGIN INBODY DATA ---
 {text}
@@ -223,7 +225,8 @@ them into a single unified wellness report.
    Each offering MUST contain at least 2-3 sentences of actionable advice.
 
 6. Metrics: Extract ACTUAL numeric values from device summaries.
-   - weight, bmi, bodyFat from InBody
+   - weight, visceralFat, bmi, bodyFat from InBody
+   - For InBody, visceralFat means "Visceral Fat Level" in Lv units, NOT the InBody score/points.
    - heartRate from ECG
    - bioEnergy, energyReserve from Bio-Well
    - lfhfRatio from ECG HRV data
@@ -239,6 +242,7 @@ them into a single unified wellness report.
   }},
   "metrics": {{
     "weight": <number from InBody>,
+    "visceralFat": <Visceral Fat Level from InBody, Lv number>,
     "bmi": <number from InBody>,
     "bodyFat": <number from InBody>,
     "heartRate": <number from ECG>,

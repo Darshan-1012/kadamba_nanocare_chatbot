@@ -12,6 +12,7 @@ class PatientInfo(BaseModel):
 # ── Metrics (top row of the report) ──────────────────────────────────
 class Metrics(BaseModel):
     weight: float = 0.0
+    visceralFat: float = Field(0.0, alias="visceralFat")
     bmi: float = 0.0
     bodyFat: float = Field(0.0, alias="bodyFat")
     heartRate: int = Field(0, alias="heartRate")
