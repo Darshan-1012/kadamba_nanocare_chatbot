@@ -1,0 +1,35 @@
+{
+  "patient": {
+    "name": "Amit",
+    "age": "21",
+    "date": "21 Feb 2026"
+  },
+  "ecg": {
+    "heart_rate_bpm": 76,
+    "pr_interval_ms": 116,
+    "qrs_interval_ms": 87,
+    "qt_interval_ms": 356,
+    "qtc_interval_ms": 401,
+    "rhythm": "Normal",
+    "overall_evaluation": "Normal ECG"
+  },
+  "hrv": {
+    "sdnn_ms": 26.98,
+    "rmssd_ms": 20.71,
+    "nn50": 0.01,
+    "lf_power": 1266.0,
+    "hf_power": 361.0,
+    "lf_hf_ratio": 3.5,
+    "stress_coping": "Low",
+    "stress_analysis": "There's risk of developing stress-induced disease, weakened ANS function.",
+    "hrv_analysis": "abnormal"
+  },
+  "scores": {
+    "hr_score": 90,
+    "qtc_score": 90,
+    "rhythm_score": 95,
+    "hrv_score": 65,
+    "lf_hf_score": 60,
+    "cardiovascular_score": 85
+  }
+}

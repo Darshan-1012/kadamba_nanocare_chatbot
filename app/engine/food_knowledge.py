@@ -250,6 +250,112 @@ _METRIC_CONDITIONS = {
     "energy_low": {"field": "energyReserve", "threshold": 60, "op": "<", "conditions": ["fatigue", "low energy", "weakness"]},
 }
 
+_NADI_TEXT_CONDITIONS = {
+    ("sleep", "insomnia", "restless", "disturbance"): ["insomnia", "poor sleep", "stress"],
+    ("stress", "overthinking", "hyperthinking", "anxiety"): ["stress", "anxiety", "mental fatigue"],
+    ("thyroid",): ["thyroid", "hormone", "endocrine"],
+    ("skin", "rash", "inflammation"): ["skin", "dermatitis"],
+    ("stomach", "acidity", "hyperacidity", "dyspepsia", "indigestion"): ["digestive", "gastritis", "gerd"],
+    ("pitta",): ["digestive", "skin", "stress"],
+}
+
+
+def _collect_text(value) -> str:
+    """Flatten nested parsed report data into searchable lowercase text."""
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value.lower()
+    if isinstance(value, dict):
+        return " ".join(_collect_text(v) for v in value.values())
+    if isinstance(value, (list, tuple, set)):
+        return " ".join(_collect_text(v) for v in value)
+    return str(value).lower()
+
+
+def _item_names(items: list, limit: int = 8, title_case: bool = False) -> list[str]:
+    """Return display names from a list of strings or dicts."""
+    names = []
+    for item in items or []:
+        if isinstance(item, dict):
+            name = item.get("name", "")
+        else:
+            name = str(item)
+        name = name.strip()
+        if not name:
+            continue
+        names.append(name.title() if title_case and name.islower() else name)
+    return list(dict.fromkeys(names))[:limit]
+
+
+def apply_recommendations_to_wellness(
+    wellness: dict | None,
+    recommendations: dict | None,
+    nadi_data: dict | None = None,
+) -> dict:
+    """Copy food knowledge recommendations into the report's visible wellness fields."""
+    wellness = dict(wellness or {})
+    recommendations = recommendations or {}
+
+    nadi_wellness = (nadi_data or {}).get("wellness", {})
+    diet = recommendations.get("diet", {})
+
+    nadi_foods = _item_names(nadi_wellness.get("diet_eat", []), limit=6)
+    knowledge_foods = _item_names(diet.get("recommended", []), limit=8)
+    functional_foods = _item_names(recommendations.get("functional_foods", []), limit=5)
+    avoid_foods = _item_names(diet.get("avoid", []), limit=5)
+
+    diet_parts = []
+    recommended_foods = list(dict.fromkeys(nadi_foods + knowledge_foods))
+    if recommended_foods:
+        diet_parts.append(f"Recommended foods: {', '.join(recommended_foods)}.")
+    if functional_foods:
+        diet_parts.append(f"Functional foods: {', '.join(functional_foods)}.")
+    if avoid_foods:
+        diet_parts.append(f"Avoid or limit: {', '.join(avoid_foods)}.")
+    if diet_parts:
+        wellness["diet"] = " ".join(diet_parts)
+
+    yoga = _item_names(nadi_wellness.get("yoga", []), limit=5)
+    yoga.extend(_item_names(recommendations.get("yoga", []), limit=5, title_case=True))
+    if yoga:
+        wellness["yoga"] = ", ".join(list(dict.fromkeys(yoga))[:8])
+
+    exercise = _item_names(nadi_wellness.get("exercise", []), limit=6)
+    if exercise:
+        wellness["physicalActivity"] = ", ".join(exercise)
+
+    nadi_supplements = _item_names(nadi_wellness.get("supplements", []), limit=5)
+    herbs = _item_names(recommendations.get("herbal_support", []), limit=8, title_case=True)
+    supplement_items = list(dict.fromkeys(nadi_supplements + herbs))
+    if supplement_items:
+        wellness["supplements"] = f"Supplements and herbal support: {', '.join(supplement_items)}."
+
+    medicines = _item_names(recommendations.get("medicines", []), limit=5)
+    nadi_medicines = _item_names(nadi_wellness.get("medicines", []), limit=4)
+    medicine_items = list(dict.fromkeys(medicines + nadi_medicines))
+    if medicine_items:
+        wellness["medicine"] = f"Kadamba/Nadi medicines: {', '.join(medicine_items)}."
+
+    lifestyle = recommendations.get("lifestyle", {})
+    dos = _item_names(lifestyle.get("dos", []), limit=20)
+    donts = _item_names(lifestyle.get("donts", []), limit=20)
+    sleep_tips = [
+        item for item in dos + donts
+        if any(token in item.lower() for token in ("sleep", "bed", "dinner", "caffeine", "nap", "screen"))
+    ][:4]
+    if sleep_tips:
+        wellness["sleep"] = " ".join(f"{tip}." for tip in sleep_tips)
+
+    stress_tips = [
+        item for item in dos + donts
+        if any(token in item.lower() for token in ("meditation", "breathing", "relax", "stress", "nature", "journaling"))
+    ][:4]
+    if stress_tips:
+        wellness["stress"] = " ".join(f"{tip}." for tip in stress_tips)
+
+    return wellness
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # PUBLIC API
@@ -317,6 +423,18 @@ def generate_recommendations(
                     conditions.update(["fatigue", "weakness", "low energy"])
                 elif dim_key == "spiritual":
                     conditions.update(["stress", "meditation"])
+
+    # Add parsed Nadi risk/organ text conditions.
+    if nadi_data:
+        nadi_text = _collect_text({
+            "dosha": nadi_data.get("dosha"),
+            "organ_insights": nadi_data.get("organ_insights"),
+            "potential_risks": nadi_data.get("potential_risks"),
+            "health_params": nadi_data.get("health_params"),
+        })
+        for keywords, mapped_conditions in _NADI_TEXT_CONDITIONS.items():
+            if any(keyword in nadi_text for keyword in keywords):
+                conditions.update(mapped_conditions)
 
     # 3. Match functional foods
     matched_foods = []

@@ -7,18 +7,30 @@ import os
 import logging
 import pymysql
 from contextlib import contextmanager
+from dotenv import load_dotenv
 
 log = logging.getLogger(__name__)
+
+load_dotenv()
+
+
+def _env(*names: str, default: str | None = None) -> str | None:
+    """Return the first non-empty environment variable from names."""
+    for name in names:
+        value = os.getenv(name)
+        if value not in (None, ""):
+            return value
+    return default
 
 
 def _get_config() -> dict:
     """Build MySQL config lazily so .env is loaded before we read it."""
     return {
-        "host": os.getenv("MYSQL_HOST", "localhost"),
-        "port": int(os.getenv("MYSQL_PORT", "3306")),
-        "user": os.getenv("MYSQL_USER", "root"),
-        "password": os.getenv("MYSQL_PASS", ""),
-        "database": os.getenv("MYSQL_DB", "nano"),
+        "host": _env("MYSQL_HOST", default="127.0.0.1"),
+        "port": int(_env("MYSQL_PORT", default="3306")),
+        "user": _env("MYSQL_USER", default="root"),
+        "password": _env("MYSQL_PASSWORD", "MYSQL_PASS", default=""),
+        "database": _env("MYSQL_DATABASE", "MYSQL_DB", default="nano"),
         "charset": "utf8mb4",
         "cursorclass": pymysql.cursors.DictCursor,
         "autocommit": True,

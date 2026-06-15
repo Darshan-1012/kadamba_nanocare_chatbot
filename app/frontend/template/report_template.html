@@ -554,7 +554,7 @@
       position: relative;
       height: 4pt;
       border-radius: 999pt;
-      background: linear-gradient(to right, #e6a442 0 24%, #209d79 24% 68%, #d85f53 68% 100%);
+      background: linear-gradient(to right, #d85f53 0 33%, #e6a442 33% 66%, #209d79 66% 100%);
     }
 
     .physical-signal__mark {
@@ -583,16 +583,16 @@
       white-space: nowrap;
     }
 
-    .physical-signal__status--good {
-      color: #0f6e56;
+    .physical-signal__status--critical {
+      color: #a23a31;
     }
 
     .physical-signal__status--attention {
       color: #9a5b00;
     }
 
-    .physical-signal__status--critical {
-      color: #a23a31;
+    .physical-signal__status--good {
+      color: #0f6e56;
     }
 
     .summary-card--spiritual .physical-signals {
@@ -988,9 +988,9 @@
       left: 20pt;
       width: 556pt;
       height: 98pt;
-      border: 1pt solid var(--border);
+      border: 1pt solid rgba(48, 128, 178, 0.85);
       border-radius: 10pt;
-      box-shadow: var(--shadow);
+      box-shadow: 0 3pt 10pt rgba(18, 78, 130, 0.14);
       overflow: hidden;
       background: var(--white);
     }
@@ -1007,9 +1007,10 @@
 
     .brain-score-bar__title {
       font-family: var(--font-h);
-      font-size: 10.5pt;
+      font-size: 11.5pt;
       color: var(--white);
       text-align: center;
+      letter-spacing: 0;
     }
 
     .brain-score-bar__body {
@@ -1029,7 +1030,7 @@
       border: .65pt solid #d6e7ef;
       border-radius: 6pt;
       background: #fbfdfe;
-      padding: 5pt 5pt 4pt;
+      padding: 5.5pt 5.5pt 4.5pt;
       box-shadow: 0 2pt 6pt rgba(18, 78, 130, .08);
     }
 
@@ -1040,7 +1041,7 @@
 
     .brain-score-label {
       display: block;
-      font-size: 5.7pt;
+      font-size: 6.2pt;
       font-weight: 800;
       line-height: 1;
       color: var(--navy);
@@ -1052,14 +1053,14 @@
       display: block;
       margin-top: 3pt;
       font-family: var(--font-h);
-      font-size: 13pt;
+      font-size: 14pt;
       font-weight: 800;
       line-height: 1;
       color: #111;
     }
 
     .brain-score-value--small {
-      font-size: 9.5pt;
+      font-size: 10pt;
       line-height: 1.15;
       color: #0f6e56;
     }
@@ -1102,27 +1103,29 @@
 
     .dmit-profile-strip {
       display: grid;
-      grid-template-columns: 1.1fr 1.35fr .75fr .75fr;
+      grid-template-columns: 1.05fr 1.7fr .8fr .8fr;
       gap: 6pt;
-      margin-bottom: 5pt;
-      padding-bottom: 5pt;
+      margin-bottom: 6pt;
+      padding-bottom: 6pt;
       border-bottom: .5pt solid #d9e2ec;
     }
 
     .dmit-profile-item {
       min-width: 0;
-      padding: 4pt 5pt;
+      padding: 5pt 6pt;
       border: .6pt solid #d6e7ef;
       border-radius: 6pt;
       background: #fbfdfe;
-      font-size: 6.4pt;
+      font-size: 6.9pt;
+      line-height: 1.25;
+      overflow: hidden;
     }
 
     .dmit-profile-item strong {
       display: block;
       margin-bottom: 3pt;
       color: var(--navy);
-      font-size: 6.6pt;
+      font-size: 7pt;
       line-height: 1;
     }
 
@@ -1138,9 +1141,63 @@
       border-radius: 999pt;
       background: #e2f7ef;
       color: #0f6e56;
-      font-size: 6.2pt;
+      font-size: 6.6pt;
       font-weight: 800;
       line-height: 1;
+      white-space: nowrap;
+    }
+
+    .dmit-learning-grid {
+      display: grid;
+      gap: 3pt;
+    }
+
+    .dmit-learning-row {
+      display: grid;
+      grid-template-columns: 52pt 1fr 22pt;
+      align-items: center;
+      gap: 4pt;
+      color: #243746;
+      font-size: 6.3pt;
+      font-weight: 750;
+      line-height: 1;
+    }
+
+    .dmit-mini-meter {
+      height: 4pt;
+      border-radius: 999pt;
+      background: #e5eef4;
+      overflow: hidden;
+    }
+
+    .dmit-mini-meter span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--grad-lr);
+    }
+
+    .dmit-mini-meter--alt span {
+      background: var(--grad-rl);
+    }
+
+    .dmit-metric-value {
+      display: block;
+      margin-top: 2pt;
+      font-family: var(--font-h);
+      font-size: 14pt;
+      color: #111;
+      line-height: 1;
+    }
+
+    .dmit-metric-note {
+      display: block;
+      margin-top: 3pt;
+      color: #557085;
+      font-size: 5.9pt;
+      font-weight: 800;
+      line-height: 1;
+      text-transform: uppercase;
       white-space: nowrap;
     }
 
@@ -1149,7 +1206,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-      height: 174pt;
+      height: 171pt;
       border: .7pt solid #c9dce8;
       border-radius: 8pt;
       overflow: hidden;
@@ -1180,45 +1237,76 @@
 
     .swot-cell {
       min-width: 0;
-      padding: 6pt 8pt;
+      padding: 5.5pt 7pt;
       background: #fbfdfe;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .swot-cell--strengths {
       background: #f2fbf7;
+      color: #209d79;
     }
 
     .swot-cell--weaknesses {
       background: #fff6f4;
+      color: #c0392b;
     }
 
     .swot-cell--opportunities {
       background: #f3f8fd;
+      color: #2a77b5;
     }
 
     .swot-cell--threats {
       background: #fff8ec;
+      color: #e67e22;
     }
 
     .swot-cell strong {
       display: block;
       margin-bottom: 4pt;
-      font-size: 7.4pt;
+      font-size: 7.6pt;
       line-height: 1;
+      font-weight: 900;
+      color: currentColor;
+      flex: 0 0 auto;
     }
 
     .swot-cell ul {
       display: flex;
       flex-direction: column;
-      gap: 2pt;
+      gap: 1.5pt;
       margin: 0;
-      padding-left: 9pt;
+      padding-left: 0;
+      list-style: none;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .swot-cell li {
+      position: relative;
+      padding-left: 8pt;
       font-size: 6pt;
       line-height: 1.15;
-      color: #222;
+      color: #243746;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+    }
+
+    .swot-cell li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 3.1pt;
+      width: 3.2pt;
+      height: 3.2pt;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: .55;
     }
 
     /* Brain figure: centered behind the two cards, opacity 0.11 */
@@ -1236,7 +1324,7 @@
       width: 409pt;
       /* fits between and behind both cards */
       height: 430pt;
-      opacity: 0.4;
+      opacity: 0.16;
       object-fit: contain;
     }
 
@@ -1248,11 +1336,11 @@
       left: 19pt;
       width: 262pt;
       height: 269pt;
-      border: 1pt solid var(--border);
+      border: 1pt solid rgba(48, 128, 178, 0.85);
       border-radius: 10pt;
-      box-shadow: var(--shadow);
+      box-shadow: 0 3pt 10pt rgba(18, 78, 130, 0.14);
       overflow: hidden;
-      background: rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.94);
       z-index: 1;
     }
 
@@ -1264,11 +1352,11 @@
       left: 314pt;
       width: 262pt;
       height: 269pt;
-      border: 1pt solid var(--border);
+      border: 1pt solid rgba(48, 128, 178, 0.85);
       border-radius: 10pt;
-      box-shadow: var(--shadow);
+      box-shadow: 0 3pt 10pt rgba(18, 78, 130, 0.14);
       overflow: hidden;
-      background: rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.94);
       z-index: 1;
     }
 
@@ -1284,8 +1372,43 @@
 
 
     .brain-card__body {
-      padding: 8pt;
+      padding: 9pt;
       flex: 1;
+      font-size: 7.7pt;
+      color: #243746;
+      line-height: 1.5;
+    }
+
+    .brain-trait-heading {
+      margin-bottom: 6pt;
+      color: var(--dark-blue);
+      font-size: 8pt;
+      font-weight: 850;
+      line-height: 1.1;
+    }
+
+    .brain-trait-list {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+      display: grid;
+      gap: 4pt;
+    }
+
+    .brain-trait-list li {
+      position: relative;
+      padding-left: 10pt;
+    }
+
+    .brain-trait-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4pt;
+      width: 4pt;
+      height: 4pt;
+      border-radius: 50%;
+      background: var(--teal);
     }
 
     /* Bottom correlation box: SVG ref x=19, y=518, w=557, h=275 */
@@ -1296,11 +1419,11 @@
       left: 19pt;
       width: 557pt;
       height: 275pt;
-      border: 1pt solid var(--border);
+      border: 1pt solid rgba(48, 128, 178, 0.85);
       border-radius: 10pt;
-      box-shadow: var(--shadow);
+      box-shadow: 0 3pt 10pt rgba(18, 78, 130, 0.14);
       overflow: hidden;
-      background: rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.94);
       flex: none;
       display: flex;
       flex-direction: column;
@@ -1313,49 +1436,248 @@
     #page4 .corr-box .corr-box__body {
       flex: 1;
       min-height: 0;
+      padding: 9pt;
+      font-size: 7.4pt;
+      color: #243746;
+      line-height: 1.45;
     }
 
     /* ============================================================
        PAGE 5 — WELLNESS OFFERINGS
-       Reference: A4 - 5.svg viewBox 0 0 595 842
-       Header = 73pt, Footer ≈ 29pt
-       Six 262×156 cards in 3 rows × 2 cols, plus one 557×129 full-width card
-       Grid gap derived from SVG: row gap ≈ 28pt, col gap ≈ 33pt
-       Left margin = 19pt, card width = 262pt each
     ============================================================ */
     #page5 .pc {
-      padding: 12pt 10pt 6pt;
+      gap: 8pt;
+      padding: 10pt 10pt 7pt;
     }
 
-    .off-grid {
+    .wellness-hero {
+      height: 50pt;
+      border: 1pt solid rgba(42, 119, 181, 0.35);
+      border-radius: 10pt;
+      background: linear-gradient(135deg, rgba(42, 119, 181, 0.1), rgba(90, 192, 156, 0.18));
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      column-gap: 18pt;
-      row-gap: 12pt;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12pt;
+      padding: 9pt 12pt;
+      overflow: hidden;
     }
 
-    .off-card {
-      border: 1pt solid var(--border);
+    .wellness-hero__title {
+      font-family: var(--font-h);
+      font-size: 16pt;
+      color: var(--dark-blue);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .wellness-hero__sub {
+      margin-top: 4pt;
+      font-size: 8pt;
+      color: #37556b;
+      line-height: 1.35;
+      font-weight: 600;
+    }
+
+    .wellness-hero__badge {
+      min-width: 98pt;
+      border-radius: 999pt;
+      background: var(--grad-lr);
+      color: #fff;
+      font-family: var(--font-h);
+      font-size: 10pt;
+      text-align: center;
+      padding: 7pt 10pt;
+      letter-spacing: 0;
+    }
+
+    .wellness-panel {
+      border: 1pt solid rgba(48, 128, 178, 0.85);
       border-radius: 10pt;
       box-shadow: var(--shadow);
       overflow: hidden;
-      height: 134pt;
-      background: rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.78);
     }
 
-    .off-card .card__hd {
-      border-radius: 10pt 10pt 0 0;
-      height: 23pt;
+    .wellness-panel__head {
+      min-height: 24pt;
+      padding: 5pt 9pt;
+      background: var(--grad-lr);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8pt;
     }
 
-    .off-card__body {
-      padding: 6pt 8pt;
-      flex: 1;
+    .wellness-panel__title {
+      font-family: var(--font-h);
+      font-size: 11.5pt;
+      line-height: 1;
+      letter-spacing: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5pt;
+      min-width: 0;
     }
 
-    .off-card--full {
-      grid-column: 1 / -1;
-      height: 252pt;
+    .wellness-title-icon {
+      width: 15pt;
+      height: 15pt;
+      flex: 0 0 15pt;
+      border-radius: 0%;
+      background: transparent;
+      padding: 0.5pt;
+      object-fit: fill;
+    }
+
+    .wellness-panel__meta {
+      font-size: 7pt;
+      font-weight: 700;
+      opacity: 0.95;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .wellness-panel__body {
+      padding: 8pt;
+      overflow: hidden;
+    }
+
+    .diet-panel {
+      min-height: 210pt;
+    }
+
+    .diet-columns {
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr 1fr;
+      gap: 7pt;
+    }
+
+    .diet-group {
+      border: 0.8pt solid rgba(48, 128, 178, 0.25);
+      border-radius: 8pt;
+      padding: 7pt;
+      min-height: 166pt;
+      background: #f9fcfb;
+      overflow: hidden;
+    }
+
+    .diet-group--functional {
+      background: #f7fbff;
+    }
+
+    .diet-group--avoid {
+      background: #fff9f5;
+    }
+
+    .wellness-label {
+      display: block;
+      font-size: 7.2pt;
+      font-weight: 800;
+      color: var(--dark-blue);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 5pt;
+    }
+
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4pt;
+      align-content: flex-start;
+      max-height: 130pt;
+      overflow: hidden;
+    }
+
+    .chip {
+      border: 0.6pt solid rgba(42, 119, 181, 0.28);
+      border-radius: 999pt;
+      background: #fff;
+      color: #17384f;
+      font-size: 7.5pt;
+      font-weight: 650;
+      line-height: 1.25;
+      padding: 3pt 6pt;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    .chip--accent {
+      border-color: rgba(32, 157, 121, 0.34);
+      background: #eefaf5;
+      color: #135f49;
+    }
+
+    .chip--warn {
+      border-color: rgba(230, 126, 34, 0.35);
+      background: #fff3ea;
+      color: #7b3f0f;
+    }
+
+    .wellness-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8pt;
+    }
+
+    .wellness-grid .wellness-panel {
+      height: 170pt;
+    }
+
+    .two-pack {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7pt;
+    }
+
+    .wellness-bullets {
+      list-style: none;
+      display: grid;
+      gap: 5pt;
+      font-size: 7.7pt;
+      line-height: 1.35;
+      color: #243746;
+      max-height: 115pt;
+      overflow: hidden;
+    }
+
+    .wellness-bullets li {
+      position: relative;
+      padding-left: 9pt;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+
+    .wellness-bullets li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4pt;
+      width: 4pt;
+      height: 4pt;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    .support-panel {
+      min-height: 196pt;
+    }
+
+    .support-columns {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 8pt;
+    }
+
+    .empty-note {
+      color: #7b8b96;
+      font-size: 7.8pt;
+      line-height: 1.4;
     }
 
     /* ============================================================
@@ -2185,11 +2507,11 @@
       <!-- Left Brain card -->
       <div class="brain-card--left">
         <div class="brain-card__hd card__hd--lr"><span class="card__hd-title">Left Brain — {{ dmit.brain_dominance.left_pct if (dmit and dmit.brain_dominance) else '—' }}%</span></div>
-        <div class="brain-card__body" style="font-size:7.2pt;color:#333;line-height:1.45;padding:8pt;">
-          <p style="margin-bottom:5pt;"><strong>Dominance interpretation</strong></p>
-          <ul style="margin:0;padding-left:11pt;">
+        <div class="brain-card__body">
+          <p class="brain-trait-heading">Dominance interpretation</p>
+          <ul class="brain-trait-list">
             {% for trait in left_traits %}
-            <li style="margin-bottom:2.5pt;">{{ trait }}</li>
+            <li>{{ trait }}</li>
             {% endfor %}
           </ul>
         </div>
@@ -2198,11 +2520,11 @@
       <!-- Right Brain card -->
       <div class="brain-card--right">
         <div class="brain-card__hd card__hd--rl"><span class="card__hd-title">Right Brain — {{ dmit.brain_dominance.right_pct if (dmit and dmit.brain_dominance) else '—' }}%</span></div>
-        <div class="brain-card__body" style="font-size:7.2pt;color:#333;line-height:1.45;padding:8pt;">
-          <p style="margin-bottom:5pt;"><strong>Dominance interpretation</strong></p>
-          <ul style="margin:0;padding-left:11pt;">
+        <div class="brain-card__body">
+          <p class="brain-trait-heading">Dominance interpretation</p>
+          <ul class="brain-trait-list">
             {% for trait in right_traits %}
-            <li style="margin-bottom:2.5pt;">{{ trait }}</li>
+            <li>{{ trait }}</li>
             {% endfor %}
           </ul>
         </div>
@@ -2213,8 +2535,13 @@
         <div class="corr-box__hd">
           <h3 class="corr-box__title">DMIT Profile and SWOT Analysis</h3>
         </div>
-        <div class="corr-box__body" style="padding:8pt;font-size:7.2pt;color:#333;line-height:1.45;">
+        <div class="corr-box__body">
           {% if dmit %}
+          {% set visual_pct = dmit.learning_styles.visual|default(0) %}
+          {% set auditory_pct = dmit.learning_styles.auditory|default(0) %}
+          {% set kinesthetic_pct = dmit.learning_styles.kinesthetic|default(0) %}
+          {% set planning_pct = dmit.planning.planning_pct|default(0) %}
+          {% set doing_pct = dmit.planning.doing_pct|default(0) %}
           <div class="dmit-profile-strip">
             <div class="dmit-profile-item">
               <strong>Personality</strong>
@@ -2223,16 +2550,45 @@
                 <span class="dmit-personality-chip">Secondary: {{ dmit.personality.secondary|dmit_personality_label }}</span>
               </div>
             </div>
-            <div class="dmit-profile-item"><strong>Learning Style</strong>Visual: {{ dmit.learning_styles.visual|default('—') }}% · Auditory: {{ dmit.learning_styles.auditory|default('—') }}% · Kinesthetic: {{ dmit.learning_styles.kinesthetic|default('—') }}%</div>
-            <div class="dmit-profile-item"><strong>Planning</strong>{{ dmit.planning.planning_pct|default('—') }}%</div>
-            <div class="dmit-profile-item"><strong>Doing</strong>{{ dmit.planning.doing_pct|default('—') }}%</div>
+            <div class="dmit-profile-item">
+              <strong>Learning Style</strong>
+              <div class="dmit-learning-grid">
+                <div class="dmit-learning-row">
+                  <span>Visual</span>
+                  <div class="dmit-mini-meter"><span style="width:{{ visual_pct }}%;"></span></div>
+                  <span>{{ visual_pct }}%</span>
+                </div>
+                <div class="dmit-learning-row">
+                  <span>Auditory</span>
+                  <div class="dmit-mini-meter dmit-mini-meter--alt"><span style="width:{{ auditory_pct }}%;"></span></div>
+                  <span>{{ auditory_pct }}%</span>
+                </div>
+                <div class="dmit-learning-row">
+                  <span>Kinesthetic</span>
+                  <div class="dmit-mini-meter"><span style="width:{{ kinesthetic_pct }}%;"></span></div>
+                  <span>{{ kinesthetic_pct }}%</span>
+                </div>
+              </div>
+            </div>
+            <div class="dmit-profile-item">
+              <strong>Planning</strong>
+              <span class="dmit-metric-value">{{ planning_pct }}%</span>
+              <div class="dmit-mini-meter"><span style="width:{{ planning_pct }}%;"></span></div>
+              <span class="dmit-metric-note">Strategy</span>
+            </div>
+            <div class="dmit-profile-item">
+              <strong>Doing</strong>
+              <span class="dmit-metric-value">{{ doing_pct }}%</span>
+              <div class="dmit-mini-meter dmit-mini-meter--alt"><span style="width:{{ doing_pct }}%;"></span></div>
+              <span class="dmit-metric-note">Execution</span>
+            </div>
           </div>
           {% endif %}
           {% set swot_data = dmit.swot if (dmit and dmit.swot) else none %}
           {% if swot_data and swot_data.strengths %}
           <div class="swot-quadrant">
             <div class="swot-cell swot-cell--strengths">
-              <strong style="color:#209d79;">Strengths</strong>
+              <strong>Strengths</strong>
               <ul>
                 {% for item in swot_data.strengths %}
                 <li>{{ item|dmit_phrase }}</li>
@@ -2240,7 +2596,7 @@
               </ul>
             </div>
             <div class="swot-cell swot-cell--weaknesses">
-              <strong style="color:#c0392b;">Weaknesses</strong>
+              <strong>Weaknesses</strong>
               <ul>
                 {% for item in swot_data.weaknesses %}
                 <li>{{ item|dmit_phrase }}</li>
@@ -2248,7 +2604,7 @@
               </ul>
             </div>
             <div class="swot-cell swot-cell--opportunities">
-              <strong style="color:#2a77b5;">Opportunities</strong>
+              <strong>Opportunities</strong>
               <ul>
                 {% for item in swot_data.opportunities %}
                 <li>{{ item|dmit_phrase }}</li>
@@ -2256,7 +2612,7 @@
               </ul>
             </div>
             <div class="swot-cell swot-cell--threats">
-              <strong style="color:#e67e22;">Threats</strong>
+              <strong>Threats</strong>
               <ul>
                 {% for item in swot_data.threats %}
                 <li>{{ item|dmit_phrase }}</li>
@@ -2292,58 +2648,139 @@
       </div>
     </header>
 
-    <div class="pc">
-      <div class="off-grid">
+    <div class="pc wellness-content">
+      <div class="wellness-panel diet-panel">
+        <div class="wellness-panel__head">
+          <span class="wellness-panel__title">
+            <img class="wellness-title-icon" src="/home/darsh/Darshan/Darshan_Kadamba/Python/kadamba_nanocare_chatbot/app/frontend/static/images/icons/page5/diet.svg" alt="" />
+            Diet and Functional Foods
+          </span>
+          <span class="wellness-panel__meta">Daily focus</span>
+        </div>
+        <div class="wellness-panel__body">
+          <div class="diet-columns">
+            <div class="diet-group">
+              <span class="wellness-label">Recommended foods</span>
+              <div class="chip-list">
+                {% for item in wellness_view.diet.recommended %}
+                <span class="chip chip--accent">{{ item }}</span>
+                {% else %}
+                <span class="empty-note">No food recommendations available.</span>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="diet-group diet-group--functional">
+              <span class="wellness-label">Functional foods</span>
+              <div class="chip-list">
+                {% for item in wellness_view.diet.functional %}
+                <span class="chip">{{ item }}</span>
+                {% else %}
+                <span class="empty-note">No functional foods available.</span>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="diet-group diet-group--avoid">
+              <span class="wellness-label">Avoid or limit</span>
+              <div class="chip-list">
+                {% for item in wellness_view.diet.avoid %}
+                <span class="chip chip--warn">{{ item }}</span>
+                {% else %}
+                <span class="empty-note">No avoid-list items available.</span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <div class="off-card">
-          <div class="card__hd card__hd--lr"><span class="card__hd-title">Diet</span></div>
-          <div class="off-card__body">
-            <p style="font-size:8pt;color:#333;line-height:1.6;">{{ wellness.diet|default("") }}</p>
+      <div class="wellness-grid">
+        <div class="wellness-panel">
+          <div class="wellness-panel__head">
+            <span class="wellness-panel__title">
+              <img class="wellness-title-icon" src="/home/darsh/Darshan/Darshan_Kadamba/Python/kadamba_nanocare_chatbot/app/frontend/static/images/icons/page5/excersise.svg" alt="" />
+              Movement
+            </span>
+            <span class="wellness-panel__meta">Yoga + activity</span>
+          </div>
+          <div class="wellness-panel__body two-pack">
+            <div>
+              <span class="wellness-label">Yoga therapy</span>
+              <div class="chip-list">
+                {% for item in wellness_view.movement.yoga %}
+                <span class="chip chip--accent">{{ item }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            <div>
+              <span class="wellness-label">Physical activity</span>
+              <div class="chip-list">
+                {% for item in wellness_view.movement.activity %}
+                <span class="chip">{{ item }}</span>
+                {% endfor %}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="off-card">
-          <div class="card__hd card__hd--rl"><span class="card__hd-title">Yoga therapy</span></div>
-          <div class="off-card__body">
-            <p style="font-size:8pt;color:#333;line-height:1.6;">{{ wellness.yoga|default("") }}</p>
+        <div class="wellness-panel">
+          <div class="wellness-panel__head">
+            <span class="wellness-panel__title">
+              <img class="wellness-title-icon" src="/home/darsh/Darshan/Darshan_Kadamba/Python/kadamba_nanocare_chatbot/app/frontend/static/images/icons/page5/sleep.svg" alt="" />
+              Recovery
+            </span>
+            <span class="wellness-panel__meta">Sleep + stress</span>
+          </div>
+          <div class="wellness-panel__body two-pack">
+            <div>
+              <span class="wellness-label">Sleep</span>
+              <ul class="wellness-bullets">
+                {% for item in wellness_view.recovery.sleep %}
+                <li>{{ item }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div>
+              <span class="wellness-label">Stress</span>
+              <ul class="wellness-bullets">
+                {% for item in wellness_view.recovery.stress %}
+                <li>{{ item }}</li>
+                {% endfor %}
+              </ul>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div class="off-card">
-          <div class="card__hd card__hd--lr"><span class="card__hd-title">Physical activity</span></div>
-          <div class="off-card__body">
-            <p style="font-size:8pt;color:#333;line-height:1.6;">{{ wellness.physicalActivity|default("") }}</p>
+      <div class="wellness-panel support-panel">
+        <div class="wellness-panel__head">
+          <span class="wellness-panel__title">
+            <img class="wellness-title-icon" src="/home/darsh/Darshan/Darshan_Kadamba/Python/kadamba_nanocare_chatbot/app/frontend/static/images/icons/page5/medicine.svg" alt="" />
+            Supplement and Medicine Support
+          </span>
+          <span class="wellness-panel__meta">Review with practitioner</span>
+        </div>
+        <div class="wellness-panel__body support-columns">
+          <div>
+            <span class="wellness-label">Supplements and herbs</span>
+            <div class="chip-list">
+              {% for item in wellness_view.support.supplements %}
+              <span class="chip chip--accent">{{ item }}</span>
+              {% else %}
+              <span class="empty-note">No supplement recommendations available.</span>
+              {% endfor %}
+            </div>
+          </div>
+          <div>
+            <span class="wellness-label">Medicines</span>
+            <div class="chip-list">
+              {% for item in wellness_view.support.medicine %}
+              <span class="chip">{{ item }}</span>
+              {% else %}
+              <span class="empty-note">No medicine recommendations available.</span>
+              {% endfor %}
+            </div>
           </div>
         </div>
-
-        <div class="off-card">
-          <div class="card__hd card__hd--rl"><span class="card__hd-title">Sleep</span></div>
-          <div class="off-card__body">
-            <p style="font-size:8pt;color:#333;line-height:1.6;">{{ wellness.sleep|default("") }}</p>
-          </div>
-        </div>
-
-        <div class="off-card">
-          <div class="card__hd card__hd--lr"><span class="card__hd-title">Stress</span></div>
-          <div class="off-card__body">
-            <p style="font-size:8pt;color:#333;line-height:1.6;">{{ wellness.stress|default("") }}</p>
-          </div>
-        </div>
-
-        <div class="off-card">
-          <div class="card__hd card__hd--rl"><span class="card__hd-title">Supplements</span></div>
-          <div class="off-card__body">
-            <p style="font-size:8pt;color:#333;line-height:1.6;">{{ wellness.supplements|default("") }}</p>
-          </div>
-        </div>
-
-        <div class="off-card off-card--full">
-          <div class="card__hd card__hd--lr"><span class="card__hd-title">Medicine</span></div>
-          <div class="off-card__body">
-            <p style="font-size:8pt;color:#333;line-height:1.6;">{{ wellness.medicine|default("") }}</p>
-          </div>
-        </div>
-
       </div>
     </div>
 

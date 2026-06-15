@@ -13,6 +13,68 @@ from typing import Dict, List, Optional
 
 log = logging.getLogger(__name__)
 
+_DMIT_JOINED_WORDS = {
+    "adjusting", "affected", "attitude", "be", "best", "business", "by",
+    "can", "capital", "caring", "challenges", "conducive", "conflict",
+    "crisis", "during", "easily", "environment", "exploited", "feels",
+    "for", "good", "handling", "hearted", "highly", "human", "insecure",
+    "indecisive", "individualism", "interactive", "interests", "kind", "lack",
+    "listener", "likes", "loose", "lose", "management", "may", "model", "much",
+    "nature", "need", "non", "of", "opportunities", "oriented", "others", "range",
+    "risk", "role", "stability", "successful", "supportive", "taking",
+    "team", "too", "towards", "wide",
+}
+_DMIT_WORD_FIXES = {
+    "loose": "lose",
+}
+
+
+def _split_joined_dmit_token(token: str) -> list[str]:
+    """Split lowercase words that pdfplumber returns glued together."""
+    lower = token.lower()
+    if lower in _DMIT_JOINED_WORDS:
+        return [lower]
+    if not lower.isalpha() or len(lower) < 8:
+        return [token]
+
+    best: list[str] | None = None
+
+    def walk(index: int, words: list[str]):
+        nonlocal best
+        if index == len(lower):
+            if best is None or len(words) < len(best):
+                best = words[:]
+            return
+        if best is not None and len(words) >= len(best):
+            return
+        for end in range(len(lower), index, -1):
+            candidate = lower[index:end]
+            if candidate in _DMIT_JOINED_WORDS:
+                walk(end, words + [candidate])
+
+    walk(0, [])
+    return best or [token]
+
+
+def _normalize_dmit_phrase(value: str) -> str:
+    """Normalize text artifacts produced by PDF extraction."""
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    text = re.sub(r"([a-z])([A-Z])", r"\1 \2", text)
+    text = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1 \2", text)
+
+    normalized_words: list[str] = []
+    for token in text.split():
+        pieces = _split_joined_dmit_token(token)
+        for piece in pieces:
+            clean = _DMIT_WORD_FIXES.get(piece.lower(), piece)
+            normalized_words.append(clean)
+
+    text = " ".join(normalized_words)
+    text = re.sub(r"\s+", " ", text).strip()
+    if not text:
+        return ""
+    return text[0].upper() + text[1:]
+
 
 @dataclass
 class DMITResult:
@@ -328,8 +390,7 @@ def _parse_swot(text: str, result: DMITResult):
 
     # Collect all numbered items
     all_items = re.findall(r"\d+>\s*(.+)", swot_text)
-    # Clean: insert spaces in run-together text
-    all_items = [re.sub(r"([a-z])([A-Z])", r"\1 \2", x.strip()) for x in all_items]
+    all_items = [_normalize_dmit_phrase(x) for x in all_items]
     all_items = [x for x in all_items if x]
 
     if not all_items:

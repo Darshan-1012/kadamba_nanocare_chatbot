@@ -46,7 +46,10 @@ from app.engine.prompts import DEVICE_PROMPTS, SYNTHESIS_PROMPT, SYSTEM_PROMPT
 from app.engine.scoring import compute_scores
 from app.engine.interpretation import build_interpretations
 from app.engine.summary_generator import generate_all_summaries
-from app.engine.food_knowledge import generate_recommendations
+from app.engine.food_knowledge import (
+    apply_recommendations_to_wellness,
+    generate_recommendations,
+)
 
 log = logging.getLogger(__name__)
 
@@ -564,6 +567,11 @@ async def synthesize_report(
                 dimensions=final.get("dimensions", {}),
             )
             final["food_recommendations"] = food_recs
+            final["wellness"] = apply_recommendations_to_wellness(
+                final.get("wellness", {}),
+                food_recs,
+                nadi_data=nadi_data,
+            )
             log.info(
                 f"Step 9: Done — {len(food_recs.get('priority_systems', []))} priority systems, "
                 f"{len(food_recs.get('medicines', []))} medicines, "

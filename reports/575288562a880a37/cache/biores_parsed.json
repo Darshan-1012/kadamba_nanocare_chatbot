@@ -1,0 +1,207 @@
+{
+  "patient": {
+    "name": "Mutalik Amit V",
+    "age": "21",
+    "date": ""
+  },
+  "system_scores": {
+    "nervous": 82,
+    "cardiovascular": 83,
+    "respiratory": 82,
+    "digestive": 82,
+    "musculoskeletal": 82,
+    "endocrine": 83,
+    "integumentary": 83,
+    "urogenital": 84,
+    "reproductive": 84,
+    "immune": 83
+  },
+  "system_details": {
+    "nervous": {
+      "score": 82,
+      "avg_shape": 2.9,
+      "organ_count": 28,
+      "status": "Normal"
+    },
+    "cardiovascular": {
+      "score": 83,
+      "avg_shape": 3.2,
+      "organ_count": 14,
+      "status": "Normal"
+    },
+    "respiratory": {
+      "score": 82,
+      "avg_shape": 3.0,
+      "organ_count": 11,
+      "status": "Normal"
+    },
+    "digestive": {
+      "score": 82,
+      "avg_shape": 2.9,
+      "organ_count": 35,
+      "status": "Normal"
+    },
+    "musculoskeletal": {
+      "score": 82,
+      "avg_shape": 2.7,
+      "organ_count": 64,
+      "status": "Normal"
+    },
+    "endocrine": {
+      "score": 83,
+      "avg_shape": 2.7,
+      "organ_count": 10,
+      "status": "Normal"
+    },
+    "integumentary": {
+      "score": 83,
+      "avg_shape": 2.6,
+      "organ_count": 7,
+      "status": "Normal"
+    },
+    "urogenital": {
+      "score": 84,
+      "avg_shape": 3.0,
+      "organ_count": 4,
+      "status": "Normal"
+    },
+    "reproductive": {
+      "score": 84,
+      "avg_shape": 3.0,
+      "organ_count": 3,
+      "status": "Normal"
+    },
+    "immune": {
+      "score": 83,
+      "avg_shape": 2.6,
+      "organ_count": 9,
+      "status": "Normal"
+    }
+  },
+  "hormone_levels": {
+    "histamine": {
+      "e_level": 85,
+      "shape": 2,
+      "kod_t": 0.214
+    },
+    "cortisol": {
+      "e_level": 85,
+      "shape": 2,
+      "kod_t": 0.223
+    },
+    "heparinum": {
+      "e_level": 83,
+      "shape": 2,
+      "kod_t": 0.243
+    },
+    "serotonin": {
+      "e_level": 81,
+      "shape": 3,
+      "kod_t": 0.246
+    },
+    "testosterone": {
+      "e_level": 85,
+      "shape": 2,
+      "kod_t": 0.258
+    },
+    "glycogen": {
+      "e_level": 89,
+      "shape": 3,
+      "kod_t": 0.262
+    },
+    "cholesterin": {
+      "e_level": 83,
+      "shape": 3,
+      "kod_t": 0.262
+    },
+    "aldosteronum": {
+      "e_level": 84,
+      "shape": 2,
+      "kod_t": 0.27
+    },
+    "insulin": {
+      "e_level": 86,
+      "shape": 3,
+      "kod_t": 0.318
+    },
+    "adrenalin": {
+      "e_level": 82,
+      "shape": 2,
+      "kod_t": 0.335
+    },
+    "noradrenalinum": {
+      "e_level": 86,
+      "shape": 2,
+      "kod_t": 0.34
+    },
+    "dna": {
+      "e_level": 84,
+      "shape": 2,
+      "kod_t": 0.384
+    }
+  },
+  "total_organs_scanned": 225,
+  "summary": {
+    "avg_e_level": 82,
+    "organs_needing_attention": [],
+    "organs_excellent": [
+      "MUTALIK AMIT V 21 YEAR, 06 MAY 2004 HISTAMINE",
+      "CORTISOL",
+      "HEPARINUM",
+      "TESTOSTERONE",
+      "ALDOSTERONUM",
+      "ADRENALIN",
+      "NORADRENALINUM",
+      "DNA 6 - 3 - 06 - 90 - 13",
+      "EOSINOPHIL",
+      "CHROMOSOMES GR.G",
+      "NEUTROPHIL",
+      "CHROMOSOMES GR.F",
+      "SET OF MALE",
+      "TRANSVERSAL SECTION CHROMOSOME GR. C",
+      "CHROMOSOMES GR. D",
+      "JOINT (SHOULDER); LEFT",
+      "CHROMOSOME GR. B",
+      "SKIN TISSUE",
+      "BLADDER VERTEBRAL COLUMN",
+      "BODY OF MAN",
+      "Y - CHROMOSOME",
+      "JOINT SURFACE",
+      "EAR RIGHT",
+      "EAR LEFT",
+      "SPLEEN TISSUE",
+      "ADRENALS",
+      "ARTERIAL VESSEL",
+      "WALL JOINT WRIST, LEFT",
+      "RIGHT VIEW DUODENUM WALL",
+      "PANCREAS TISSUE",
+      "BLADDER; REAR VIEW NERVE TRIFACIAL; RIGHT",
+      "VIEW EPIPHYSIS",
+      "SECTION RACHIS, FRONT VIEW",
+      "LARYNX TRANSVERSAL",
+      "VIEW VERTEBRAE THORACAL SECTOR COLUMN; RIGH",
+      "JOINT (FOOT); LEFT FROM",
+      "MEDIASTINUM RACHIS, RIGHT LATERAL VIEW",
+      "FRONT VIEW VERTEBRAE THORACAL SECTOR COLUMN; LEFT",
+      "SIDE VIEW JOINT (FOOT); RIGHT FROM 11..14",
+      "TRANSVERSAL SECTION EPINEPHROS; LEFT",
+      "VIEW VERTEBRAE MEDIAN SAGITTAL SECTION OF",
+      "VIEW VERTEBRAE THORACAL SECTOR COLUMN; FRONT",
+      "PANCREATIK-DUODEN 11..22",
+      "AL BACK AREA GALL BLADDER WALL",
+      "HYPOTHALAMUS",
+      "NUCLEA BONE- FIRST NECK",
+      "LIVER; FROM ABOVE",
+      "VERTEBRAL COLUMN LUMBAR SECTOR RIGHT",
+      "FASCICLE VERTEBRAL COLUMN LUMBAR SECTOR ; FRONT",
+      "LIVER STOMACH ESOPHAGUS",
+      "BONE ARM ON THE 11..28",
+      "TRANSVERSAL SECTION VERTEBRAL COLUMN LUMBAR SECTOR ; LEFT",
+      ") CUT LYMPHATIC NODES IN",
+      "THORACIC ; LEFT VIEW FEMUR; RIGNT",
+      "THORACIC ; RIGHT VIEW FEMUR; LEFT 11..55",
+      "HEMISPHERE BONES; SHIN RIGHT",
+      "FRONTAL WALL VEGETATIVE NERVOUS"
+    ]
+  }
+}

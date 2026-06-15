@@ -22,6 +22,8 @@ log = logging.getLogger(__name__)
 # Paths
 _TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "frontend" / "template"
 _TEMPLATE_NAME = "report_template.html"
+_MAX_CHIP_CHARS = 34
+_MAX_BULLET_CHARS = 72
 
 
 def _build_jinja_env() -> Environment:
@@ -122,30 +124,101 @@ def _dmit_personality_label(value) -> str:
 
 
 def _dmit_phrase(value) -> str:
-    """Clean common DMIT PDF spacing artifacts for display."""
+    """Clean final spacing/case artifacts for display."""
     text = str(value or "").strip()
-    replacements = {
-        "Need Rolemodel": "Need role model",
-        "Canbeexploited": "Can be exploited",
-        "Lackofindividualism": "Lack of individualism",
-        "Easilyaffectedbyenvironment": "Easily affected by environment",
-        "Toowiderangeofinterests": "Too wide range of interests",
-        "Feelsinsecuretowardschallenges": "Feels insecure towards challenges",
-        "Caringtoomuchforothers": "Caring too much for others",
-        "Maylooseopportunities": "May lose opportunities",
-        "NonRiskTakingAttitude": "Non risk taking attitude",
-        "Indecisiveduringcrisis": "Indecisive during crisis",
-        "HighlyAdjustingNature": "Highly adjusting nature",
-        "TeamOriented": "Team oriented",
-        "KindHearted": "Kind hearted",
-        "GoodListener": "Good listener",
-        "LikesStability": "Likes stability",
-    }
-    for raw, clean in replacements.items():
-        text = text.replace(raw, clean)
     text = re.sub(r"([a-z])([A-Z])", r"\1 \2", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
+
+
+def _split_items(text: str, limit: int = 10) -> list[str]:
+    """Split compact recommendation text into displayable item chips."""
+    text = str(text or "").strip()
+    if not text:
+        return []
+    text = re.sub(r"^[^:]{1,45}:\s*", "", text)
+    text = text.rstrip(".")
+    parts = re.split(r",|;", text)
+    items = [re.sub(r"\s+", " ", part).strip(" .") for part in parts]
+    return [_fit_text(item, _MAX_CHIP_CHARS) for item in items if item][:limit]
+
+
+def _sentence_items(text: str, limit: int = 4) -> list[str]:
+    """Split paragraph recommendations into short bullet lines."""
+    text = str(text or "").strip()
+    if not text:
+        return []
+    parts = re.split(r"(?<=[.!?])\s+", text)
+    return [_fit_text(part.strip(" ."), _MAX_BULLET_CHARS) for part in parts if part.strip(" .")][:limit]
+
+
+def _fit_text(text: str, max_chars: int) -> str:
+    """Bound display text length so PDF cards do not overflow."""
+    text = re.sub(r"\s+", " ", str(text or "")).strip()
+    if len(text) <= max_chars:
+        return text
+    clipped = text[: max_chars - 1].rsplit(" ", 1)[0].rstrip(" ,.;:")
+    return f"{clipped}..."
+
+
+def _extract_labeled_items(text: str, label: str, next_labels: tuple[str, ...] = (), limit: int = 10) -> list[str]:
+    """Extract comma-separated items after a label in a wellness sentence."""
+    text = str(text or "")
+    pattern = re.escape(label) + r"\s*:\s*(.*)"
+    match = re.search(pattern, text, flags=re.IGNORECASE)
+    if not match:
+        return []
+    segment = match.group(1)
+    for next_label in next_labels:
+        marker = re.search(re.escape(next_label) + r"\s*:", segment, flags=re.IGNORECASE)
+        if marker:
+            segment = segment[:marker.start()]
+    segment = segment.split(".")[0]
+    return _split_items(segment, limit=limit)
+
+
+def _wellness_view(wellness: dict, food_recommendations: dict | None = None) -> dict:
+    """Prepare Page 5 display groups from visible wellness and knowledge data."""
+    wellness = wellness or {}
+    food_recommendations = food_recommendations or {}
+    diet_text = wellness.get("diet", "")
+
+    diet = {
+        "recommended": _extract_labeled_items(
+            diet_text,
+            "Recommended foods",
+            ("Functional foods", "Avoid or limit"),
+            limit=11,
+        ),
+        "functional": _extract_labeled_items(
+            diet_text,
+            "Functional foods",
+            ("Avoid or limit",),
+            limit=6,
+        ),
+        "avoid": _extract_labeled_items(diet_text, "Avoid or limit", limit=6),
+    }
+    if not any(diet.values()):
+        diet["recommended"] = _split_items(diet_text, limit=12)
+
+    support = {
+        "supplements": _split_items(wellness.get("supplements", ""), limit=12),
+        "medicine": _split_items(wellness.get("medicine", ""), limit=8),
+    }
+
+    return {
+        "diet": diet,
+        "movement": {
+            "yoga": _split_items(wellness.get("yoga", ""), limit=9),
+            "activity": _split_items(wellness.get("physicalActivity", ""), limit=8),
+        },
+        "recovery": {
+            "sleep": _sentence_items(wellness.get("sleep", ""), limit=5),
+            "stress": _sentence_items(wellness.get("stress", ""), limit=5),
+        },
+        "support": support,
+        "priority_systems": food_recommendations.get("priority_systems", [])[:4],
+    }
 
 
 def _metric_indicator(metric: str, value) -> dict:
@@ -540,6 +613,10 @@ def render_html(report_data: dict) -> str:
         "system_summaries": report_data.get("system_summaries", {}),
         "swot":       report_data.get("swot", {}),
     }
+    ctx["wellness_view"] = _wellness_view(
+        ctx["wellness"],
+        report_data.get("food_recommendations", {}),
+    )
 
     # Convert biorhythm image file to base64 data URI for inline embedding
     bio = ctx["biorhythm"]

@@ -1,0 +1,143 @@
+HRV (Heart Rate Variability) Report
+Date: 21 Feb 2026, 03:57 pm
+NAME AGE GENDER HEIGHT WEIGHT REPORT ID
+Amit 21 year(s) Male 183 cm 85 kg 1771669636587350
+ECG Parameters AI POWERED Result Details AI POWERED
+Heart Health Analysis
+Parameter Observed Values Standard Range Heart rate within normal range.
+Stress Coping Ability Analysis
+PR Interval 128 ms 100 ms - 200 ms
+Low: There's risk of developing stress-induced disease, weakened ANS function.
+QRS Interval 88 ms 60 ms - 120 ms
+HRV Test Analysis
+QT Interval 349 ms 300 ms - 450 ms HRV parameters in abnormal range.
+Balanced SNS activity
+Balanced autonomic activity: Sympathetic and parasympathetic (vagal) tone in
+QTc Interval 285 ms 300 ms - 450 ms
+equilibrium.
+LF 1266 ms² within standard range (754–1586).HF 361 ms² OUTSIDE standard range
+(772–1178)!
+Heart Rate 80 bpm 60 bpm - 100 bpm
+Heart Electrical Stability Test Analysis
+No significant ANS impairment detected; autonomic flexibility is within normal limits.
+This is a computer-generated ECG interpretation. Clinical validation by a licensed healthcare
+professional is required.
+Disclaimer: NOT FOR COMMERCIAL USE | Medical advice asked and accepted on the internet (without physically examining the patient) is at patient’s own risk. Visit a doctor in case of emergency.
+Note: This report is generated using Spandan portable ECG device .To know more about Spandan visit www.sunfox.in/spandan or call at (+91) 7060000556 Page: 1 of 3
+Device Variant: Spandan Pro Report Version:1.0.18 Source:Spandan App v4.10.1 ECG Processor Version:2.0.40-beta6Firmware Version:001.03 Device ID:SPPR-DN01-2511260248
+[TABLE]
+HRV (Heart Rate Variability) Report
+Date: 21 Feb 2026, 03:57 pm
+NAME AGE GENDER HEIGHT WEIGHT REPORT ID
+Amit 21 year(s) Male 183 cm 85 kg 1771669636587350
+ECG Parameters AI POWERED Result Details AI POWERED
+Heart Health Analysis
+Parameter Observed Values Standard Range Heart rate within normal range.
+Stress Coping Ability Analysis
+PR Interval 128 ms 100 ms - 200 ms
+Low: There's risk of developing stress-induced disease, weakened ANS function.
+QRS Interval 88 ms 60 ms - 120 ms
+HRV Test Analysis
+QT Interval 349 ms 300 ms - 450 ms HRV parameters in abnormal range.
+Balanced SNS activity
+Balanced autonomic activity: Sympathetic and parasympathetic (vagal) tone in
+QTc Interval 285 ms 300 ms - 450 ms
+equilibrium.
+LF 1266 ms² within standard range (754–1586).HF 361 ms² OUTSIDE standard range
+(772–1178)!
+Heart Rate 80 bpm 60 bpm - 100 bpm
+Heart Electrical Stability Test Analysis
+No significant ANS impairment detected; autonomic flexibility is within normal limits.
+This is a computer-generated ECG interpretation. Clinical validation by a licensed healthcare
+professional is required.
+Disclaimer: NOT FOR COMMERCIAL USE | Medical advice asked and accepted on the internet (without physically examining the patient) is at patient’s own risk. Visit a doctor in case of emergency.
+Note: This report is generated using Spandan portable ECG device .To know more about Spandan visit www.sunfox.in/spandan or call at (+91) 7060000556 Page: 1 of 3
+Device Variant: Spandan Pro Report Version:1.0.18 Source:Spandan App v4.10.1 ECG Processor Version:2.0.40-beta6Firmware Version:001.03 Device ID:SPPR-DN01-2511260248
+Parameter | Observed Values | Standard Range
+ |  | 
+PR Interval | 128 ms | 100 ms - 200 ms
+QRS Interval | 88 ms | 60 ms - 120 ms
+QT Interval | 349 ms | 300 ms - 450 ms
+QTc Interval | 285 ms | 300 ms - 450 ms
+Heart Rate | 80 bpm | 60 bpm - 100 bpm
+
+--- PAGE BREAK ---
+
+HRV (Heart Rate Variability) Report
+Date: 21 Feb 2026, 03:57 pm
+NAME AGE GENDER HEIGHT WEIGHT REPORT ID
+Amit 21 year(s) Male 183 cm 85 kg 1771669636587350
+Heart rate: 80 bpm
+Lead II(First minute)
+Lead II(Second minute)
+Lead II(Third minute)
+Lead II(Fourth minute)
+Lead II(Fifth minute)
+Scale: x-axis: 25.0 mm/sec y-axis: 10.0 mm/mv
+Note: This report is generated using Spandan portable ECG device .To know more about Spandan visit www.sunfox.in/spandan or call at (+91) 7060000556 Page: 2 of 3
+Device Variant: Spandan Pro Report Version:1.0.18 Source:Spandan App v4.10.1 ECG Processor Version:2.0.40-beta6Firmware Version:001.03 Device ID:SPPR-DN01-2511260248
+[TABLE]
+HRV (Heart Rate Variability) Report
+Date: 21 Feb 2026, 03:57 pm
+NAME AGE GENDER HEIGHT WEIGHT REPORT ID
+Amit 21 year(s) Male 183 cm 85 kg 1771669636587350
+Heart rate: 80 bpm
+Lead II(First minute)
+Lead II(Second minute)
+Lead II(Third minute)
+Lead II(Fourth minute)
+Lead II(Fifth minute)
+Scale: x-axis: 25.0 mm/sec y-axis: 10.0 mm/mv
+Note: This report is generated using Spandan portable ECG device .To know more about Spandan visit www.sunfox.in/spandan or call at (+91) 7060000556 Page: 2 of 3
+Device Variant: Spandan Pro Report Version:1.0.18 Source:Spandan App v4.10.1 ECG Processor Version:2.0.40-beta6Firmware Version:001.03 Device ID:SPPR-DN01-2511260248
+
+--- PAGE BREAK ---
+
+HRV (Heart Rate Variability) Report
+Date: 21 Feb 2026, 03:57 pm
+NAME AGE GENDER HEIGHT WEIGHT REPORT ID
+Amit 21 year(s) Male 183 cm 85 kg 1771669636587350
+Time domain Analysis
+SSDDAANNNN: 26.75 SDNN : 26.98 RMSSD : 20.71 NN50 : 0.01
+Avg. RR Interval per minute Avg. Heart Rate per minute Radar Chart
+753 779 765 761
+700 86
+800ms 100BPM 80 77 78 79 NN50
+600ms 75BPM
+RMSSD
+400ms 50BPM
+SDANN
+200ms 25BPM
+0ms 0BPM SDDN
+1 2 3 4 5 1 2 3 4 5
+BPM
+Frequency Domain Analysis
+LF: 1266 ms² HF: 361 ms² LF/HF : 3.50
+0Hz 1Hz 2Hz 3Hz 4Hz
+Note: This report is generated using Spandan portable ECG device .To know more about Spandan visit www.sunfox.in/spandan or call at (+91) 7060000556 Page: 3 of 3
+Device Variant: Spandan Pro Report Version:1.0.18 Source:Spandan App v4.10.1 ECG Processor Version:2.0.40-beta6Firmware Version:001.03 Device ID:SPPR-DN01-2511260248
+[TABLE]
+HRV (Heart Rate Variability) Report
+Date: 21 Feb 2026, 03:57 pm
+NAME AGE GENDER HEIGHT WEIGHT REPORT ID
+Amit 21 year(s) Male 183 cm 85 kg 1771669636587350
+Time domain Analysis
+SSDDAANNNN: 26.75 SDNN : 26.98 RMSSD : 20.71 NN50 : 0.01
+Avg. RR Interval per minute Avg. Heart Rate per minute Radar Chart
+753 779 765 761
+700 86
+800ms 100BPM 80 77 78 79 NN50
+600ms 75BPM
+RMSSD
+400ms 50BPM
+SDANN
+200ms 25BPM
+0ms 0BPM SDDN
+1 2 3 4 5 1 2 3 4 5
+BPM
+Frequency Domain Analysis
+LF: 1266 ms² HF: 361 ms² LF/HF : 3.50
+0Hz 1Hz 2Hz 3Hz 4Hz
+Note: This report is generated using Spandan portable ECG device .To know more about Spandan visit www.sunfox.in/spandan or call at (+91) 7060000556 Page: 3 of 3
+Device Variant: Spandan Pro Report Version:1.0.18 Source:Spandan App v4.10.1 ECG Processor Version:2.0.40-beta6Firmware Version:001.03 Device ID:SPPR-DN01-2511260248
+ |

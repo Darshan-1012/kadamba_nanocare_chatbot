@@ -14,6 +14,7 @@ from app.engine.synthesizer import synthesize_report
 from app.engine.llm_client import check_health
 from app.output.html_renderer import render_pdf_async as generate_pdf
 from app.engine.patient_history import ensure_table, save_visit, get_history, get_chart_data, get_latest_visit
+from app.engine.food_knowledge import apply_recommendations_to_wellness
 
 log = logging.getLogger(__name__)
 router = APIRouter()
@@ -23,6 +24,19 @@ try:
     ensure_table()
 except Exception as _e:
     logging.getLogger(__name__).warning(f"MySQL table init deferred: {_e}")
+
+
+def _apply_cached_recommendations(report_data: dict) -> dict:
+    """Upgrade cached reports so visible wellness fields use food knowledge."""
+    food_recs = report_data.get("food_recommendations")
+    if food_recs:
+        report_data["wellness"] = apply_recommendations_to_wellness(
+            report_data.get("wellness", {}),
+            food_recs,
+            nadi_data=None,
+        )
+    return report_data
+
 
 # ── In-memory hash→report_id map for cache lookups ──────────────────
 _file_hash_cache: dict[str, str] = {}
@@ -132,6 +146,7 @@ async def generate_report(
         log.info(f"[{report_id}] Cache HIT (hash={file_hash}) — returning cached report")
         with open(cached["path"], "r", encoding="utf-8") as f:
             report_data = json.load(f)
+        report_data = _apply_cached_recommendations(report_data)
         return {
             "report_id": report_id,
             "report": report_data,
@@ -273,7 +288,7 @@ async def get_report(report_id: str):
         raise HTTPException(404, f"Report {report_id} not found")
 
     with open(json_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        return _apply_cached_recommendations(json.load(f))
 
 
 @router.get("/report/{report_id}/pdf")
