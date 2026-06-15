@@ -1693,22 +1693,22 @@
     #page3 .bio-box__hd {
       background: var(--grad-lr);
       border-radius: var(--r-head);
-      padding: 7pt 12pt;
+      padding: 5pt 12pt;
     }
 
     #page3 .bio-box__title {
       font-family: var(--font-h);
-      font-size: 10.5pt;
+      font-size: 10pt;
       color: var(--white);
       text-align: center;
     }
 
     #page3 .bio-box__body {
-      padding: 8pt;
+      padding: 4pt 6pt;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 300pt;
+      height: 185pt;
       flex-basis: auto;
     }
 
@@ -1717,6 +1717,141 @@
       height: 100%;
       object-fit: contain;
       display: block;
+    }
+
+    /* ── Biorhythm Legend (between graph and calendar) ── */
+    #page3 .bio-legend {
+      display: flex;
+      justify-content: center;
+      gap: 14pt;
+      padding: 4pt 8pt;
+      background: #f4f8fc;
+      border: 1pt solid #d5e3f0;
+      border-radius: 6pt;
+    }
+
+    #page3 .bio-legend__item {
+      display: flex;
+      align-items: center;
+      gap: 3pt;
+      font-size: 6.5pt;
+      color: #2c3e50;
+      font-weight: 500;
+    }
+
+    #page3 .bio-legend__icon {
+      font-size: 8pt;
+      line-height: 1;
+    }
+
+    #page3 .bio-legend__dot {
+      display: inline-block;
+      width: 6pt;
+      height: 6pt;
+      border-radius: 50%;
+    }
+
+    #page3 .bio-legend__dot--hyper  { background: #27ae60; }
+    #page3 .bio-legend__dot--neutral { background: #f39c12; }
+    #page3 .bio-legend__dot--hypo   { background: #e74c3c; }
+
+    /* ── Biorhythm Calendar Grid ── */
+    #page3 .bio-cal {
+      border: 1pt solid var(--border);
+      border-radius: var(--r-card);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      flex: 1;
+    }
+
+    #page3 .bio-cal__hd {
+      background: var(--grad-lr);
+      border-radius: var(--r-head);
+      padding: 5pt 12pt;
+    }
+
+    #page3 .bio-cal__title {
+      font-family: var(--font-h);
+      font-size: 10pt;
+      color: var(--white);
+      text-align: center;
+    }
+
+    #page3 .bio-cal__grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0;
+      padding: 3pt 4pt 4pt;
+    }
+
+    #page3 .bio-cal__dow {
+      text-align: center;
+      font-size: 6pt;
+      font-weight: 700;
+      color: #5a6c7d;
+      padding: 2pt 0;
+      text-transform: uppercase;
+      letter-spacing: 0.3pt;
+      border-bottom: 0.5pt solid #dce6ef;
+    }
+
+    #page3 .bio-cal__cell {
+      text-align: center;
+      padding: 2.5pt 1pt 2pt;
+      min-height: 26pt;
+      border: 0.3pt solid #edf1f5;
+      border-radius: 3pt;
+      position: relative;
+    }
+
+    #page3 .bio-cal__cell--empty {
+      border-color: transparent;
+    }
+
+    #page3 .bio-cal__day {
+      font-size: 6.5pt;
+      font-weight: 700;
+      color: #2c3e50;
+      line-height: 1;
+      margin-bottom: 1.5pt;
+    }
+
+    #page3 .bio-cal__icons {
+      display: flex;
+      justify-content: center;
+      gap: 2pt;
+      line-height: 1;
+    }
+
+    #page3 .bio-cal__icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5pt;
+    }
+
+    #page3 .bio-cal__icon-emoji {
+      font-size: 5.5pt;
+      line-height: 1;
+    }
+
+    #page3 .bio-cal__icon-dot {
+      width: 5pt;
+      height: 5pt;
+      border-radius: 50%;
+    }
+
+    .bio-dot--hyper  { background: #27ae60; }
+    .bio-dot--neutral { background: #f39c12; }
+    .bio-dot--hypo   { background: #e74c3c; }
+
+    /* Subtle highlight for watch days */
+    #page3 .bio-cal__cell--caution {
+      background: #fff5f5;
+    }
+
+    #page3 .bio-cal__cell--peak {
+      background: #f0faf0;
     }
   </style>
 </head>
@@ -2397,12 +2532,97 @@
         </div>
       </div>
 
-      <div class="corr-box" style="flex:1;display:flex;flex-direction:column;">
-        <div class="corr-box__hd">
-          <h3 class="corr-box__title">Current and future reports correlation summary with infographics</h3>
+      <!-- ── Biorhythm Legend ── -->
+      <div class="bio-legend">
+        <div class="bio-legend__item">
+          <span class="bio-legend__icon">💪</span>
+          <span>Physical</span>
         </div>
-        <div class="corr-box__body"></div>
+        <div class="bio-legend__item">
+          <span class="bio-legend__icon">❤</span>
+          <span>Emotional</span>
+        </div>
+        <div class="bio-legend__item">
+          <span class="bio-legend__icon">🧠</span>
+          <span>Intellectual</span>
+        </div>
+        <div class="bio-legend__item">
+          <span class="bio-legend__dot bio-legend__dot--hyper"></span>
+          <span>Hyper</span>
+        </div>
+        <div class="bio-legend__item">
+          <span class="bio-legend__dot bio-legend__dot--neutral"></span>
+          <span>Neutral</span>
+        </div>
+        <div class="bio-legend__item">
+          <span class="bio-legend__dot bio-legend__dot--hypo"></span>
+          <span>Hypo</span>
+        </div>
       </div>
+
+      <!-- ── Biorhythm Calendar Grid ── -->
+      {% set cal = biorhythm.calendar if biorhythm and biorhythm.calendar else none %}
+      {% if cal %}
+      <div class="bio-cal">
+        <div class="bio-cal__hd">
+          <h3 class="bio-cal__title">Biorhythm Interpretation — {{ cal.month_name }}</h3>
+        </div>
+        <div class="bio-cal__grid">
+          <!-- Day-of-week headers (Mon–Sun) -->
+          {% for dow in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %}
+          <div class="bio-cal__dow">{{ dow }}</div>
+          {% endfor %}
+
+          <!-- Leading empty cells (first_weekday = 0 for Monday) -->
+          {% for _ in range(cal.first_weekday) %}
+          <div class="bio-cal__cell bio-cal__cell--empty"></div>
+          {% endfor %}
+
+          <!-- Day cells -->
+          {% set watch_day_nums = {} %}
+          {% for wd in cal.watch_days %}
+            {% set _ = watch_day_nums.update({wd.day: wd.type}) %}
+          {% endfor %}
+
+          {% for d in cal.days %}
+          {% set cell_class = '' %}
+          {% if d.day in watch_day_nums %}
+            {% if watch_day_nums[d.day] == 'caution' %}
+              {% set cell_class = ' bio-cal__cell--caution' %}
+            {% elif watch_day_nums[d.day] == 'peak' %}
+              {% set cell_class = ' bio-cal__cell--peak' %}
+            {% endif %}
+          {% endif %}
+          <div class="bio-cal__cell{{ cell_class }}">
+            <div class="bio-cal__day">{{ d.day }}</div>
+            <div class="bio-cal__icons">
+              <div class="bio-cal__icon">
+                <span class="bio-cal__icon-emoji">💪</span>
+                <span class="bio-cal__icon-dot bio-dot--{{ d.physical.state }}"></span>
+              </div>
+              <div class="bio-cal__icon">
+                <span class="bio-cal__icon-emoji">❤</span>
+                <span class="bio-cal__icon-dot bio-dot--{{ d.emotional.state }}"></span>
+              </div>
+              <div class="bio-cal__icon">
+                <span class="bio-cal__icon-emoji">🧠</span>
+                <span class="bio-cal__icon-dot bio-dot--{{ d.intellectual.state }}"></span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="bio-cal">
+        <div class="bio-cal__hd">
+          <h3 class="bio-cal__title">Biorhythm Interpretation</h3>
+        </div>
+        <div style="padding:12pt;text-align:center;color:#999;font-size:8pt;">
+          Calendar data not available — patient age required for computation.
+        </div>
+      </div>
+      {% endif %}
 
     </div>
 

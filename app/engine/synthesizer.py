@@ -15,6 +15,7 @@ import re
 import time
 
 from app.engine.biorhythm_extractor import extract_biorhythm_image
+from app.engine.biorhythm_calculator import build_biorhythm_calendar
 from pathlib import Path
 from typing import Dict
 
@@ -590,6 +591,19 @@ async def synthesize_report(
         if biorhythm_image_path:
             final["biorhythm"] = {"image_path": biorhythm_image_path}
             log.info(f"Step 8b: Biorhythm graph injected: {biorhythm_image_path}")
+
+        # Step 8c: Compute biorhythm day-by-day calendar interpretation
+        patient_data = final.get("patient", {})
+        calendar_data = build_biorhythm_calendar(patient_data, biowell_raw)
+        if calendar_data:
+            final.setdefault("biorhythm", {})["calendar"] = calendar_data
+            log.info(
+                f"Step 8c: Biorhythm calendar computed — "
+                f"{calendar_data['month_name']}, {len(calendar_data['days'])} days, "
+                f"{len(calendar_data['watch_days'])} watch days"
+            )
+        else:
+            log.warning("Step 8c: Biorhythm calendar skipped — no DOB/age available")
 
         # Step 9: Generate food & supplement recommendations (deterministic)
         log.info("Step 9: Generating food & supplement recommendations...")
