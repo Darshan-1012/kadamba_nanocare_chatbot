@@ -418,8 +418,6 @@ async def synthesize_report(
                 sp = src_data.get("patient", {})
                 if not patient.get("name") or patient["name"] == "Unknown":
                     patient["name"] = sp.get("name", "")
-                if not patient.get("age"):
-                    patient["age"] = sp.get("age", "")
                 if not patient.get("date"):
                     patient["date"] = sp.get("date", "")
 
@@ -566,7 +564,12 @@ async def synthesize_report(
             dim_summaries = summaries.get("dimension_summaries", {})
             for dim_key in ["physical", "psychological", "emotional", "spiritual"]:
                 ai_text = dim_summaries.get(dim_key, "")
-                if ai_text and not ai_text.startswith("Summary generation"):
+                if (
+                    ai_text
+                    and not ai_text.startswith("Summary generation")
+                    and "currently unavailable" not in ai_text.lower()
+                    and "data unavailable" not in ai_text.lower()
+                ):
                     final.setdefault("dimensions", {}).setdefault(dim_key, {})
                     final["dimensions"][dim_key]["description"] = ai_text
 
@@ -735,7 +738,7 @@ def _parse_inbody_ocr_text(raw_text: str) -> dict:
 def _validate_and_fill(report: dict) -> dict:
     """Ensure all required keys exist with sensible defaults."""
     defaults = {
-        "patient": {"name": "Unknown", "age": "", "date": ""},
+        "patient": {"name": "Unknown", "dob": "", "date": ""},
         "metrics": {
             "weight": 0.0, "visceralFat": 0.0, "bmi": 0.0, "bodyFat": 0.0,
             "heartRate": 0, "bioEnergy": 0.0, "energyReserve": 0,
@@ -777,11 +780,11 @@ def _validate_and_fill(report: dict) -> dict:
 
     # Clean placeholder text from patient fields
     patient = report.get("patient", {})
-    for field_name in ["name", "age", "date"]:
+    for field_name in ["name", "dob", "date"]:
         val = patient.get(field_name, "")
         if val and any(p in str(val).lower() for p in [
             "not provided", "not specified", "report date",
-            "patient name", "age string", "unknown",
+            "patient name", "date of birth", "unknown",
         ]):
             patient[field_name] = ""
 

@@ -100,7 +100,7 @@ async def generate_dimension_summaries(
             dimensions.get("psychological", {}).get("description", ""),
         ),
         "emotional": _gen_emotional(
-            metrics, biowell_data,
+            metrics, nadi_data, biowell_data,
             dimensions.get("emotional", {}).get("description", ""),
         ),
         "spiritual": _gen_spiritual(
@@ -217,15 +217,21 @@ Write a comprehensive clinical prose summary. Do not contradict the doctor-rule 
 
 async def _gen_emotional(
     metrics: dict,
+    nadi_data: dict | None,
     biowell_data: dict | None,
     rule_summary: str = "",
 ) -> str:
     """Emotional: Nadi stress + BioWell emotional/stress indicators."""
     data_parts = []
 
-    # Nadi emotional stress
-    # nadi_data is not part of this function signature, so deterministic
-    # Nadi stress is supplied through rule_summary from interpretation.py.
+    if nadi_data:
+        params = nadi_data.get("health_params", {})
+        stress_param = params.get("stress", {})
+        stress = stress_param.get("level", "")
+        pct = stress_param.get("percentage")
+        if stress:
+            value = f" ({pct}%)" if pct is not None else ""
+            data_parts.append(f"Nadi Emotional Stress: {stress}{value}")
 
     if biowell_data:
         stress_idx = biowell_data.get("stress_index")
@@ -237,6 +243,20 @@ async def _gen_emotional(
         emotional_text = biowell_data.get("emotional_psychological")
         if emotional_text:
             data_parts.append(f"BioWell Emotional/Psychological: {emotional_text}")
+        chakra = (biowell_data.get("chakra_details") or {}).get("anahatha")
+        if chakra:
+            name = chakra.get("name", "Anahatha")
+            color = chakra.get("color", "Green")
+            alignment = chakra.get("alignment_percent")
+            status = chakra.get("status", "")
+            description = chakra.get("description", "")
+            alignment_text = f" {alignment:g}%" if isinstance(alignment, (int, float)) else ""
+            data_parts.append(
+                f"{name} Chakra ({color}){alignment_text}: {status}. {description}".strip()
+            )
+
+    if not data_parts and _has_rule_summary(rule_summary):
+        data_parts.extend(_rule_summary_lines(rule_summary))
 
     if not data_parts:
         return "Emotional wellness data currently unavailable."
@@ -255,6 +275,27 @@ Interpretation guidelines:
 Write a comprehensive clinical prose summary. Do not contradict the doctor-rule interpretation. Do NOT use bullet points."""
 
     return await llm_client.generate_text(prompt, system=_CLINICAL_SYSTEM, max_tokens=300)
+
+
+def _has_rule_summary(rule_summary: str) -> bool:
+    """Return True when deterministic rule text has usable clinical content."""
+    text = str(rule_summary or "").strip()
+    if not text:
+        return False
+    unavailable_markers = (
+        "currently unavailable",
+        "data unavailable",
+        "assessment data unavailable",
+    )
+    return not any(marker in text.lower() for marker in unavailable_markers)
+
+
+def _rule_summary_lines(rule_summary: str) -> list[str]:
+    """Split deterministic rule text into concise evidence lines."""
+    import re
+
+    text = str(rule_summary or "").strip()
+    return [chunk.strip() for chunk in re.split(r"(?<=[.!?])\s+", text) if chunk.strip()]
 
 
 async def _gen_spiritual(

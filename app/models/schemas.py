@@ -1,11 +1,13 @@
 """Pydantic schemas for API request/response validation."""
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
 # ── Patient ───────────────────────────────────────────────────────────
 class PatientInfo(BaseModel):
     name: str = "Unknown"
-    age: str = ""
+    dob: str = ""
     date: str = ""
 
 
@@ -85,8 +87,39 @@ class WellnessReport(BaseModel):
 class GenerateResponse(BaseModel):
     """Response from POST /api/generate."""
     report_id: str
+    generated_report: str = ""
     report: WellnessReport
     extraction_summary: dict = Field(default_factory=dict)
+
+
+ReportStatus = Literal["draft", "approved", "rejected"]
+
+
+class DoctorDraftResponse(BaseModel):
+    """Response from POST /api/doctor/reports/draft."""
+    draft_report_id: str
+    status: ReportStatus = "draft"
+    report: dict
+    cached: bool = False
+    extraction_summary: dict = Field(default_factory=dict)
+
+
+class DoctorApprovalResponse(BaseModel):
+    """Response from POST /api/doctor/reports/{draft_report_id}/approve."""
+    report_id: str
+    draft_report_id: str
+    status: ReportStatus = "approved"
+    generated_report: str
+    summary: dict = Field(default_factory=dict)
+    history: dict = Field(default_factory=dict)
+
+
+class UserDashboardResponse(BaseModel):
+    """Compact approved-report payload for user web/mobile dashboards."""
+    patient: dict = Field(default_factory=dict)
+    latest_report: dict | None = None
+    history: dict = Field(default_factory=dict)
+    reports: list[dict] = Field(default_factory=list)
 
 
 class HealthResponse(BaseModel):

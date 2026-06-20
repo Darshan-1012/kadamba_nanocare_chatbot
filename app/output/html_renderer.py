@@ -620,6 +620,11 @@ def render_html(report_data: dict) -> str:
 
     # Convert biorhythm image file to base64 data URI for inline embedding
     bio = ctx["biorhythm"]
+    if bio.get("calendar"):
+        from app.engine.biorhythm_calculator import normalize_biorhythm_calendar
+
+        bio["calendar"] = normalize_biorhythm_calendar(bio["calendar"])
+
     if bio.get("image_path"):
         img_path = Path(bio["image_path"])
         if img_path.exists():

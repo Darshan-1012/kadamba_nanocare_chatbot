@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nanocare Customer Dashboard</title>
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+  <main class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <img src="static/images/logo.png" alt="Nanocare">
+        <h1>Customer Dashboard</h1>
+      </div>
+      <div class="nav">
+        <a href="doctor_demo.html">Doctor Workflow</a>
+        <a href="api_demo.html">API Demo</a>
+      </div>
+    </div>
+
+    <section class="panel">
+      <header>
+        <h2>Customer Selection</h2>
+        <button class="ghost" id="healthBtn" type="button">Health</button>
+      </header>
+      <div class="body">
+        <div class="grid-4">
+          <label>API Base <input id="apiBase" value="http://localhost:8001/api"></label>
+          <label>Patient ID <input id="patientId" value="PAT-99120"></label>
+          <label>Report ID <input id="reportId" placeholder="approved report_id"></label>
+          <label>Detail
+            <select id="detail">
+              <option value="compact">Compact</option>
+              <option value="full">Full</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="loadDashboardBtn" type="button">Load Dashboard</button>
+          <button class="secondary" id="loadReportBtn" type="button">Load Report</button>
+          <button class="ghost" id="openPdfBtn" type="button">Open PDF</button>
+        </div>
+        <div id="customerStatus" class="status">Ready</div>
+      </div>
+    </section>
+
+    <div class="layout" style="margin-top: 16px;">
+      <section class="panel">
+        <header>
+          <h2>Approved Reports</h2>
+        </header>
+        <div class="body">
+          <div id="patientLine" class="status">No customer loaded</div>
+          <div id="reportList" class="list"></div>
+          <h3>History</h3>
+          <div id="historyList" class="list"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <header>
+          <h2>Report Dashboard</h2>
+          <span id="reportBadge" class="pill">Approved Only</span>
+        </header>
+        <div class="tabs">
+          <button class="active" data-tab="summaryView" type="button">Summary</button>
+          <button data-tab="systemsView" type="button">Systems</button>
+          <button data-tab="wellnessView" type="button">Wellness</button>
+          <button data-tab="biorhythmView" type="button">Biorhythm</button>
+          <button data-tab="jsonView" type="button">JSON</button>
+        </div>
+        <div class="body">
+          <div id="summaryView" class="view active">
+            <div id="scoreGrid" class="grid-4"></div>
+            <div id="metricGrid" class="grid-4"></div>
+          </div>
+          <div id="systemsView" class="view"><div id="systemsList" class="list"></div></div>
+          <div id="wellnessView" class="view"><div id="wellnessList" class="list"></div></div>
+          <div id="biorhythmView" class="view"><div id="biorhythmPanel" class="list"></div></div>
+          <div id="jsonView" class="view"><pre id="jsonOutput" class="json">{}</pre></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="demo_common.js"></script>
+  <script>
+    function currentSummaryPayload(payload) {
+      if (payload.latest_report) return payload.latest_report;
+      if (payload.summary || payload.metrics || payload.systems) return payload;
+      return {};
+    }
+
+    function showDashboard(payload) {
+      const patient = payload.patient || {};
+      Demo.$("patientLine").textContent = [
+        patient.name || "Unknown patient",
+        patient.id || Demo.$("patientId").value,
+        patient.dob ? `DOB ${patient.dob}` : "",
+      ].filter(Boolean).join(" | ");
+      Demo.renderHistory("historyList", payload.history || {});
+      renderReports(payload.reports || []);
+      showReport(payload.latest_report || payload);
+      Demo.showJson("jsonOutput", payload);
+    }
+
+    function showReport(payload) {
+      const summaryPayload = currentSummaryPayload(payload);
+      const report = Demo.extractReport(payload);
+      const summary = summaryPayload.summary || Demo.extractSummary(payload, report);
+      const metrics = summaryPayload.metrics || Demo.keyMetrics(report.metrics || {});
+      Demo.renderScores("scoreGrid", summary);
+      Demo.renderMetrics("metricGrid", metrics);
+      Demo.renderSystems("systemsList", summaryPayload.systems || report.systems || {});
+      Demo.renderWellness("wellnessList", summaryPayload.wellness || report.wellness || {});
+      Demo.renderBiorhythm("biorhythmPanel", summaryPayload.biorhythm || report.biorhythm || {});
+      Demo.showJson("jsonOutput", payload);
+      if (summaryPayload.report_id) Demo.$("reportId").value = summaryPayload.report_id;
+    }
+
+    function renderReports(reports) {
+      Demo.$("reportList").innerHTML = reports.map((report) => `
+        <div class="row">
+          <strong>${report.report_id}</strong>
+          <span>${report.date || ""}</span>
+          <button class="ghost" type="button" data-report-id="${report.report_id}">View</button>
+        </div>
+      `).join("") || Demo.empty("No approved reports");
+
+      Demo.$("reportList").querySelectorAll("button[data-report-id]").forEach((button) => {
+        button.addEventListener("click", () => {
+          Demo.$("reportId").value = button.dataset.reportId;
+          loadReport();
+        });
+      });
+    }
+
+    async function loadDashboard() {
+      const patientId = Demo.$("patientId").value.trim();
+      if (!patientId) return Demo.setStatus("customerStatus", "Enter patient ID", "err");
+      const button = Demo.$("loadDashboardBtn");
+      Demo.setBusy(button, true);
+      try {
+        const detail = Demo.$("detail").value;
+        const data = await Demo.apiGet(`/user/patient/${encodeURIComponent(patientId)}/dashboard?detail=${encodeURIComponent(detail)}`);
+        Demo.setStatus("customerStatus", `Dashboard loaded for ${patientId}`, "ok");
+        showDashboard(data);
+      } catch (error) {
+        Demo.setStatus("customerStatus", error.message, "err");
+      } finally {
+        Demo.setBusy(button, false);
+      }
+    }
+
+    async function loadReport() {
+      const reportId = Demo.$("reportId").value.trim();
+      if (!reportId) return Demo.setStatus("customerStatus", "Enter report ID", "err");
+      const button = Demo.$("loadReportBtn");
+      Demo.setBusy(button, true);
+      try {
+        const detail = Demo.$("detail").value === "full" ? "full" : "compact";
+        const data = await Demo.apiGet(`/user/report/${encodeURIComponent(reportId)}?detail=${encodeURIComponent(detail)}`);
+        Demo.setStatus("customerStatus", `Report loaded: ${reportId}`, "ok");
+        showReport(data);
+      } catch (error) {
+        Demo.setStatus("customerStatus", error.message, "err");
+      } finally {
+        Demo.setBusy(button, false);
+      }
+    }
+
+    function openPdf() {
+      const reportId = Demo.$("reportId").value.trim();
+      if (!reportId) return Demo.setStatus("customerStatus", "Enter report ID", "err");
+      window.open(`${Demo.apiBase()}/user/report/${encodeURIComponent(reportId)}/pdf`, "_blank", "noopener");
+    }
+
+    function initFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("patient_id")) Demo.$("patientId").value = params.get("patient_id");
+      if (params.get("report_id")) Demo.$("reportId").value = params.get("report_id");
+    }
+
+    Demo.setupTabs();
+    initFromQuery();
+    Demo.$("healthBtn").addEventListener("click", () => Demo.health("customerStatus"));
+    Demo.$("loadDashboardBtn").addEventListener("click", loadDashboard);
+    Demo.$("loadReportBtn").addEventListener("click", loadReport);
+    Demo.$("openPdfBtn").addEventListener("click", openPdf);
+  </script>
+</body>
+</html>

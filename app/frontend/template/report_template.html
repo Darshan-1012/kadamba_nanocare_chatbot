@@ -152,7 +152,10 @@
     }
 
     .ph__patient {
-      text-align: right;
+      min-width: 122pt;
+      text-align: left;
+      background: transparent;
+      border: 0;
       color: var(--white);
       font-size: 10.5pt;
       font-weight: 600;
@@ -1683,6 +1686,11 @@
     /* ============================================================
        PAGE 3 — BIORHYTHM
     ============================================================ */
+    #page3 .pc {
+      gap: 5pt;
+      padding: 7pt 8pt 5pt;
+    }
+
     #page3 .bio-box {
       border: 1pt solid var(--border);
       border-radius: var(--r-card);
@@ -1708,7 +1716,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 185pt;
+      height: 145pt;
       flex-basis: auto;
     }
 
@@ -1719,41 +1727,119 @@
       display: block;
     }
 
-    /* ── Biorhythm Legend (between graph and calendar) ── */
-    #page3 .bio-legend {
-      display: flex;
-      justify-content: center;
-      gap: 14pt;
-      padding: 4pt 8pt;
-      background: #f4f8fc;
-      border: 1pt solid #d5e3f0;
-      border-radius: 6pt;
+    #page3 .bio-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
-    #page3 .bio-legend__item {
-      display: flex;
+    #page3 .bio-svg__panel {
+      fill: #fbfdff;
+      stroke: #d9e8f1;
+      stroke-width: 1;
+    }
+
+    #page3 .bio-svg__grid {
+      stroke: #d7e5ee;
+      stroke-width: .7;
+    }
+
+    #page3 .bio-svg__grid--x {
+      stroke-dasharray: 2 4;
+      opacity: .75;
+    }
+
+    #page3 .bio-svg__axis {
+      stroke: #8cb4ca;
+      stroke-width: 1.2;
+      stroke-dasharray: 5 4;
+    }
+
+    #page3 .bio-svg__line {
+      fill: none;
+      stroke-width: 2.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    #page3 .bio-svg__line--physical { stroke: #2a77b5; }
+    #page3 .bio-svg__line--emotional { stroke: #d94f70; }
+    #page3 .bio-svg__line--intellectual { stroke: #209d79; }
+
+    #page3 .bio-svg__label {
+      fill: #526878;
+      font-family: var(--font-b);
+      font-size: 6.5px;
+      font-weight: 800;
+    }
+
+    #page3 .bio-svg__legend-text {
+      font-size: 7.2px;
+      font-weight: 900;
+    }
+
+    #page3 .bio-svg__legend-text--physical { fill: #2a77b5; }
+    #page3 .bio-svg__legend-text--emotional { fill: #d94f70; }
+    #page3 .bio-svg__legend-text--intellectual { fill: #209d79; }
+
+    #page3 .bio-guide {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      column-gap: 5pt;
+      padding: 5pt 6pt;
+      border: .8pt solid #d5e3f0;
+      border-radius: 7pt;
+      background: #f7fbfd;
+    }
+
+    #page3 .bio-guide__group {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 13pt 1fr;
+      column-gap: 4pt;
+      align-items: start;
+    }
+
+    #page3 .bio-guide__letter {
+      display: inline-flex;
       align-items: center;
-      gap: 3pt;
-      font-size: 6.5pt;
-      color: #2c3e50;
-      font-weight: 500;
-    }
-
-    #page3 .bio-legend__icon {
-      font-size: 8pt;
+      justify-content: center;
+      width: 13pt;
+      height: 13pt;
+      border-radius: 50%;
+      background: var(--grad-lr);
+      color: #fff;
+      font-size: 6.2pt;
+      font-weight: 900;
       line-height: 1;
     }
 
-    #page3 .bio-legend__dot {
-      display: inline-block;
-      width: 6pt;
-      height: 6pt;
-      border-radius: 50%;
+    #page3 .bio-guide__name {
+      display: block;
+      margin-bottom: 2pt;
+      color: #183f63;
+      font-size: 6.6pt;
+      font-weight: 900;
+      line-height: 1;
     }
 
-    #page3 .bio-legend__dot--hyper  { background: #27ae60; }
-    #page3 .bio-legend__dot--neutral { background: #f39c12; }
-    #page3 .bio-legend__dot--hypo   { background: #e74c3c; }
+    #page3 .bio-guide__line {
+      display: block;
+      color: #405666;
+      font-size: 5.7pt;
+      line-height: 1.2;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    #page3 .bio-guide__state {
+      font-weight: 900;
+    }
+
+    #page3 .bio-guide__state--hyper { color: #1f8f53; }
+    #page3 .bio-guide__state--neutral { color: #ba7611; }
+    #page3 .bio-guide__state--hypo { color: #c0392b; }
 
     /* ── Biorhythm Calendar Grid ── */
     #page3 .bio-cal {
@@ -1796,12 +1882,13 @@
     }
 
     #page3 .bio-cal__cell {
-      text-align: center;
-      padding: 2.5pt 1pt 2pt;
-      min-height: 26pt;
+      padding: 3pt 2pt 2.5pt;
+      min-height: 55pt;
       border: 0.3pt solid #edf1f5;
       border-radius: 3pt;
       position: relative;
+      overflow: hidden;
+      background: #fff;
     }
 
     #page3 .bio-cal__cell--empty {
@@ -1809,41 +1896,83 @@
     }
 
     #page3 .bio-cal__day {
-      font-size: 6.5pt;
+      font-size: 6.2pt;
       font-weight: 700;
       color: #2c3e50;
       line-height: 1;
-      margin-bottom: 1.5pt;
+      margin-bottom: 2pt;
+    }
+
+    #page3 .bio-cal__state {
+      display: block;
+      margin-bottom: 2pt;
+      padding: 1.5pt 2pt;
+      border-radius: 3pt;
+      color: #fff;
+      font-size: 5.5pt;
+      font-weight: 900;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
     }
 
     #page3 .bio-cal__icons {
-      display: flex;
-      justify-content: center;
-      gap: 2pt;
-      line-height: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: 1pt;
+      margin-bottom: 2pt;
     }
 
     #page3 .bio-cal__icon {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 6pt 1fr;
       align-items: center;
-      gap: 0.5pt;
+      column-gap: 1pt;
+      min-width: 0;
     }
 
-    #page3 .bio-cal__icon-emoji {
-      font-size: 5.5pt;
+    #page3 .bio-cal__cycle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 6pt;
+      height: 6pt;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 4.4pt;
+      font-weight: 900;
       line-height: 1;
     }
 
-    #page3 .bio-cal__icon-dot {
-      width: 5pt;
-      height: 5pt;
-      border-radius: 50%;
+    #page3 .bio-cal__pct {
+      color: #2d3f4d;
+      font-size: 4.9pt;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
     }
 
-    .bio-dot--hyper  { background: #27ae60; }
-    .bio-dot--neutral { background: #f39c12; }
-    .bio-dot--hypo   { background: #e74c3c; }
+    #page3 .bio-cal__action {
+      color: #334b5a;
+      font-size: 5.1pt;
+      font-weight: 650;
+      line-height: 1.13;
+      text-align: left;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+
+    .bio-state--hyper,
+    .bio-type--peak { background: #209d79; }
+
+    .bio-state--neutral,
+    .bio-type--steady,
+    .bio-type--mixed { background: #d98c18; }
+
+    .bio-state--hypo,
+    .bio-type--caution { background: #c85b4d; }
 
     /* Subtle highlight for watch days */
     #page3 .bio-cal__cell--caution {
@@ -2111,9 +2240,7 @@
         alt="Kadamba Nanocare logo" />
       <h1 class="ph__title">Wellness Report</h1>
       <div class="ph__patient">
-        Patient Name:&nbsp;<strong>{{ patient.name }}</strong><br>Age:&nbsp;<strong>{{ patient.age
-          }}</strong><br>Patient
-        ID:&nbsp;<strong>{{ patient.id|default("—") }}</strong>
+        Patient Name:&nbsp;<strong>{{ patient.name }}</strong><br>DOB:&nbsp;<strong>{{ patient.dob|default("—") }}</strong><br>Date:&nbsp;<strong>{{ patient.date|default("—") }}</strong>
       </div>
     </header>
 
@@ -2287,9 +2414,7 @@
         alt="Kadamba Nanocare logo" />
       <h2 class="ph__title" style="font-size:20pt;">Body Systems Analysis</h2>
       <div class="ph__patient">
-        Patient Name:&nbsp;<strong>{{ patient.name }}</strong><br>Age:&nbsp;<strong>{{ patient.age
-          }}</strong><br>Patient
-        ID:&nbsp;<strong>{{ patient.id|default("—") }}</strong>
+        Patient Name:&nbsp;<strong>{{ patient.name }}</strong><br>DOB:&nbsp;<strong>{{ patient.dob|default("—") }}</strong><br>Date:&nbsp;<strong>{{ patient.date|default("—") }}</strong>
       </div>
     </header>
 
@@ -2511,57 +2636,84 @@
         alt="Kadamba Nanocare logo" />
       <h2 class="ph__title">Biorhythm</h2>
       <div class="ph__patient">
-        Patient Name:&nbsp;<strong>{{ patient.name }}</strong><br>Age:&nbsp;<strong>{{ patient.age
-          }}</strong><br>Patient
-        ID:&nbsp;<strong>{{ patient.id|default("—") }}</strong>
+        Patient Name:&nbsp;<strong>{{ patient.name }}</strong><br>DOB:&nbsp;<strong>{{ patient.dob|default("—") }}</strong><br>Date:&nbsp;<strong>{{ patient.date|default("—") }}</strong>
       </div>
     </header>
 
     <div class="pc">
+      {% set cal = biorhythm.calendar if biorhythm and biorhythm.calendar else none %}
 
       <div class="bio-box">
         <div class="bio-box__hd">
-          <h3 class="bio-box__title">Biorhythm Graph</h3>
+          <h3 class="bio-box__title">Calculated Biorhythm Graph</h3>
         </div>
         <div class="bio-box__body">
-          {% if biorhythm.image_data_uri %}
+          {% if cal and cal.graph %}
+          <svg class="bio-svg" viewBox="0 0 {{ cal.graph.width }} {{ cal.graph.height }}"
+            aria-label="Calculated biorhythm graph for {{ cal.month_name }}" role="img">
+            <rect class="bio-svg__panel" x="{{ cal.graph.plot_left }}" y="{{ cal.graph.plot_top }}"
+              width="{{ cal.graph.plot_right - cal.graph.plot_left }}"
+              height="{{ cal.graph.plot_bottom - cal.graph.plot_top }}" rx="6" />
+
+            {% for tick in cal.graph.y_ticks %}
+            <line class="{{ 'bio-svg__axis' if tick.value == 0 else 'bio-svg__grid' }}"
+              x1="{{ cal.graph.plot_left }}" y1="{{ tick.y }}"
+              x2="{{ cal.graph.plot_right }}" y2="{{ tick.y }}" />
+            <text class="bio-svg__label" x="4" y="{{ tick.y + 2.5 }}">{{ tick.label }}</text>
+            {% endfor %}
+
+            {% for tick in cal.graph.x_ticks %}
+            <line class="bio-svg__grid bio-svg__grid--x"
+              x1="{{ tick.x }}" y1="{{ cal.graph.plot_top }}"
+              x2="{{ tick.x }}" y2="{{ cal.graph.plot_bottom }}" />
+            <text class="bio-svg__label" x="{{ tick.x - 3 }}" y="{{ cal.graph.height - 3 }}">{{ tick.day }}</text>
+            {% endfor %}
+
+            <polyline class="bio-svg__line bio-svg__line--physical" points="{{ cal.graph.points.physical }}" />
+            <polyline class="bio-svg__line bio-svg__line--emotional" points="{{ cal.graph.points.emotional }}" />
+            <polyline class="bio-svg__line bio-svg__line--intellectual" points="{{ cal.graph.points.intellectual }}" />
+
+            <text class="bio-svg__legend-text bio-svg__legend-text--physical" x="356" y="14">Physical</text>
+            <text class="bio-svg__legend-text bio-svg__legend-text--emotional" x="417" y="14">Emotional</text>
+            <text class="bio-svg__legend-text bio-svg__legend-text--intellectual" x="482" y="14">Intellectual</text>
+          </svg>
+          {% elif biorhythm.image_data_uri %}
           <img src="{{ biorhythm.image_data_uri }}" alt="Biorhythm graph — Physical, Emotional, Intellectual cycles" />
           {% else %}
-          <p style="color:#999;font-size:9pt;text-align:center;">Biorhythm graph not available — BioWell PDF required.</p>
+          <p style="color:#999;font-size:9pt;text-align:center;">Biorhythm graph not available — DOB required.</p>
           {% endif %}
         </div>
       </div>
 
-      <!-- ── Biorhythm Legend ── -->
-      <div class="bio-legend">
-        <div class="bio-legend__item">
-          <span class="bio-legend__icon">💪</span>
-          <span>Physical</span>
+      <!-- ── Biorhythm Interpretation Guide ── -->
+      <div class="bio-guide">
+        <div class="bio-guide__group">
+          <span class="bio-guide__letter">P</span>
+          <div>
+            <span class="bio-guide__name">Physical</span>
+            <span class="bio-guide__line"><span class="bio-guide__state bio-guide__state--hyper">Hyper</span>: stamina high; train with stretching.</span>
+            <span class="bio-guide__line"><span class="bio-guide__state bio-guide__state--hypo">Hypo</span>: recovery low; use sleep, walking or yoga.</span>
+          </div>
         </div>
-        <div class="bio-legend__item">
-          <span class="bio-legend__icon">❤</span>
-          <span>Emotional</span>
+        <div class="bio-guide__group">
+          <span class="bio-guide__letter">E</span>
+          <div>
+            <span class="bio-guide__name">Emotional</span>
+            <span class="bio-guide__line"><span class="bio-guide__state bio-guide__state--hyper">Hyper</span>: creative and sensitive; breathe to ground.</span>
+            <span class="bio-guide__line"><span class="bio-guide__state bio-guide__state--hypo">Hypo</span>: low motivation; protect quiet time.</span>
+          </div>
         </div>
-        <div class="bio-legend__item">
-          <span class="bio-legend__icon">🧠</span>
-          <span>Intellectual</span>
-        </div>
-        <div class="bio-legend__item">
-          <span class="bio-legend__dot bio-legend__dot--hyper"></span>
-          <span>Hyper</span>
-        </div>
-        <div class="bio-legend__item">
-          <span class="bio-legend__dot bio-legend__dot--neutral"></span>
-          <span>Neutral</span>
-        </div>
-        <div class="bio-legend__item">
-          <span class="bio-legend__dot bio-legend__dot--hypo"></span>
-          <span>Hypo</span>
+        <div class="bio-guide__group">
+          <span class="bio-guide__letter">I</span>
+          <div>
+            <span class="bio-guide__name">Intellectual</span>
+            <span class="bio-guide__line"><span class="bio-guide__state bio-guide__state--hyper">Hyper</span>: logic sharp; avoid late racing thoughts.</span>
+            <span class="bio-guide__line"><span class="bio-guide__state bio-guide__state--hypo">Hypo</span>: focus low; choose routine tasks.</span>
+          </div>
         </div>
       </div>
 
       <!-- ── Biorhythm Calendar Grid ── -->
-      {% set cal = biorhythm.calendar if biorhythm and biorhythm.calendar else none %}
       {% if cal %}
       <div class="bio-cal">
         <div class="bio-cal__hd">
@@ -2578,37 +2730,26 @@
           <div class="bio-cal__cell bio-cal__cell--empty"></div>
           {% endfor %}
 
-          <!-- Day cells -->
-          {% set watch_day_nums = {} %}
-          {% for wd in cal.watch_days %}
-            {% set _ = watch_day_nums.update({wd.day: wd.type}) %}
-          {% endfor %}
-
           {% for d in cal.days %}
-          {% set cell_class = '' %}
-          {% if d.day in watch_day_nums %}
-            {% if watch_day_nums[d.day] == 'caution' %}
-              {% set cell_class = ' bio-cal__cell--caution' %}
-            {% elif watch_day_nums[d.day] == 'peak' %}
-              {% set cell_class = ' bio-cal__cell--peak' %}
-            {% endif %}
-          {% endif %}
+          {% set cell_class = ' bio-cal__cell--' ~ d.type if d.type in ['caution', 'peak'] else '' %}
           <div class="bio-cal__cell{{ cell_class }}">
             <div class="bio-cal__day">{{ d.day }}</div>
+            <span class="bio-cal__state bio-type--{{ d.type }}">{{ d.interpretation.title }}</span>
             <div class="bio-cal__icons">
               <div class="bio-cal__icon">
-                <span class="bio-cal__icon-emoji">💪</span>
-                <span class="bio-cal__icon-dot bio-dot--{{ d.physical.state }}"></span>
+                <span class="bio-cal__cycle bio-state--{{ d.physical.state }}">P</span>
+                <span class="bio-cal__pct">{{ "%+d"|format(d.physical.percent) }}%</span>
               </div>
               <div class="bio-cal__icon">
-                <span class="bio-cal__icon-emoji">❤</span>
-                <span class="bio-cal__icon-dot bio-dot--{{ d.emotional.state }}"></span>
+                <span class="bio-cal__cycle bio-state--{{ d.emotional.state }}">E</span>
+                <span class="bio-cal__pct">{{ "%+d"|format(d.emotional.percent) }}%</span>
               </div>
               <div class="bio-cal__icon">
-                <span class="bio-cal__icon-emoji">🧠</span>
-                <span class="bio-cal__icon-dot bio-dot--{{ d.intellectual.state }}"></span>
+                <span class="bio-cal__cycle bio-state--{{ d.intellectual.state }}">I</span>
+                <span class="bio-cal__pct">{{ "%+d"|format(d.intellectual.percent) }}%</span>
               </div>
             </div>
+            <div class="bio-cal__action">{{ d.interpretation.action }}</div>
           </div>
           {% endfor %}
         </div>
@@ -2639,9 +2780,7 @@
         alt="Kadamba Nanocare logo" />
       <h2 class="ph__title" style="font-size:20pt;">Brain Analysis</h2>
       <div class="ph__patient">
-        Patient Name:&nbsp;<strong>{{ patient.name }}</strong><br>Age:&nbsp;<strong>{{ patient.age
-          }}</strong><br>Patient
-        ID:&nbsp;<strong>{{ patient.id|default("—") }}</strong>
+        Patient Name:&nbsp;<strong>{{ patient.name }}</strong><br>DOB:&nbsp;<strong>{{ patient.dob|default("—") }}</strong><br>Date:&nbsp;<strong>{{ patient.date|default("—") }}</strong>
       </div>
     </header>
 
@@ -2862,9 +3001,7 @@
         alt="Kadamba Nanocare logo" />
       <h2 class="ph__title">Wellness Offerings</h2>
       <div class="ph__patient">
-        Patient Name:&nbsp;<strong>{{ patient.name }}</strong><br>Age:&nbsp;<strong>{{ patient.age
-          }}</strong><br>Patient
-        ID:&nbsp;<strong>{{ patient.id|default("—") }}</strong>
+        Patient Name:&nbsp;<strong>{{ patient.name }}</strong><br>DOB:&nbsp;<strong>{{ patient.dob|default("—") }}</strong><br>Date:&nbsp;<strong>{{ patient.date|default("—") }}</strong>
       </div>
     </header>
 
