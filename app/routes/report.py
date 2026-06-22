@@ -1,4 +1,10 @@
-"""API routes — report generation, retrieval, and PDF download."""
+"""API routes — report generation, retrieval, and PDF download.
+
+.. deprecated::
+    These routes are preserved for backward compatibility.
+    New integrations should use ``/api/v1/wellness/`` endpoints
+    defined in ``wellness_v1.py``.
+"""
 import hashlib
 import json
 import logging
@@ -575,7 +581,7 @@ async def health():
     return {"service": "Nanocare Wellness Report Engine", **info}
 
 
-@router.post("/generate")
+@router.post("/generate", deprecated=True)
 async def generate_report(
     request: Request,
     ecg: UploadFile = File(..., description="ECG PDF report"),
@@ -676,7 +682,7 @@ async def generate_report(
     }
 
 
-@router.post("/doctor/reports/draft")
+@router.post("/doctor/reports/draft", deprecated=True)
 async def create_doctor_draft_report(
     ecg: UploadFile = File(..., description="ECG PDF report"),
     hrv: UploadFile = File(..., description="HRV PDF report"),
@@ -781,7 +787,7 @@ async def create_doctor_draft_report(
     }
 
 
-@router.get("/doctor/reports/{draft_report_id}")
+@router.get("/doctor/reports/{draft_report_id}", deprecated=True)
 async def get_doctor_report(draft_report_id: str):
     """Fetch a draft or approved doctor report for review."""
     draft_dir = DRAFTS_DIR / draft_report_id
@@ -798,7 +804,7 @@ async def get_doctor_report(draft_report_id: str):
     }
 
 
-@router.patch("/doctor/reports/{draft_report_id}")
+@router.patch("/doctor/reports/{draft_report_id}", deprecated=True)
 async def update_doctor_draft_report(
     draft_report_id: str,
     payload: dict = Body(...),
@@ -828,7 +834,7 @@ async def update_doctor_draft_report(
     }
 
 
-@router.post("/doctor/reports/{draft_report_id}/approve")
+@router.post("/doctor/reports/{draft_report_id}/approve", deprecated=True)
 async def approve_doctor_draft_report(request: Request, draft_report_id: str):
     """Approve a draft, generate final PDF, and save approved patient history."""
     draft_dir = DRAFTS_DIR / draft_report_id
@@ -940,7 +946,7 @@ async def get_report_pdf(report_id: str):
 
 # ── User Dashboard Endpoints (approved reports only) ─────────────────
 
-@router.get("/user/patient/{patient_id}/dashboard")
+@router.get("/user/patient/{patient_id}/dashboard", deprecated=True)
 async def get_user_patient_dashboard(
     request: Request,
     patient_id: str,
@@ -983,7 +989,7 @@ async def get_user_patient_dashboard(
     }
 
 
-@router.get("/user/patient/{patient_id}/reports")
+@router.get("/user/patient/{patient_id}/reports", deprecated=True)
 async def get_user_patient_reports(
     request: Request,
     patient_id: str,
@@ -1001,14 +1007,14 @@ async def get_user_patient_reports(
     return {"patient_id": patient_id, "reports": reports, "total": len(reports)}
 
 
-@router.get("/user/report/{report_id}/summary")
+@router.get("/user/report/{report_id}/summary", deprecated=True)
 async def get_user_report_summary(request: Request, report_id: str):
     """Return an approved report summary for web/mobile dashboards."""
     report_data = _load_approved_report(report_id)
     return _report_summary_payload(request, report_id, report_data)
 
 
-@router.get("/user/report/{report_id}/pdf")
+@router.get("/user/report/{report_id}/pdf", deprecated=True)
 async def get_user_report_pdf(report_id: str):
     """Download an approved report PDF only."""
     _load_approved_report(report_id)
@@ -1022,7 +1028,7 @@ async def get_user_report_pdf(report_id: str):
     )
 
 
-@router.get("/user/report/{report_id}")
+@router.get("/user/report/{report_id}", deprecated=True)
 async def get_user_report(report_id: str, detail: str = "full"):
     """Return approved full report JSON, or compact summary fields if requested."""
     report_data = _load_approved_report(report_id)

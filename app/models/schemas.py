@@ -129,3 +129,57 @@ class HealthResponse(BaseModel):
     configured_model: str = ""
     available_models: list[str] = Field(default_factory=list)
     model_loaded: bool = False
+
+
+# ═════════════════════════════════════════════════════════════════════
+# v1 Integration API response models
+# ═════════════════════════════════════════════════════════════════════
+
+class V1DraftCreateResponse(BaseModel):
+    """Response from POST /api/v1/wellness/reports/drafts."""
+    draft_id: str
+    patient_id: str
+    status: ReportStatus = "draft"
+    created_by_doctor_id: str = ""
+    report: dict
+    cached: bool = False
+    extraction_summary: dict = Field(default_factory=dict)
+
+
+class V1ApprovalResponse(BaseModel):
+    """Response from POST /api/v1/wellness/reports/drafts/{id}/approve.
+
+    Includes the full approved report so the doctor can review the
+    final version immediately after approval.
+    """
+    report_id: str
+    draft_id: str
+    status: ReportStatus = "approved"
+    created_by_doctor_id: str = ""
+    approved_by_doctor_id: str = ""
+    generated_report: str = ""  # PDF URL
+    report: dict = Field(default_factory=dict)  # full approved report
+    summary: dict = Field(default_factory=dict)
+    history: dict = Field(default_factory=dict)
+
+
+class V1ReportSummaryResponse(BaseModel):
+    """Compact summary for web/mobile dashboards."""
+    report_id: str
+    patient_id: str
+    date: str = ""
+    generated_report: str = ""
+    summary: dict = Field(default_factory=dict)
+    metrics: dict = Field(default_factory=dict)
+    systems: dict = Field(default_factory=dict)
+    wellness: dict = Field(default_factory=dict)
+    biorhythm: dict = Field(default_factory=dict)
+
+
+class V1DashboardResponse(BaseModel):
+    """Response from GET /api/v1/wellness/patients/{id}/dashboard."""
+    patient_id: str
+    patient: dict = Field(default_factory=dict)
+    latest_report: dict | None = None
+    history: dict = Field(default_factory=dict)
+    reports: list[dict] = Field(default_factory=list)
