@@ -337,6 +337,132 @@ label {
   gap: 8px;
 }
 
+.section-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.detail-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px;
+}
+
+.detail-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.detail-card h4 {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.item-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 5px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.item-list li span {
+  display: block;
+  color: var(--muted);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(92px, 1fr));
+  gap: 8px;
+}
+
+.weekday {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.day-cell {
+  min-height: 148px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.day-cell.empty {
+  background: #f1f4ef;
+}
+
+.day-cell.caution {
+  background: #fff8eb;
+  border-color: #e0bf82;
+}
+
+.day-cell.peak {
+  background: #edf6ff;
+  border-color: #a9cce7;
+}
+
+.day-number {
+  font-weight: 850;
+}
+
+.cycle-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.cycle-chip {
+  min-height: 21px;
+  border-radius: 999px;
+  padding: 2px 6px;
+  background: #eef2ec;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.cycle-chip.hyper {
+  background: #e8f4ee;
+  color: var(--green);
+}
+
+.cycle-chip.hypo {
+  background: #fbebea;
+  color: var(--red);
+}
+
+.cycle-chip.neutral {
+  background: #edf1eb;
+  color: var(--muted);
+}
+
+.day-title,
+.day-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
 .json {
   margin: 0;
   max-height: 520px;
@@ -386,6 +512,11 @@ label {
   .grid-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .calendar-grid,
+  .section-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
@@ -397,6 +528,8 @@ label {
   .grid-2,
   .grid-3,
   .grid-4,
+  .calendar-grid,
+  .section-grid,
   .row,
   .row.compact {
     grid-template-columns: 1fr;

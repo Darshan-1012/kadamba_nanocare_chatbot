@@ -17,6 +17,8 @@ from pathlib import Path
 # pyrefly: ignore [missing-import]
 from jinja2 import Environment, FileSystemLoader
 
+from app.engine.dmit_parser import safe_personality_label
+
 log = logging.getLogger(__name__)
 
 # Paths
@@ -114,13 +116,7 @@ def _system_summary_points(value, limit: int = 2) -> list[str]:
 
 def _dmit_personality_label(value) -> str:
     """Convert DMIT bird labels into client-safe personality wording."""
-    label = str(value or "").strip().lower()
-    return {
-        "dove": "Calm",
-        "eagle": "Straight forward",
-        "peacock": "Expressive",
-        "owl": "Analytical",
-    }.get(label, str(value or "Not available").strip().title())
+    return safe_personality_label(value) or "Not available"
 
 
 def _dmit_phrase(value) -> str:

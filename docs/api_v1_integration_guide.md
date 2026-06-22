@@ -4,6 +4,11 @@
 >
 > **OpenAPI Docs**: `http://localhost:8001/docs` (Swagger UI)
 
+Related focused docs:
+
+- Postman/cURL cookbook: [`docs/api_v1_postman_curls.md`](api_v1_postman_curls.md)
+- Web/mobile frontend guide: [`docs/frontend_v1_integration.md`](frontend_v1_integration.md)
+
 ---
 
 ## Authentication
@@ -34,9 +39,19 @@
 
 ## Endpoints
 
+### 0. Health Check
+
+```bash
+curl http://localhost:8001/api/v1/wellness/health
+```
+
+Use this to confirm the v1 base URL before testing draft/report flows.
+
+---
+
 ### 1. Create Draft
 
-Upload 6 device files to generate a wellness report draft.
+Upload the core device files to generate a wellness report draft. DMIT is optional but recommended when available.
 
 ```bash
 curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts \
@@ -48,6 +63,7 @@ curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts \
   -F biowell=@biowell_report.pdf \
   -F biores=@bioresonance_report.pdf \
   -F inbody=@inbody_scan.jpg \
+  -F dmit=@dmit_report.pdf \
   -F patient_id=PAT001 \
   -F "name=John Doe" \
   -F dob=1990-05-15 \
@@ -61,13 +77,24 @@ curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts \
   "patient_id": "PAT001",
   "status": "draft",
   "created_by_doctor_id": "doc_123",
-  "report": { "patient": {...}, "metrics": {...}, "dimensions": {...}, ... },
+  "report": {
+    "patient": {...},
+    "metrics": {...},
+    "dimensions": {...},
+    "body_systems": {...},
+    "functional_summary": {...},
+    "dmit_summary": {...},
+    "wellness_offerings": {...},
+    "biorhythm_calendar": {...}
+  },
   "cached": false,
   "extraction_summary": { "ecg": "ok", "hrv": "ok", ... }
 }
 ```
 
 **Idempotency**: Sending the same files + patient inputs returns the existing draft (`"cached": true`). No re-extraction occurs.
+
+`dmit` is optional. When supplied, v1 draft/report responses include `report.dmit_summary` for doctor/customer views.
 
 ---
 
@@ -186,11 +213,22 @@ curl http://localhost:8001/api/v1/wellness/patients/PAT001/dashboard
 {
   "patient_id": "PAT001",
   "patient": { "id": "PAT001", "name": "John D.", "dob": "1990-05-15" },
-  "latest_report": { "report_id": "...", "summary": {...}, ... },
+  "latest_report": {
+    "report_id": "...",
+    "summary": {...},
+    "metrics": {...},
+    "body_systems": {...},
+    "functional_summary": {...},
+    "dmit": {...},
+    "wellness_offerings": {...},
+    "biorhythm_calendar": { "days": [...], "watch_days": [...] }
+  },
   "history": { "dates": [...], "stats": {...}, "dimensions": {...}, ... },
   "reports": [ ... ]
 }
 ```
+
+The customer dashboard exposes only approved reports. Draft JSON is never returned from customer endpoints.
 
 ---
 

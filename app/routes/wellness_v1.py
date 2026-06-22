@@ -9,12 +9,15 @@ Mount at: ``/api/v1/wellness``
 import json
 import logging
 import shutil
+from copy import deepcopy
 from pathlib import Path
 
 from fastapi import APIRouter, Body, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 
 from app.config import REPORTS_DIR
+from app.engine.dmit_parser import safe_personality_label
+from app.engine.llm_client import check_health
 from app.output.html_renderer import render_pdf_async as generate_pdf
 from app.engine.patient_history import get_chart_data
 from app.services import draft_service
@@ -50,11 +53,131 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
+@router.get("/health", summary="Health check")
+async def v1_health():
+    """Check service and LLM connectivity from the v1 API base URL."""
+    info = await check_health()
+    return {"service": "Nanocare Wellness Report Engine", "api_version": "v1", **info}
+
+
 # ── URL builders (v1 route names) ────────────────────────────────────
 
 def _v1_pdf_url(request: Request, report_id: str) -> str:
     """Build the PDF download URL using v1 route names."""
     return str(request.url_for("v1_get_report_pdf", report_id=report_id))
+
+
+def _v1_body_systems(report_data: dict) -> dict:
+    """Merge system scores with generated functional summaries."""
+    report_data = report_data or {}
+    systems = report_data.get("systems", {}) or {}
+    summaries = report_data.get("system_summaries", {}) or {}
+    return {
+        key: {
+            **(item if isinstance(item, dict) else {"value": item}),
+            "functional_summary": summaries.get(key, ""),
+        }
+        for key, item in systems.items()
+    }
+
+
+def _v1_dmit_summary(report_data: dict) -> dict:
+    """Return the DMIT block in a display-friendly but complete shape."""
+    report_data = report_data or {}
+    dmit = report_data.get("dmit", {}) or {}
+    if not dmit:
+        return {"available": False}
+    personality = dmit.get("personality", {}) or {}
+    return {
+        "available": True,
+        "patient": dmit.get("patient", {}),
+        "brain_dominance": dmit.get("brain_dominance", {}),
+        "tfrc": dmit.get("tfrc", {}),
+        "multiple_intelligences": dmit.get("multiple_intelligences", {}),
+        "brain_lobes": dmit.get("brain_lobes", {}),
+        "learning_styles": dmit.get("learning_styles", {}),
+        "personality": {
+            "primary": safe_personality_label(personality.get("primary")),
+            "secondary": safe_personality_label(personality.get("secondary")),
+        },
+        "planning": dmit.get("planning", {}),
+        "swot": dmit.get("swot", {}),
+        "brain_traits": dmit.get("brain_traits", {}),
+        "neuron_distribution": dmit.get("neuron_distribution", {}),
+    }
+
+
+def _v1_wellness_offerings(report_data: dict) -> dict:
+    """Group wellness guidance so doctor/customer UIs are easier to scan."""
+    report_data = report_data or {}
+    wellness = report_data.get("wellness", {}) or {}
+    food = report_data.get("food_recommendations", {}) or {}
+    diet = food.get("diet", {}) or {}
+    lifestyle = food.get("lifestyle", {}) or {}
+    return {
+        "nutrition": {
+            "summary": wellness.get("diet", ""),
+            "recommended": diet.get("recommended", []),
+            "avoid": diet.get("avoid", []),
+            "functional_foods": food.get("functional_foods", []),
+        },
+        "movement": {
+            "yoga": food.get("yoga", []) or wellness.get("yoga", ""),
+            "physical_activity": wellness.get("physicalActivity", ""),
+        },
+        "recovery": {
+            "sleep": wellness.get("sleep", ""),
+            "stress": wellness.get("stress", ""),
+        },
+        "support": {
+            "supplements": wellness.get("supplements", ""),
+            "medicine": wellness.get("medicine", ""),
+            "medicines": food.get("medicines", []),
+            "herbal_support": food.get("herbal_support", []),
+        },
+        "lifestyle": {
+            "dos": lifestyle.get("dos", []),
+            "donts": lifestyle.get("donts", []),
+        },
+        "priority_systems": food.get("priority_systems", []),
+    }
+
+
+def _v1_biorhythm_calendar(report_data: dict) -> dict:
+    """Return full day-by-day biorhythm calendar for customer views."""
+    report_data = report_data or {}
+    calendar = report_data.get("biorhythm", {}).get("calendar", {}) or {}
+    return {
+        "month_name": calendar.get("month_name", ""),
+        "year": calendar.get("year"),
+        "month": calendar.get("month"),
+        "first_weekday": calendar.get("first_weekday", 0),
+        "num_days": calendar.get("num_days", 0),
+        "today": biorhythm_summary(report_data).get("today", {}),
+        "days": calendar.get("days", []),
+        "watch_days": calendar.get("watch_days", []),
+        "graph": calendar.get("graph", {}),
+        "rules": calendar.get("rules", {}),
+    }
+
+
+def _v1_public_report(report_data: dict) -> dict:
+    """Add v1 display sections while preserving the original report keys."""
+    report_data = report_data or {}
+    public_report = deepcopy(report_data)
+    dmit = public_report.get("dmit")
+    if isinstance(dmit, dict):
+        personality = dmit.get("personality", {}) or {}
+        dmit["personality"] = {
+            "primary": safe_personality_label(personality.get("primary")),
+            "secondary": safe_personality_label(personality.get("secondary")),
+        }
+    public_report["body_systems"] = _v1_body_systems(report_data)
+    public_report["functional_summary"] = report_data.get("system_summaries", {}) or {}
+    public_report["dmit_summary"] = _v1_dmit_summary(report_data)
+    public_report["wellness_offerings"] = _v1_wellness_offerings(report_data)
+    public_report["biorhythm_calendar"] = _v1_biorhythm_calendar(report_data)
+    return public_report
 
 
 def _v1_summary_payload(request: Request, report_id: str, report_data: dict) -> dict:
@@ -66,10 +189,17 @@ def _v1_summary_payload(request: Request, report_id: str, report_data: dict) -> 
         "date": patient.get("date", ""),
         "generated_report": _v1_pdf_url(request, report_id),
         "summary": domain_scores(report_data),
+        "dimensions": report_data.get("dimensions", {}),
         "metrics": key_metrics(report_data),
         "systems": report_data.get("systems", {}),
+        "body_systems": _v1_body_systems(report_data),
+        "functional_summary": report_data.get("system_summaries", {}) or {},
+        "interpretations": report_data.get("interpretations", {}) or {},
         "wellness": wellness_summary(report_data),
+        "wellness_offerings": _v1_wellness_offerings(report_data),
         "biorhythm": biorhythm_summary(report_data),
+        "biorhythm_calendar": _v1_biorhythm_calendar(report_data),
+        "dmit": _v1_dmit_summary(report_data),
     }
 
 
@@ -135,7 +265,7 @@ async def v1_create_draft(
                 "patient_id": existing["patient_id"],
                 "status": existing["status"],
                 "created_by_doctor_id": existing.get("doctor_id") or "",
-                "report": apply_cached_recommendations(draft_json or {}),
+                "report": _v1_public_report(apply_cached_recommendations(draft_json or {})),
                 "cached": True,
                 "extraction_summary": existing.get("extraction_summary") or {},
             }
@@ -164,7 +294,7 @@ async def v1_create_draft(
             "patient_id": existing_wf["patient_id"],
             "status": existing_wf["status"],
             "created_by_doctor_id": existing_wf.get("doctor_id") or "",
-            "report": apply_cached_recommendations(draft_json or {}),
+            "report": _v1_public_report(apply_cached_recommendations(draft_json or {})),
             "cached": True,
             "existing_draft": True,
             "extraction_summary": existing_wf.get("extraction_summary") or {},
@@ -227,7 +357,7 @@ async def v1_create_draft(
         "patient_id": patient_id,
         "status": "draft",
         "created_by_doctor_id": effective_doctor_id,
-        "report": report_data,
+        "report": _v1_public_report(report_data),
         "cached": bool(cached),
         "extraction_summary": extraction_sum,
     }
@@ -248,7 +378,7 @@ async def v1_get_draft(draft_id: str):
             "patient_id": wf["patient_id"],
             "status": wf["status"],
             "created_by_doctor_id": wf.get("doctor_id") or "",
-            "report": apply_cached_recommendations(draft_json or {}),
+            "report": _v1_public_report(apply_cached_recommendations(draft_json or {})),
         }
 
     # File-based fallback
@@ -263,7 +393,7 @@ async def v1_get_draft(draft_id: str):
         "patient_id": metadata.get("patient", {}).get("id", ""),
         "status": metadata.get("status", "draft"),
         "created_by_doctor_id": metadata.get("doctor_id", ""),
-        "report": apply_cached_recommendations(read_json(json_path)),
+        "report": _v1_public_report(apply_cached_recommendations(read_json(json_path))),
     }
 
 
@@ -308,7 +438,7 @@ async def v1_patch_draft(
     return {
         "draft_id": draft_id,
         "status": "draft",
-        "report": report_data,
+        "report": _v1_public_report(report_data),
     }
 
 
@@ -354,7 +484,7 @@ async def v1_approve_draft(
                 "created_by_doctor_id": (wf or {}).get("doctor_id") or file_meta.get("doctor_id", ""),
                 "approved_by_doctor_id": (wf or {}).get("approved_by") or approving_doctor,
                 "generated_report": _v1_pdf_url(request, report_id),
-                "report": approved_json,
+                "report": _v1_public_report(approved_json),
                 "summary": _v1_summary_payload(request, report_id, approved_json),
                 "history": {},
             }
@@ -391,7 +521,7 @@ async def v1_approve_draft(
                 "created_by_doctor_id": (wf or {}).get("doctor_id") or file_meta.get("doctor_id", ""),
                 "approved_by_doctor_id": approving_doctor,
                 "generated_report": _v1_pdf_url(request, report_id),
-                "report": report_data,
+                "report": _v1_public_report(report_data),
                 "summary": _v1_summary_payload(request, report_id, report_data),
                 "history": history_data,
             }
@@ -461,7 +591,7 @@ async def v1_approve_draft(
         "created_by_doctor_id": creating_doctor,
         "approved_by_doctor_id": approving_doctor,
         "generated_report": _v1_pdf_url(request, report_id),
-        "report": report_data,
+        "report": _v1_public_report(report_data),
         "summary": _v1_summary_payload(request, report_id, report_data),
         "history": history_data,
     }
@@ -505,7 +635,7 @@ async def v1_patient_active_draft(patient_id: str):
         "patient_id": patient_id,
         "status": "draft",
         "created_by_doctor_id": row.get("doctor_id") or "",
-        "report": apply_cached_recommendations(draft_json or {}),
+        "report": _v1_public_report(apply_cached_recommendations(draft_json or {})),
     }
 
 
@@ -582,7 +712,7 @@ async def v1_patient_dashboard(
 
 
 @router.get("/reports/{report_id}", summary="Get an approved report")
-async def v1_get_report(report_id: str):
+async def v1_get_report(request: Request, report_id: str, detail: str = "full"):
     """Return the full approved report JSON."""
     wf = draft_service.get_by_report_id(report_id)
     if wf:
@@ -590,13 +720,17 @@ async def v1_get_report(report_id: str):
         if isinstance(approved_json, str):
             approved_json = json.loads(approved_json)
         if approved_json:
+            approved_json = apply_cached_recommendations(approved_json)
             return {
                 "report_id": report_id,
                 "patient_id": wf.get("patient_id", ""),
                 "status": "approved",
                 "created_by_doctor_id": wf.get("doctor_id") or "",
                 "approved_by_doctor_id": wf.get("approved_by") or "",
-                "report": apply_cached_recommendations(approved_json),
+                "generated_report": _v1_pdf_url(request, report_id),
+                "summary": _v1_summary_payload(request, report_id, approved_json),
+                "detail": detail,
+                "report": _v1_public_report(approved_json),
             }
 
     # File-based fallback
@@ -606,11 +740,15 @@ async def v1_get_report(report_id: str):
     metadata = load_metadata(REPORTS_DIR / report_id)
     if metadata.get("status") not in (None, "", "approved"):
         raise HTTPException(404, f"Approved report {report_id} not found")
+    report_data = apply_cached_recommendations(read_json(json_path))
     return {
         "report_id": report_id,
         "patient_id": metadata.get("patient", {}).get("id", ""),
         "status": "approved",
-        "report": apply_cached_recommendations(read_json(json_path)),
+        "generated_report": _v1_pdf_url(request, report_id),
+        "summary": _v1_summary_payload(request, report_id, report_data),
+        "detail": detail,
+        "report": _v1_public_report(report_data),
     }
 
 

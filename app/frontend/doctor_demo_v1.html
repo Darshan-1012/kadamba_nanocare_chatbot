@@ -287,7 +287,7 @@
             </button>
             <button class="step-button" data-step="4" type="button">
               <span class="step-number">4</span>
-              <span>Clinical Review<small>Biorhythm and wellness</small></span>
+              <span>Clinical Review<small>Biorhythm and offerings</small></span>
             </button>
             <button class="step-button" data-step="5" type="button">
               <span class="step-number">5</span>
@@ -384,11 +384,16 @@
                 <label>Nadi Pulse <input id="metric_nadiPulse" type="number"></label>
               </div>
             </div>
+
+            <div class="edit-card">
+              <h3>DMIT Analysis</h3>
+              <div id="dmitPanel" class="list"></div>
+            </div>
           </section>
 
           <section id="step3" class="step-page">
             <div class="edit-card">
-              <h3>Body System Scores</h3>
+              <h3>Body System Scores And Functional Summary</h3>
               <div id="systemsEditor" class="list"></div>
             </div>
           </section>
@@ -421,6 +426,11 @@
                 <label>Supplements <textarea id="wellness_supplements"></textarea></label>
                 <label>Medicine <textarea id="wellness_medicine"></textarea></label>
               </div>
+            </div>
+
+            <div class="edit-card">
+              <h3>Organized Wellness Offerings</h3>
+              <div id="wellnessOfferingsPreview" class="list"></div>
             </div>
           </section>
 
@@ -566,6 +576,7 @@
       const dimensions = report.dimensions || {};
       const metrics = report.metrics || {};
       const systems = report.systems || {};
+      const systemSummaries = report.system_summaries || report.functional_summary || {};
       const wellness = report.wellness || {};
 
       setValue("editName", patient.name);
@@ -581,6 +592,13 @@
 
       metricKeys.forEach((key) => setValue(`metric_${key}`, metrics[key]));
       wellnessKeys.forEach((key) => setValue(`wellness_${key}`, wellness[key]));
+      Demo.renderDmit("dmitPanel", report.dmit_summary || report.dmit || {});
+      Demo.renderWellnessOfferings(
+        "wellnessOfferingsPreview",
+        report.wellness_offerings || {},
+        wellness,
+        report.food_recommendations || {},
+      );
 
       Demo.$("systemsEditor").innerHTML = Object.entries(systems).map(([key, item]) => `
         <div class="edit-card">
@@ -595,6 +613,7 @@
             </label>
             <label>Display Status <input id="system_${key}_displayStatus" value="${item.displayStatus || item.status || ""}"></label>
           </div>
+          <label>Functional Summary <textarea id="system_${key}_functionalSummary">${item.functional_summary || systemSummaries[key] || ""}</textarea></label>
         </div>
       `).join("") || Demo.empty("No body system data in draft.");
 
@@ -718,6 +737,7 @@
         dimensions: {},
         metrics: {},
         systems: {},
+        system_summaries: {},
         wellness: {},
       };
 
@@ -736,6 +756,7 @@
           status: getText(`system_${key}_status`),
           displayStatus: getText(`system_${key}_displayStatus`),
         };
+        report.system_summaries[key] = getText(`system_${key}_functionalSummary`);
       });
 
       return clean({ report });

@@ -30,6 +30,15 @@ def _serialize_row(row: dict) -> dict:
     return out
 
 
+def _bounded_limit(limit: int, *, default: int = 20, maximum: int = 100) -> int:
+    """Keep patient history queries from accidentally requesting huge result sets."""
+    try:
+        value = int(limit)
+    except (TypeError, ValueError):
+        return default
+    return max(1, min(value, maximum))
+
+
 # ── Lookups ──────────────────────────────────────────────────────────
 
 def find_draft_by_source_hash(
@@ -192,10 +201,23 @@ def get_approved_reports(
     limit: int = 20,
 ) -> list[dict]:
     """Return approved workflow rows for a patient, most recent first."""
-    rows = execute_query(
-        "SELECT * FROM wellness_report_workflow "
+    limit = _bounded_limit(limit)
+    id_rows = execute_query(
+        "SELECT id FROM wellness_report_workflow "
+        "FORCE INDEX (idx_wf_patient_status_approved_at) "
         "WHERE patient_id = %s AND status = 'approved' "
-        "ORDER BY approved_at DESC LIMIT %s",
+        "ORDER BY approved_at DESC, id DESC LIMIT %s",
         (patient_id, limit),
     )
-    return [_serialize_row(r) for r in rows]
+    ids = [row["id"] for row in id_rows]
+    if not ids:
+        return []
+
+    placeholders = ", ".join(["%s"] * len(ids))
+    rows = execute_query(
+        f"SELECT * FROM wellness_report_workflow WHERE id IN ({placeholders})",
+        tuple(ids),
+    )
+    rows_by_id = {row["id"]: row for row in rows}
+    ordered_rows = [rows_by_id[row_id] for row_id in ids if row_id in rows_by_id]
+    return [_serialize_row(r) for r in ordered_rows]

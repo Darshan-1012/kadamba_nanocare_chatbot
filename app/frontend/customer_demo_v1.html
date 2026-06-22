@@ -65,8 +65,9 @@
         </header>
         <div class="tabs">
           <button class="active" data-tab="summaryView" type="button">Summary</button>
-          <button data-tab="systemsView" type="button">Systems</button>
-          <button data-tab="wellnessView" type="button">Wellness</button>
+          <button data-tab="systemsView" type="button">Body Systems</button>
+          <button data-tab="dmitView" type="button">DMIT</button>
+          <button data-tab="offeringsView" type="button">Offerings</button>
           <button data-tab="biorhythmView" type="button">Biorhythm</button>
           <button data-tab="jsonView" type="button">JSON</button>
         </div>
@@ -74,9 +75,11 @@
           <div id="summaryView" class="view active">
             <div id="scoreGrid" class="grid-4"></div>
             <div id="metricGrid" class="grid-4"></div>
+            <div id="dimensionList" class="list"></div>
           </div>
           <div id="systemsView" class="view"><div id="systemsList" class="list"></div></div>
-          <div id="wellnessView" class="view"><div id="wellnessList" class="list"></div></div>
+          <div id="dmitView" class="view"><div id="dmitPanel" class="list"></div></div>
+          <div id="offeringsView" class="view"><div id="offeringsPanel" class="list"></div></div>
           <div id="biorhythmView" class="view"><div id="biorhythmPanel" class="list"></div></div>
           <div id="jsonView" class="view"><pre id="jsonOutput" class="json">{}</pre></div>
         </div>
@@ -88,8 +91,23 @@
   <script>
     function currentSummaryPayload(payload) {
       if (payload.latest_report) return payload.latest_report;
+      if (payload.summary && payload.report) return payload.summary;
       if (payload.summary || payload.metrics || payload.systems) return payload;
       return {};
+    }
+
+    function renderDimensions(dimensions = {}) {
+      Demo.$("dimensionList").innerHTML = Object.entries(dimensions || {}).map(([key, item]) => `
+        <div class="detail-card">
+          <div class="row">
+            <strong>${Demo.labelize(key)}</strong>
+            <span>${item.score ?? "--"}</span>
+            <span class="pill ${/poor|critical|low/i.test(item.statusLabel || "") ? "attention" : ""}">${item.statusLabel || "Score"}</span>
+          </div>
+          <p>${item.description || ""}</p>
+          ${item.summary_points?.length ? `<ul class="item-list">${item.summary_points.map((point) => `<li>${point}</li>`).join("")}</ul>` : ""}
+        </div>
+      `).join("") || Demo.empty("No domain summaries available");
     }
 
     function showDashboard(payload) {
@@ -112,9 +130,23 @@
       const metrics = summaryPayload.metrics || Demo.keyMetrics(report.metrics || {});
       Demo.renderScores("scoreGrid", summary);
       Demo.renderMetrics("metricGrid", metrics);
-      Demo.renderSystems("systemsList", summaryPayload.systems || report.systems || {});
-      Demo.renderWellness("wellnessList", summaryPayload.wellness || report.wellness || {});
-      Demo.renderBiorhythm("biorhythmPanel", summaryPayload.biorhythm || report.biorhythm || {});
+      renderDimensions(summaryPayload.dimensions || report.dimensions || {});
+      Demo.renderFunctionalSystems(
+        "systemsList",
+        summaryPayload.body_systems || report.body_systems || report.systems || {},
+        summaryPayload.functional_summary || report.functional_summary || report.system_summaries || {},
+      );
+      Demo.renderDmit("dmitPanel", summaryPayload.dmit || report.dmit_summary || report.dmit || {});
+      Demo.renderWellnessOfferings(
+        "offeringsPanel",
+        summaryPayload.wellness_offerings || report.wellness_offerings || {},
+        summaryPayload.wellness || report.wellness || {},
+        report.food_recommendations || {},
+      );
+      Demo.renderBiorhythm(
+        "biorhythmPanel",
+        summaryPayload.biorhythm_calendar || report.biorhythm_calendar || summaryPayload.biorhythm || report.biorhythm || {},
+      );
       Demo.showJson("jsonOutput", payload);
       if (summaryPayload.report_id) Demo.$("reportId").value = summaryPayload.report_id;
     }

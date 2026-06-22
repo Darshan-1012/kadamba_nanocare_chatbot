@@ -28,6 +28,21 @@ _DMIT_WORD_FIXES = {
     "loose": "lose",
 }
 
+DMIT_PERSONALITY_LABELS = {
+    "dove": "Calm / Reasonable",
+    "eagle": "Straightforward / Bold",
+    "peacock": "Expressive / Social",
+    "owl": "Analytical / Observant",
+}
+
+
+def safe_personality_label(value) -> str:
+    """Convert DMIT personality animal labels into patient-safe wording."""
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    return DMIT_PERSONALITY_LABELS.get(text.lower(), text)
+
 
 def _split_joined_dmit_token(token: str) -> list[str]:
     """Split lowercase words that pdfplumber returns glued together."""
@@ -507,8 +522,8 @@ def to_deterministic_dict(result: DMITResult) -> dict:
         "brain_traits": result.brain_traits,
         "learning_styles": result.learning_styles,
         "personality": {
-            "primary": result.primary_personality,
-            "secondary": result.secondary_personality,
+            "primary": safe_personality_label(result.primary_personality),
+            "secondary": safe_personality_label(result.secondary_personality),
         },
         "planning": {
             "doing_pct": result.doing_capability_pct,
