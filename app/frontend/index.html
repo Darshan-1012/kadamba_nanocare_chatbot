@@ -16,17 +16,33 @@
     </div>
     <div class="grid-2">
       <section class="panel">
-        <header><h2>Doctor Workflow</h2></header>
+        <header><h2>Doctor Workflow <small style="color:#2f7d58">(v1 API)</small></h2></header>
         <div class="body">
-          <div class="status">Upload device reports, review draft values, approve final PDF.</div>
-          <div class="actions"><a class="nav" href="doctor_demo.html"><button type="button">Open Doctor Page</button></a></div>
+          <div class="status">Upload device reports, review draft values, approve final PDF. Uses <code>/api/v1/wellness</code> endpoints with <code>X-Doctor-Id</code> header.</div>
+          <div class="actions"><a class="nav" href="doctor_demo_v1.html"><button type="button">Open Doctor Page (v1)</button></a></div>
         </div>
       </section>
       <section class="panel">
-        <header><h2>Customer Dashboard</h2></header>
+        <header><h2>Customer Dashboard <small style="color:#2f7d58">(v1 API)</small></h2></header>
         <div class="body">
-          <div class="status">View approved report dashboard, history, reports list, and PDF.</div>
-          <div class="actions"><a class="nav" href="customer_demo.html"><button class="secondary" type="button">Open Customer Page</button></a></div>
+          <div class="status">View approved report dashboard, history, reports list, and PDF. Uses <code>/api/v1/wellness</code> endpoints.</div>
+          <div class="actions"><a class="nav" href="customer_demo_v1.html"><button type="button">Open Customer Page (v1)</button></a></div>
+        </div>
+      </section>
+    </div>
+    <div class="grid-2" style="margin-top:16px">
+      <section class="panel">
+        <header><h2>Doctor Workflow <small style="color:var(--muted)">(Legacy)</small></h2></header>
+        <div class="body">
+          <div class="status">Original demo using legacy <code>/api/doctor/*</code> routes. Deprecated — use v1 above.</div>
+          <div class="actions"><a class="nav" href="doctor_demo.html"><button class="ghost" type="button">Open Legacy Doctor Page</button></a></div>
+        </div>
+      </section>
+      <section class="panel">
+        <header><h2>Customer Dashboard <small style="color:var(--muted)">(Legacy)</small></h2></header>
+        <div class="body">
+          <div class="status">Original demo using legacy <code>/api/user/*</code> routes. Deprecated — use v1 above.</div>
+          <div class="actions"><a class="nav" href="customer_demo.html"><button class="ghost" type="button">Open Legacy Customer Page</button></a></div>
         </div>
       </section>
     </div>

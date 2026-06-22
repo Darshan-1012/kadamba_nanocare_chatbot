@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nanocare Doctor Draft Review (v1 API)</title>
+  <link rel="stylesheet" href="demo.css">
+  <style>
+    .doctor-layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .stepper {
+      display: grid;
+      gap: 8px;
+    }
+
+    .step-button {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+      min-height: 56px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+    }
+
+    .step-button.active {
+      border-color: #9fc5b3;
+      background: var(--soft-green);
+    }
+
+    .step-number {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background: var(--green);
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .step-button small {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .step-page {
+      display: none;
+    }
+
+    .step-page.active {
+      display: grid;
+      gap: 16px;
+    }
+
+    .edit-card {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .edit-card h3 {
+      font-size: 15px;
+    }
+
+    .review-band {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .page-actions {
+      position: sticky;
+      bottom: 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 12px;
+      background: linear-gradient(to top, var(--panel) 72%, rgba(255, 255, 255, 0));
+    }
+
+    .file-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .file-row strong {
+      font-size: 13px;
+    }
+
+    .bio-graph {
+      min-height: 210px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      overflow-x: auto;
+    }
+
+    .bio-legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-swatch {
+      width: 22px;
+      height: 4px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(74px, 1fr));
+      gap: 8px;
+    }
+
+    .weekday {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .day-cell {
+      min-height: 108px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 8px;
+      display: grid;
+      gap: 6px;
+      align-content: start;
+      cursor: pointer;
+    }
+
+    .day-cell.empty {
+      background: #f1f4ef;
+      cursor: default;
+    }
+
+    .day-cell.selected {
+      border-color: #6da184;
+      box-shadow: inset 0 0 0 2px #6da184;
+    }
+
+    .day-cell.caution {
+      background: #fff8eb;
+      border-color: #e0bf82;
+    }
+
+    .day-cell.peak {
+      background: #edf6ff;
+      border-color: #a9cce7;
+    }
+
+    .day-number {
+      font-weight: 850;
+    }
+
+    .cycle-row {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .cycle-chip {
+      min-height: 21px;
+      border-radius: 999px;
+      padding: 2px 6px;
+      background: #eef2ec;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .cycle-chip.hyper {
+      background: #e8f4ee;
+      color: var(--green);
+    }
+
+    .cycle-chip.hypo {
+      background: #fbebea;
+      color: var(--red);
+    }
+
+    .cycle-chip.neutral {
+      background: #edf1eb;
+      color: var(--muted);
+    }
+
+    .day-title {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    @media (max-width: 980px) {
+      .doctor-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .review-band {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .file-row,
+      .review-band,
+      .calendar-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <img src="static/images/logo.png" alt="Nanocare">
+        <div>
+          <h1>Doctor Draft Review <small style="font-size:12px;color:var(--green)">(v1 API)</small></h1>
+          <div id="workflowStatus" class="status">Upload reports to create a draft.</div>
+        </div>
+      </div>
+      <div class="nav">
+        <a href="customer_demo_v1.html">Customer Dashboard (v1)</a>
+      </div>
+    </div>
+
+    <div class="doctor-layout">
+      <aside class="panel">
+        <header>
+          <h2>Workflow</h2>
+          <span id="draftState" class="pill attention">No Draft</span>
+        </header>
+        <div class="body">
+          <label>API Base <input id="apiBase" value="http://localhost:8001/api/v1/wellness"></label>
+          <label>Doctor ID <input id="doctorId" value="doc_001" placeholder="X-Doctor-Id"></label>
+          <div class="stepper">
+            <button class="step-button active" data-step="1" type="button">
+              <span class="step-number">1</span>
+              <span>Submit Reports<small>Customer and attachments</small></span>
+            </button>
+            <button class="step-button" data-step="2" type="button">
+              <span class="step-number">2</span>
+              <span>Patient Summary<small>Scores and key metrics</small></span>
+            </button>
+            <button class="step-button" data-step="3" type="button">
+              <span class="step-number">3</span>
+              <span>Body Systems<small>System score verification</small></span>
+            </button>
+            <button class="step-button" data-step="4" type="button">
+              <span class="step-number">4</span>
+              <span>Clinical Review<small>Biorhythm and wellness</small></span>
+            </button>
+            <button class="step-button" data-step="5" type="button">
+              <span class="step-number">5</span>
+              <span>Final Approval<small>Generate approved report</small></span>
+            </button>
+          </div>
+          <div class="grid-2">
+            <label>Draft ID <input id="draftId" placeholder="draft_id"></label>
+            <label>Report ID <input id="reportId" placeholder="approved report_id"></label>
+          </div>
+          <div class="actions">
+            <button class="secondary" id="loadDraftBtn" type="button">Load Draft</button>
+            <button class="ghost" id="healthBtn" type="button">Health</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <header>
+          <h2 id="pageTitle">1. Submit Reports</h2>
+          <span id="patientBadge" class="pill attention">No Patient</span>
+        </header>
+        <div class="body">
+          <section id="step1" class="step-page active">
+            <div class="edit-card">
+              <h3>Customer Selection</h3>
+              <label>Customer
+                <select id="customerSelect">
+                  <option value="PAT-99120" data-name="Patient001" data-dob="2004-05-06">Patient001 - PAT-99120</option>
+                  <option value="P001" data-name="User Name" data-dob="2001-04-17">User Name - P001</option>
+                </select>
+              </label>
+              <div class="grid-2">
+                <label>Name <input id="patientName" value="Patient001"></label>
+                <label>Patient ID <input id="patientId" value="PAT-99120"></label>
+                <label>DOB <input id="patientDob" value="2004-05-06"></label>
+                <label>Report Date <input id="reportDate" value="2026-06-19"></label>
+              </div>
+            </div>
+
+            <div class="edit-card">
+              <h3>Device Attachments</h3>
+              <div class="file-row"><strong>ECG PDF</strong><input id="ecg" type="file" accept=".pdf"></div>
+              <div class="file-row"><strong>HRV PDF</strong><input id="hrv" type="file" accept=".pdf"></div>
+              <div class="file-row"><strong>Nadi PDF</strong><input id="nadi" type="file" accept=".pdf"></div>
+              <div class="file-row"><strong>Bio-Well PDF</strong><input id="biowell" type="file" accept=".pdf"></div>
+              <div class="file-row"><strong>Bioresonance PDF</strong><input id="biores" type="file" accept=".pdf"></div>
+              <div class="file-row"><strong>InBody Image</strong><input id="inbody" type="file" accept=".jpg,.jpeg,.png"></div>
+              <div class="file-row"><strong>DMIT PDF optional</strong><input id="dmit" type="file" accept=".pdf"></div>
+              <div class="mini-note">Creating a draft extracts and synthesizes values only. It does not generate a PDF or publish anything to the customer.</div>
+            </div>
+
+            <div class="actions">
+              <button id="createDraftBtn" type="button">Create Draft For Review</button>
+            </div>
+          </section>
+
+          <section id="step2" class="step-page">
+            <div class="edit-card">
+              <h3>Patient Information</h3>
+              <div class="grid-3">
+                <label>Name <input id="editName"></label>
+                <label>DOB <input id="editDob"></label>
+                <label>Report Date <input id="editDate"></label>
+              </div>
+            </div>
+
+            <div class="edit-card">
+              <h3>Four Domain Scores</h3>
+              <div class="grid-4">
+                <label>Physical <input id="dim_physical_score" type="number" min="0" max="100"></label>
+                <label>Psychological <input id="dim_psychological_score" type="number" min="0" max="100"></label>
+                <label>Emotional <input id="dim_emotional_score" type="number" min="0" max="100"></label>
+                <label>Spiritual <input id="dim_spiritual_score" type="number" min="0" max="100"></label>
+              </div>
+              <div class="grid-2">
+                <label>Physical Summary <textarea id="dim_physical_description"></textarea></label>
+                <label>Psychological Summary <textarea id="dim_psychological_description"></textarea></label>
+                <label>Emotional Summary <textarea id="dim_emotional_description"></textarea></label>
+                <label>Spiritual Summary <textarea id="dim_spiritual_description"></textarea></label>
+              </div>
+            </div>
+
+            <div class="edit-card">
+              <h3>Key Metrics</h3>
+              <div class="grid-4">
+                <label>Weight <input id="metric_weight" type="number" step="0.1"></label>
+                <label>BMI <input id="metric_bmi" type="number" step="0.1"></label>
+                <label>Body Fat <input id="metric_bodyFat" type="number" step="0.1"></label>
+                <label>Heart Rate <input id="metric_heartRate" type="number"></label>
+                <label>Bio Energy <input id="metric_bioEnergy" type="number" step="0.1"></label>
+                <label>Energy Reserve <input id="metric_energyReserve" type="number"></label>
+                <label>LF/HF Ratio <input id="metric_lfhfRatio" type="number" step="0.01"></label>
+                <label>Nadi Pulse <input id="metric_nadiPulse" type="number"></label>
+              </div>
+            </div>
+          </section>
+
+          <section id="step3" class="step-page">
+            <div class="edit-card">
+              <h3>Body System Scores</h3>
+              <div id="systemsEditor" class="list"></div>
+            </div>
+          </section>
+
+          <section id="step4" class="step-page">
+            <div class="edit-card">
+              <h3>Biorhythm Graph</h3>
+              <div id="biorhythmGraph" class="bio-graph"></div>
+            </div>
+
+            <div class="edit-card">
+              <h3>Biorhythm Calendar</h3>
+              <div id="biorhythmSelectedDay" class="status">No day selected</div>
+              <div id="biorhythmCalendar" class="calendar-grid"></div>
+            </div>
+
+            <div class="edit-card">
+              <h3>Watch Days</h3>
+              <div id="biorhythmWatchDays" class="list"></div>
+            </div>
+
+            <div class="edit-card">
+              <h3>Wellness Recommendations</h3>
+              <div class="grid-2">
+                <label>Diet <textarea id="wellness_diet"></textarea></label>
+                <label>Yoga <textarea id="wellness_yoga"></textarea></label>
+                <label>Physical Activity <textarea id="wellness_physicalActivity"></textarea></label>
+                <label>Sleep <textarea id="wellness_sleep"></textarea></label>
+                <label>Stress <textarea id="wellness_stress"></textarea></label>
+                <label>Supplements <textarea id="wellness_supplements"></textarea></label>
+                <label>Medicine <textarea id="wellness_medicine"></textarea></label>
+              </div>
+            </div>
+          </section>
+
+          <section id="step5" class="step-page">
+            <div class="edit-card">
+              <h3>Final Doctor Review</h3>
+              <div id="finalPatient" class="status">No draft loaded</div>
+              <div id="finalScores" class="review-band"></div>
+              <div id="finalMetrics" class="grid-4"></div>
+            </div>
+            <div class="edit-card">
+              <h3>Final Checks</h3>
+              <div class="list">
+                <div class="row compact"><strong>Draft status</strong><span id="finalDraftStatus">Not ready</span></div>
+                <div class="row compact"><strong>Customer visibility</strong><span>Only after approval</span></div>
+                <div class="row compact"><strong>PDF generation</strong><span>Runs only when doctor approves</span></div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="secondary" id="saveDraftBtn" type="button">Save All Edits</button>
+              <button class="warn" id="approveBtn" type="button">Approve And Generate Final Report</button>
+              <button class="ghost" id="openFinalPdfBtn" type="button">Open Final PDF</button>
+              <button class="ghost" id="openCustomerBtn" type="button">Open Customer View</button>
+            </div>
+          </section>
+
+          <div class="page-actions">
+            <button class="ghost" id="prevStepBtn" type="button">Previous</button>
+            <button class="secondary" id="saveProgressBtn" type="button">Save Draft Changes</button>
+            <button id="nextStepBtn" type="button">Next</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="demo_common.js"></script>
+  <script>
+    const dimensionKeys = ["physical", "psychological", "emotional", "spiritual"];
+    const metricKeys = ["weight", "bmi", "bodyFat", "heartRate", "bioEnergy", "energyReserve", "lfhfRatio", "nadiPulse"];
+    const wellnessKeys = ["diet", "yoga", "physicalActivity", "sleep", "stress", "supplements", "medicine"];
+    const cycleColors = {
+      physical: "#2f7d58",
+      emotional: "#b94b45",
+      intellectual: "#356d9a",
+    };
+    let currentStep = 1;
+    let draftReport = null;
+    let draftStatus = "empty";
+    let selectedBiorhythmDay = null;
+
+    function goToStep(step) {
+      currentStep = Math.max(1, Math.min(5, step));
+      document.querySelectorAll(".step-page").forEach((node) => node.classList.remove("active"));
+      document.querySelectorAll(".step-button").forEach((node) => node.classList.remove("active"));
+      Demo.$(`step${currentStep}`).classList.add("active");
+      document.querySelector(`.step-button[data-step="${currentStep}"]`)?.classList.add("active");
+      Demo.$("pageTitle").textContent = [
+        "1. Submit Reports",
+        "2. Patient Summary",
+        "3. Body Systems",
+        "4. Clinical Review",
+        "5. Final Approval",
+      ][currentStep - 1];
+      Demo.$("prevStepBtn").disabled = currentStep === 1;
+      Demo.$("nextStepBtn").textContent = currentStep === 5 ? "Back To Start" : "Next";
+      renderFinalReview();
+    }
+
+    function setWorkflow(message, kind = "") {
+      Demo.setStatus("workflowStatus", message, kind);
+    }
+
+    function setDraftState(status) {
+      draftStatus = status || "draft";
+      Demo.$("draftState").textContent = status === "approved" ? "Approved" : status === "draft" ? "Draft" : "No Draft";
+      Demo.$("draftState").className = status === "approved" ? "pill" : "pill attention";
+    }
+
+    function syncCustomer() {
+      const selected = Demo.$("customerSelect").selectedOptions[0];
+      Demo.$("patientId").value = selected.value;
+      Demo.$("patientName").value = selected.dataset.name || "";
+      Demo.$("patientDob").value = selected.dataset.dob || "";
+      Demo.$("patientBadge").textContent = selected.textContent.trim();
+      Demo.$("patientBadge").className = "pill";
+    }
+
+    function requiredFile(id, form, key) {
+      const input = Demo.$(id);
+      if (!input.files.length) throw new Error(`Missing ${key} file`);
+      form.append(key, input.files[0]);
+    }
+
+    function buildUploadForm() {
+      const form = new FormData();
+      requiredFile("ecg", form, "ecg");
+      requiredFile("hrv", form, "hrv");
+      requiredFile("nadi", form, "nadi");
+      requiredFile("biowell", form, "biowell");
+      requiredFile("biores", form, "biores");
+      requiredFile("inbody", form, "inbody");
+      if (Demo.$("dmit").files.length) form.append("dmit", Demo.$("dmit").files[0]);
+      form.append("name", Demo.$("patientName").value);
+      form.append("dob", Demo.$("patientDob").value);
+      form.append("patient_id", Demo.$("patientId").value);
+      form.append("date", Demo.$("reportDate").value);
+      form.append("doctor_id", Demo.$("doctorId").value.trim());
+      return form;
+    }
+
+    function setValue(id, value) {
+      const node = Demo.$(id);
+      if (node) node.value = value ?? "";
+    }
+
+    function getText(id) {
+      return Demo.$(id).value.trim();
+    }
+
+    function getNumber(id) {
+      const value = Demo.$(id).value;
+      if (value === "") return undefined;
+      const number = Number(value);
+      return Number.isFinite(number) ? number : undefined;
+    }
+
+    function clean(value) {
+      if (!value || typeof value !== "object") return value;
+      Object.keys(value).forEach((key) => {
+        if (value[key] && typeof value[key] === "object") {
+          clean(value[key]);
+          if (!Object.keys(value[key]).length) delete value[key];
+        } else if (value[key] === undefined || value[key] === "") {
+          delete value[key];
+        }
+      });
+      return value;
+    }
+
+    function hydrateEditors(report) {
+      const patient = report.patient || {};
+      const dimensions = report.dimensions || {};
+      const metrics = report.metrics || {};
+      const systems = report.systems || {};
+      const wellness = report.wellness || {};
+
+      setValue("editName", patient.name);
+      setValue("editDob", patient.dob);
+      setValue("editDate", patient.date);
+      Demo.$("patientBadge").textContent = patient.id ? `${patient.name || "Patient"} - ${patient.id}` : "Draft Patient";
+      Demo.$("patientBadge").className = "pill";
+
+      dimensionKeys.forEach((key) => {
+        setValue(`dim_${key}_score`, dimensions[key]?.score);
+        setValue(`dim_${key}_description`, dimensions[key]?.description);
+      });
+
+      metricKeys.forEach((key) => setValue(`metric_${key}`, metrics[key]));
+      wellnessKeys.forEach((key) => setValue(`wellness_${key}`, wellness[key]));
+
+      Demo.$("systemsEditor").innerHTML = Object.entries(systems).map(([key, item]) => `
+        <div class="edit-card">
+          <h3>${Demo.labelize(key)}</h3>
+          <div class="grid-3">
+            <label>Score <input id="system_${key}_score" type="number" min="0" max="100" value="${item.score ?? ""}"></label>
+            <label>Status
+              <select id="system_${key}_status">
+                <option value="Normal" ${((item.displayStatus || item.status) === "Normal") ? "selected" : ""}>Normal</option>
+                <option value="Need Attention" ${((item.displayStatus || item.status) !== "Normal") ? "selected" : ""}>Need Attention</option>
+              </select>
+            </label>
+            <label>Display Status <input id="system_${key}_displayStatus" value="${item.displayStatus || item.status || ""}"></label>
+          </div>
+        </div>
+      `).join("") || Demo.empty("No body system data in draft.");
+
+      renderBiorhythm(report);
+      renderFinalReview();
+    }
+
+    function renderBiorhythm(report) {
+      const calendar = report.biorhythm?.calendar || {};
+      const days = calendar.days || [];
+      const watchDays = calendar.watch_days || [];
+      const reportDate = report.patient?.date || "";
+      let today = calendar.today || {};
+      if (!today && reportDate && calendar.year && calendar.month) {
+        const dayNumber = Number(reportDate.split("-")[2]);
+        today = days.find((day) => day.day === dayNumber) || {};
+      }
+      selectedBiorhythmDay = today.day || (days[0] && days[0].day) || null;
+
+      Demo.$("biorhythmGraph").innerHTML = renderBiorhythmGraph(calendar);
+      Demo.$("biorhythmCalendar").innerHTML = renderBiorhythmCalendar(calendar, selectedBiorhythmDay);
+      Demo.$("biorhythmWatchDays").innerHTML = watchDays.slice(0, 12).map((day) => `
+        <div class="row">
+          <strong>Day ${day.day}</strong>
+          <span>${day.summary || day.advice || day.label || ""}</span>
+          <span class="pill attention">${day.type || "Watch"}</span>
+        </div>
+      `).join("") || Demo.empty("No watch days found.");
+
+      showSelectedBiorhythmDay(calendar, selectedBiorhythmDay);
+    }
+
+    function renderBiorhythmGraph(calendar) {
+      const graph = calendar.graph || {};
+      if (!graph.points) {
+        return Demo.empty("Biorhythm graph data not available in this draft.");
+      }
+      const width = graph.width || 540;
+      const height = graph.height || 150;
+      const plotLeft = graph.plot_left || 28;
+      const plotRight = graph.plot_right || width - 28;
+      const midY = graph.mid_y || Math.round(height / 2);
+      const yTicks = graph.y_ticks || [];
+      const xTicks = graph.x_ticks || [];
+      const monthName = calendar.month_name || "";
+      const polylines = Object.entries(graph.points).map(([cycle, points]) => `
+        <polyline points="${points}" fill="none" stroke="${cycleColors[cycle] || "#333"}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      `).join("");
+
+      return `
+        <svg viewBox="0 0 ${width} ${height + 34}" width="100%" height="220" role="img" aria-label="Biorhythm graph for ${monthName}">
+          <rect x="0" y="0" width="${width}" height="${height + 34}" rx="8" fill="#ffffff"></rect>
+          ${yTicks.map((tick) => `
+            <line x1="${plotLeft}" x2="${plotRight}" y1="${tick.y}" y2="${tick.y}" stroke="#d8ded7" stroke-width="1"></line>
+            <text x="4" y="${Number(tick.y) + 4}" font-size="10" fill="#637169">${tick.label}</text>
+          `).join("")}
+          <line x1="${plotLeft}" x2="${plotRight}" y1="${midY}" y2="${midY}" stroke="#9aa89f" stroke-width="1.5"></line>
+          ${polylines}
+          ${xTicks.map((tick) => `
+            <line x1="${tick.x}" x2="${tick.x}" y1="${height - 16}" y2="${height - 10}" stroke="#9aa89f" stroke-width="1"></line>
+            <text x="${Number(tick.x) - 6}" y="${height + 6}" font-size="10" fill="#637169">${tick.day}</text>
+          `).join("")}
+          <text x="${Math.round(width / 2) - 44}" y="${height + 28}" font-size="12" fill="#1e2823" font-weight="700">${monthName}</text>
+        </svg>
+        <div class="bio-legend">
+          <span class="legend-item" style="color:${cycleColors.physical}"><span class="legend-swatch"></span>Physical</span>
+          <span class="legend-item" style="color:${cycleColors.emotional}"><span class="legend-swatch"></span>Emotional</span>
+          <span class="legend-item" style="color:${cycleColors.intellectual}"><span class="legend-swatch"></span>Intellectual</span>
+        </div>
+      `;
+    }
+
+    function renderBiorhythmCalendar(calendar, selectedDay) {
+      const days = calendar.days || [];
+      if (!days.length) return Demo.empty("Biorhythm calendar data not available in this draft.");
+      const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      const blanks = Array.from({ length: calendar.first_weekday || 0 }, () => `<div class="day-cell empty"></div>`);
+      return `
+        ${weekdays.map((day) => `<div class="weekday">${day}</div>`).join("")}
+        ${blanks.join("")}
+        ${days.map((day) => {
+          const interpretation = day.interpretation || {};
+          const selected = Number(day.day) === Number(selectedDay);
+          return `
+            <button class="day-cell ${day.type || ""} ${selected ? "selected" : ""}" type="button" data-bio-day="${day.day}">
+              <span class="day-number">${day.day}</span>
+              <span class="cycle-row">
+                ${["physical", "emotional", "intellectual"].map((cycle) => `
+                  <span class="cycle-chip ${day[cycle]?.state || ""}">${day[cycle]?.short || cycle[0].toUpperCase()} ${day[cycle]?.percent ?? "--"}%</span>
+                `).join("")}
+              </span>
+              <span class="day-title">${interpretation.title || day.type || ""}</span>
+            </button>
+          `;
+        }).join("")}
+      `;
+    }
+
+    function showSelectedBiorhythmDay(calendar, dayNumber) {
+      const day = (calendar.days || []).find((item) => Number(item.day) === Number(dayNumber));
+      if (!day) {
+        Demo.$("biorhythmSelectedDay").textContent = "No day selected";
+        return;
+      }
+      const interpretation = day.interpretation || {};
+      Demo.$("biorhythmSelectedDay").innerHTML = `
+        <strong>Day ${day.day}: ${interpretation.title || day.type || "Biorhythm"}</strong><br>
+        ${interpretation.summary || ""}<br>
+        ${interpretation.action || ""}
+      `;
+    }
+
+    function buildPatchPayload() {
+      const report = {
+        patient: {
+          name: getText("editName"),
+          dob: getText("editDob"),
+          date: getText("editDate"),
+          id: Demo.$("patientId").value.trim(),
+        },
+        dimensions: {},
+        metrics: {},
+        systems: {},
+        wellness: {},
+      };
+
+      dimensionKeys.forEach((key) => {
+        report.dimensions[key] = {
+          score: getNumber(`dim_${key}_score`),
+          description: getText(`dim_${key}_description`),
+        };
+      });
+      metricKeys.forEach((key) => report.metrics[key] = getNumber(`metric_${key}`));
+      wellnessKeys.forEach((key) => report.wellness[key] = getText(`wellness_${key}`));
+
+      Object.keys(draftReport?.systems || {}).forEach((key) => {
+        report.systems[key] = {
+          score: getNumber(`system_${key}_score`),
+          status: getText(`system_${key}_status`),
+          displayStatus: getText(`system_${key}_displayStatus`),
+        };
+      });
+
+      return clean({ report });
+    }
+
+    function mergeDraftLocally(patch) {
+      if (!draftReport || !patch.report) return;
+      deepMerge(draftReport, patch.report);
+      hydrateEditors(draftReport);
+    }
+
+    function deepMerge(target, source) {
+      Object.entries(source || {}).forEach(([key, value]) => {
+        if (value && typeof value === "object" && !Array.isArray(value) && target[key] && typeof target[key] === "object") {
+          deepMerge(target[key], value);
+        } else {
+          target[key] = value;
+        }
+      });
+      return target;
+    }
+
+    async function saveDraftEdits() {
+      const draftId = Demo.$("draftId").value.trim();
+      if (!draftId) {
+        setWorkflow("Create or load a draft before saving edits.", "err");
+        return false;
+      }
+      const patch = buildPatchPayload();
+      const data = await Demo.apiPatch(`/reports/drafts/${encodeURIComponent(draftId)}`, patch, Demo.$("doctorId").value.trim());
+      draftReport = data.report;
+      setDraftState(data.status);
+      hydrateEditors(draftReport);
+      setWorkflow("Draft edits saved. Continue review or approve when ready.", "ok");
+      return true;
+    }
+
+    async function createDraft() {
+      const button = Demo.$("createDraftBtn");
+      Demo.setBusy(button, true);
+      setWorkflow("Creating draft. This may take a while...");
+      try {
+        const data = await Demo.apiPost("/reports/drafts", buildUploadForm(), Demo.$("doctorId").value.trim());
+        Demo.$("draftId").value = data.draft_id || "";
+        draftReport = data.report;
+        setDraftState(data.status);
+        hydrateEditors(draftReport);
+        setWorkflow(`Draft created: ${data.draft_id}`, "ok");
+        goToStep(2);
+      } catch (error) {
+        setWorkflow(error.message, "err");
+      } finally {
+        Demo.setBusy(button, false);
+      }
+    }
+
+    async function loadDraft() {
+      const draftId = Demo.$("draftId").value.trim();
+      if (!draftId) return setWorkflow("Enter a draft ID to load.", "err");
+      const button = Demo.$("loadDraftBtn");
+      Demo.setBusy(button, true);
+      try {
+        const data = await Demo.apiGet(`/reports/drafts/${encodeURIComponent(draftId)}`);
+        draftReport = data.report;
+        setDraftState(data.status);
+        hydrateEditors(draftReport);
+        setWorkflow(`Draft loaded: ${data.status}`, "ok");
+        goToStep(2);
+      } catch (error) {
+        setWorkflow(error.message, "err");
+      } finally {
+        Demo.setBusy(button, false);
+      }
+    }
+
+    async function approveDraft() {
+      const draftId = Demo.$("draftId").value.trim();
+      if (!draftId) return setWorkflow("Create or load a draft before approval.", "err");
+      const button = Demo.$("approveBtn");
+      Demo.setBusy(button, true);
+      setWorkflow("Saving edits and generating final PDF...");
+      try {
+        await saveDraftEdits();
+        const data = await Demo.apiPost(`/reports/drafts/${encodeURIComponent(draftId)}/approve`, null, Demo.$("doctorId").value.trim());
+        Demo.$("reportId").value = data.report_id || "";
+        setDraftState(data.status);
+        Demo.$("finalDraftStatus").textContent = "Approved and customer-visible";
+        setWorkflow(`Final report generated: ${data.report_id}`, "ok");
+      } catch (error) {
+        setWorkflow(error.message, "err");
+      } finally {
+        Demo.setBusy(button, false);
+      }
+    }
+
+    function renderFinalReview() {
+      if (!draftReport) {
+        Demo.$("finalPatient").textContent = "No draft loaded";
+        Demo.$("finalScores").innerHTML = Demo.empty("Create a draft first.");
+        Demo.$("finalMetrics").innerHTML = "";
+        Demo.$("finalDraftStatus").textContent = "Not ready";
+        return;
+      }
+      const reviewReport = JSON.parse(JSON.stringify(draftReport));
+      deepMerge(reviewReport, buildPatchPayload().report || {});
+      const patient = reviewReport.patient || {};
+      Demo.$("finalPatient").textContent = [
+        patient.name || "Unknown patient",
+        patient.id || Demo.$("patientId").value,
+        patient.dob ? `DOB ${patient.dob}` : "",
+        patient.date ? `Date ${patient.date}` : "",
+      ].filter(Boolean).join(" | ");
+      Demo.renderScores("finalScores", Demo.extractSummary({}, reviewReport));
+      Demo.renderMetrics("finalMetrics", Demo.keyMetrics(reviewReport.metrics || {}));
+      Demo.$("finalDraftStatus").textContent = draftStatus === "approved" ? "Approved" : "Draft ready for approval";
+    }
+
+    function openFinalPdf() {
+      const reportId = Demo.$("reportId").value.trim();
+      if (!reportId) return setWorkflow("No final report ID yet.", "err");
+      window.open(`${Demo.apiBase()}/reports/${encodeURIComponent(reportId)}/pdf`, "_blank", "noopener");
+    }
+
+    function openCustomerView() {
+      const patientId = encodeURIComponent(Demo.$("patientId").value.trim());
+      const reportId = encodeURIComponent(Demo.$("reportId").value.trim());
+      window.open(`customer_demo_v1.html?patient_id=${patientId}&report_id=${reportId}`, "_blank", "noopener");
+    }
+
+    document.querySelectorAll(".step-button").forEach((button) => {
+      button.addEventListener("click", () => goToStep(Number(button.dataset.step)));
+    });
+    Demo.$("prevStepBtn").addEventListener("click", () => goToStep(currentStep - 1));
+    Demo.$("nextStepBtn").addEventListener("click", () => goToStep(currentStep === 5 ? 1 : currentStep + 1));
+    Demo.$("customerSelect").addEventListener("change", syncCustomer);
+    Demo.$("biorhythmCalendar").addEventListener("click", (event) => {
+      const dayButton = event.target.closest("[data-bio-day]");
+      if (!dayButton || !draftReport) return;
+      selectedBiorhythmDay = Number(dayButton.dataset.bioDay);
+      const calendar = draftReport.biorhythm?.calendar || {};
+      Demo.$("biorhythmCalendar").innerHTML = renderBiorhythmCalendar(calendar, selectedBiorhythmDay);
+      showSelectedBiorhythmDay(calendar, selectedBiorhythmDay);
+    });
+    Demo.$("healthBtn").addEventListener("click", () => Demo.health("workflowStatus"));
+    Demo.$("createDraftBtn").addEventListener("click", createDraft);
+    Demo.$("loadDraftBtn").addEventListener("click", loadDraft);
+    Demo.$("saveProgressBtn").addEventListener("click", async () => {
+      const button = Demo.$("saveProgressBtn");
+      Demo.setBusy(button, true);
+      try {
+        await saveDraftEdits();
+      } catch (error) {
+        setWorkflow(error.message, "err");
+      } finally {
+        Demo.setBusy(button, false);
+      }
+    });
+    Demo.$("saveDraftBtn").addEventListener("click", async () => {
+      const button = Demo.$("saveDraftBtn");
+      Demo.setBusy(button, true);
+      try {
+        await saveDraftEdits();
+      } catch (error) {
+        setWorkflow(error.message, "err");
+      } finally {
+        Demo.setBusy(button, false);
+      }
+    });
+    Demo.$("approveBtn").addEventListener("click", approveDraft);
+    Demo.$("openFinalPdfBtn").addEventListener("click", openFinalPdf);
+    Demo.$("openCustomerBtn").addEventListener("click", openCustomerView);
+    syncCustomer();
+    goToStep(1);
+  </script>
+</body>
+</html>

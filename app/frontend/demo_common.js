@@ -39,14 +39,18 @@ const Demo = (() => {
     return parseResponse(await fetch(`${apiBase()}${path}`));
   }
 
-  async function apiPost(path, body) {
-    return parseResponse(await fetch(`${apiBase()}${path}`, { method: "POST", body }));
+  async function apiPost(path, body, doctorId) {
+    const headers = {};
+    if (doctorId) headers["X-Doctor-Id"] = doctorId;
+    return parseResponse(await fetch(`${apiBase()}${path}`, { method: "POST", headers, body }));
   }
 
-  async function apiPatch(path, data) {
+  async function apiPatch(path, data, doctorId) {
+    const headers = { "Content-Type": "application/json" };
+    if (doctorId) headers["X-Doctor-Id"] = doctorId;
     return parseResponse(await fetch(`${apiBase()}${path}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(data),
     }));
   }
