@@ -11,16 +11,47 @@ Related focused docs:
 
 ---
 
-## Authentication
+## Authentication & Headers
 
-| Header | Required | Purpose |
-|--------|----------|---------|
-| `X-Doctor-Id` | Yes (draft/approve) | External doctor identifier |
-| `Idempotency-Key` | Optional | Unique UUID per request — safe retries |
+This API uses **three separate headers** — each serves a different purpose:
 
-> **Note**: The API does not validate `X-Doctor-Id` against any user table.
-> The external system is responsible for doctor authentication.
-> Future versions will transition to `Authorization: Bearer <token>`.
+| Header | What It Does | Required? | When To Send |
+|--------|-------------|-----------|-------------|
+| `X-API-Key` | **Authentication** — proves you're an authorized integration partner | Every request (when `NANOCARE_API_KEY` is set in `.env`) | Always |
+| `X-Doctor-Id` | **Identity** — tells the system which doctor is creating/editing/approving | Recommended on doctor endpoints | `POST /reports/drafts`, `PATCH /reports/drafts/{id}`, `POST .../approve` |
+| `Idempotency-Key` | **Duplicate prevention** — ensures the same request isn't processed twice | Optional (source-hash also catches duplicates) | `POST /reports/drafts` only |
+
+### How They Work Together
+
+```
+X-API-Key         →  "Am I allowed to call this API?"       (Security layer)
+X-Doctor-Id       →  "Which doctor is doing this?"          (Business logic)
+Idempotency-Key   →  "Have I seen this exact request before?" (Retry safety)
+```
+
+### X-API-Key — Security Gate
+
+- Set `NANOCARE_API_KEY=your-secret-key` in `.env` to activate
+- When NOT set → middleware is **bypassed** (dev mode, no key needed)
+- When set → every request (except `/`, `/docs`, `/health`) must include `X-API-Key: your-secret-key`
+- Missing/wrong key → `401 Unauthorized`
+
+### X-Doctor-Id — Doctor Identity
+
+- Passed by the external system after it authenticates the doctor
+- This API does NOT validate the doctor — your app is responsible for that
+- Stored in the workflow DB as `doctor_id` / `approved_by`
+- Can also be sent as a form field `doctor_id` on draft creation
+
+### Idempotency-Key — Safe Retries
+
+- A unique UUID per request (e.g. `550e8400-e29b-41d4-a716-446655440000`)
+- If you send the same key twice, the second call returns the existing draft without re-processing
+- Even without this header, the **source file hash** also catches duplicate uploads
+
+> **Note**: Future versions will transition `X-Doctor-Id` to a verified JWT claim
+> via `Authorization: Bearer <token>`. The external system will remain responsible
+> for issuing tokens.
 
 ---
 
@@ -55,6 +86,7 @@ Upload the core device files to generate a wellness report draft. DMIT is option
 
 ```bash
 curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts \
+  -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_123" \
   -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
   -F ecg=@ecg_report.pdf \
@@ -102,6 +134,7 @@ curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts \
 
 ```bash
 curl http://localhost:8001/api/v1/wellness/reports/drafts/draft_a1b2c3d4 \
+  -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_123"
 ```
 
@@ -126,6 +159,7 @@ No re-extraction, no re-synthesis, no PDF generation.
 
 ```bash
 curl -X PATCH http://localhost:8001/api/v1/wellness/reports/drafts/draft_a1b2c3d4 \
+  -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_123" \
   -H "Content-Type: application/json" \
   -d '{
@@ -156,6 +190,7 @@ Generates the final PDF, persists to history, and returns the full approved repo
 
 ```bash
 curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts/draft_a1b2c3d4/approve \
+  -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_456"
 ```
 
@@ -184,6 +219,7 @@ Find the latest unfinished draft for a patient.
 
 ```bash
 curl http://localhost:8001/api/v1/wellness/patients/PAT001/active-draft \
+  -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_123"
 ```
 
@@ -195,6 +231,7 @@ Returns `404` if no active draft exists.
 
 ```bash
 curl http://localhost:8001/api/v1/wellness/patients/PAT001/drafts?limit=10 \
+  -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_123"
 ```
 
@@ -205,7 +242,8 @@ curl http://localhost:8001/api/v1/wellness/patients/PAT001/drafts?limit=10 \
 Latest approved report + historical chart data. No drafts are ever exposed.
 
 ```bash
-curl http://localhost:8001/api/v1/wellness/patients/PAT001/dashboard
+curl http://localhost:8001/api/v1/wellness/patients/PAT001/dashboard \
+  -H "X-API-Key: your-secret-key"
 ```
 
 **Response** (`200 OK`):
@@ -235,7 +273,8 @@ The customer dashboard exposes only approved reports. Draft JSON is never return
 ### 8. List Approved Reports (Customer/User)
 
 ```bash
-curl http://localhost:8001/api/v1/wellness/patients/PAT001/reports?limit=20
+curl http://localhost:8001/api/v1/wellness/patients/PAT001/reports?limit=20 \
+  -H "X-API-Key: your-secret-key"
 ```
 
 ---
@@ -243,7 +282,8 @@ curl http://localhost:8001/api/v1/wellness/patients/PAT001/reports?limit=20
 ### 9. Get Approved Report
 
 ```bash
-curl http://localhost:8001/api/v1/wellness/reports/report_a1b2c3d4
+curl http://localhost:8001/api/v1/wellness/reports/report_a1b2c3d4 \
+  -H "X-API-Key: your-secret-key"
 ```
 
 ---
@@ -253,7 +293,8 @@ curl http://localhost:8001/api/v1/wellness/reports/report_a1b2c3d4
 Compact payload for mobile/web cards.
 
 ```bash
-curl http://localhost:8001/api/v1/wellness/reports/report_a1b2c3d4/summary
+curl http://localhost:8001/api/v1/wellness/reports/report_a1b2c3d4/summary \
+  -H "X-API-Key: your-secret-key"
 ```
 
 ---
@@ -262,6 +303,7 @@ curl http://localhost:8001/api/v1/wellness/reports/report_a1b2c3d4/summary
 
 ```bash
 curl http://localhost:8001/api/v1/wellness/reports/report_a1b2c3d4/pdf \
+  -H "X-API-Key: your-secret-key" \
   -o wellness_report.pdf
 ```
 
@@ -279,6 +321,7 @@ All errors return JSON:
 
 | Status | Meaning |
 |--------|---------|
+| `401` | Invalid or missing API key |
 | `400` | Missing required field (e.g. `patient_id`) |
 | `404` | Draft/report not found |
 | `409` | Conflict (e.g. editing an approved draft) |

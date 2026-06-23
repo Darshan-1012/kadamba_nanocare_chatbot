@@ -12,6 +12,24 @@ In Postman, choose **Import -> Raw text**, paste any cURL below, and replace the
 
 Do not use deprecated routes under `/api/generate`, `/api/doctor/*`, or `/api/user/*` for new web/mobile work.
 
+## Headers Reference
+
+This API uses **three separate headers** — each serves a different purpose:
+
+| Header | What It Does | Required? | When To Send |
+|--------|-------------|-----------|-------------|
+| `X-API-Key` | **Authentication** — proves you're authorized | Every request (when `NANOCARE_API_KEY` is set) | Always |
+| `X-Doctor-Id` | **Identity** — which doctor is acting | Recommended on doctor endpoints | Create, Edit, Approve |
+| `Idempotency-Key` | **Duplicate prevention** — safe retries | Optional | Create Draft only |
+
+```
+X-API-Key         →  "Am I allowed to call this API?"       (Security)
+X-Doctor-Id       →  "Which doctor is doing this?"          (Business logic)
+Idempotency-Key   →  "Don't process this request twice"     (Retry safety)
+```
+
+> **Dev mode**: When `NANOCARE_API_KEY` is NOT set in `.env`, the `X-API-Key` header is not required.
+
 ## Sample Values
 
 ```text
@@ -49,6 +67,7 @@ Optional file: `dmit`.
 
 ```bash
 curl --location "http://localhost:8001/api/v1/wellness/reports/drafts" \
+  --header "X-API-Key: your-secret-key" \
   --header "X-Doctor-Id: doc_123" \
   --header "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
   --form "ecg=@/absolute/path/ecg_report.pdf" \
@@ -99,6 +118,7 @@ Doctor review endpoint. Use this after draft creation or when reopening a review
 
 ```bash
 curl --location "http://localhost:8001/api/v1/wellness/reports/drafts/draft_e994e65c0630e105" \
+  --header "X-API-Key: your-secret-key" \
   --header "X-Doctor-Id: doc_123"
 ```
 
@@ -121,6 +141,7 @@ Deep-merges changed fields into the draft JSON. Send only fields that changed.
 
 ```bash
 curl --location --request PATCH "http://localhost:8001/api/v1/wellness/reports/drafts/draft_e994e65c0630e105" \
+  --header "X-API-Key: your-secret-key" \
   --header "X-Doctor-Id: doc_123" \
   --header "Content-Type: application/json" \
   --data '{
@@ -164,6 +185,7 @@ Doctor endpoint. Generates PDF, saves approved report, saves history, and makes 
 
 ```bash
 curl --location --request POST "http://localhost:8001/api/v1/wellness/reports/drafts/draft_e994e65c0630e105/approve" \
+  --header "X-API-Key: your-secret-key" \
   --header "X-Doctor-Id: doc_123"
 ```
 
@@ -189,6 +211,7 @@ Doctor endpoint. Lists drafts and approved workflow rows for one patient.
 
 ```bash
 curl --location "http://localhost:8001/api/v1/wellness/patients/PAT-99120/drafts?limit=10" \
+  --header "X-API-Key: your-secret-key" \
   --header "X-Doctor-Id: doc_123"
 ```
 
@@ -198,6 +221,7 @@ Doctor endpoint. Returns the latest draft with status `draft`.
 
 ```bash
 curl --location "http://localhost:8001/api/v1/wellness/patients/PAT-99120/active-draft" \
+  --header "X-API-Key: your-secret-key" \
   --header "X-Doctor-Id: doc_123"
 ```
 
@@ -208,7 +232,8 @@ Returns `404` when no active draft exists.
 Customer/mobile endpoint. Returns approved reports only. Drafts are never exposed here.
 
 ```bash
-curl --location "http://localhost:8001/api/v1/wellness/patients/PAT-99120/dashboard?limit=10"
+curl --location "http://localhost:8001/api/v1/wellness/patients/PAT-99120/dashboard?limit=10" \
+  --header "X-API-Key: your-secret-key"
 ```
 
 Important response fields:
@@ -241,7 +266,8 @@ Important response fields:
 Customer/mobile endpoint. Use this for report history cards.
 
 ```bash
-curl --location "http://localhost:8001/api/v1/wellness/patients/PAT-99120/reports?limit=20"
+curl --location "http://localhost:8001/api/v1/wellness/patients/PAT-99120/reports?limit=20" \
+  --header "X-API-Key: your-secret-key"
 ```
 
 ## 10. Get Approved Report
@@ -249,7 +275,8 @@ curl --location "http://localhost:8001/api/v1/wellness/patients/PAT-99120/report
 Customer/mobile endpoint. Returns the full approved report JSON.
 
 ```bash
-curl --location "http://localhost:8001/api/v1/wellness/reports/report_e994e65c0630e105?detail=full"
+curl --location "http://localhost:8001/api/v1/wellness/reports/report_e994e65c0630e105?detail=full" \
+  --header "X-API-Key: your-secret-key"
 ```
 
 Use this when the user opens a complete report detail screen.
@@ -259,7 +286,8 @@ Use this when the user opens a complete report detail screen.
 Customer/mobile endpoint. Compact payload for cards and list/detail previews.
 
 ```bash
-curl --location "http://localhost:8001/api/v1/wellness/reports/report_e994e65c0630e105/summary"
+curl --location "http://localhost:8001/api/v1/wellness/reports/report_e994e65c0630e105/summary" \
+  --header "X-API-Key: your-secret-key"
 ```
 
 ## 12. Download PDF
@@ -268,6 +296,7 @@ Customer/mobile endpoint. Streams the approved PDF.
 
 ```bash
 curl --location "http://localhost:8001/api/v1/wellness/reports/report_e994e65c0630e105/pdf" \
+  --header "X-API-Key: your-secret-key" \
   --output wellness_report.pdf
 ```
 
@@ -289,6 +318,7 @@ curl --location "http://localhost:8001/api/v1/wellness/reports/report_e994e65c06
 
 | Status | Meaning | Usual Fix |
 |--------|---------|-----------|
+| `401` | Invalid or missing API key | Add `X-API-Key` header or check `.env` |
 | `400` | Missing required field | Include `patient_id` and required files |
 | `404` | Draft/report not found | Check `draft_id`, `report_id`, or approval status |
 | `409` | Workflow conflict | Do not edit approved drafts |
