@@ -40,6 +40,8 @@ _ADD_COLUMNS = [
 # ── Index additions ──────────────────────────────────────────────────
 _ADD_INDEXES = [
     ("idx_wf_patient_status", "CREATE INDEX idx_wf_patient_status ON wellness_report_workflow (patient_id, status)"),
+    ("idx_wf_patient_created_at", "CREATE INDEX idx_wf_patient_created_at ON wellness_report_workflow (patient_id, created_at, id)"),
+    ("idx_wf_patient_status_created_at", "CREATE INDEX idx_wf_patient_status_created_at ON wellness_report_workflow (patient_id, status, created_at, id)"),
     ("idx_wf_patient_status_approved_at", "CREATE INDEX idx_wf_patient_status_approved_at ON wellness_report_workflow (patient_id, status, approved_at, id)"),
     ("idx_wf_source_hash", "CREATE INDEX idx_wf_source_hash ON wellness_report_workflow (source_hash, status)"),
     ("idx_wf_idempotency", "CREATE INDEX idx_wf_idempotency ON wellness_report_workflow (idempotency_key)"),

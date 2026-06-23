@@ -6,6 +6,31 @@ const Demo = (() => {
     return (input ? input.value : "http://localhost:8000/api").replace(/\/+$/, "");
   }
 
+  function apiKey() {
+    const input = $("apiKey");
+    const current = input ? input.value.trim() : "";
+    return current || localStorage.getItem("nanocare_api_key") || "";
+  }
+
+  function setupApiKeyField() {
+    const input = $("apiKey");
+    if (!input) return;
+    const saved = localStorage.getItem("nanocare_api_key") || "";
+    if (!input.value && saved) input.value = saved;
+    input.addEventListener("input", () => {
+      const value = input.value.trim();
+      if (value) localStorage.setItem("nanocare_api_key", value);
+      else localStorage.removeItem("nanocare_api_key");
+    });
+  }
+
+  function authHeaders(headers = {}) {
+    const out = { ...headers };
+    const key = apiKey();
+    if (key) out["X-API-Key"] = key;
+    return out;
+  }
+
   function setStatus(id, message, kind = "") {
     const node = $(id);
     if (!node) return;
@@ -36,23 +61,44 @@ const Demo = (() => {
   }
 
   async function apiGet(path) {
-    return parseResponse(await fetch(`${apiBase()}${path}`));
+    return parseResponse(await fetch(`${apiBase()}${path}`, { headers: authHeaders() }));
   }
 
   async function apiPost(path, body, doctorId) {
-    const headers = {};
+    const headers = authHeaders();
     if (doctorId) headers["X-Doctor-Id"] = doctorId;
     return parseResponse(await fetch(`${apiBase()}${path}`, { method: "POST", headers, body }));
   }
 
   async function apiPatch(path, data, doctorId) {
-    const headers = { "Content-Type": "application/json" };
+    const headers = authHeaders({ "Content-Type": "application/json" });
     if (doctorId) headers["X-Doctor-Id"] = doctorId;
     return parseResponse(await fetch(`${apiBase()}${path}`, {
       method: "PATCH",
       headers,
       body: JSON.stringify(data),
     }));
+  }
+
+  async function openPdf(path, statusId = "status") {
+    const response = await fetch(`${apiBase()}${path}`, { headers: authHeaders() });
+    if (!response.ok) {
+      await parseResponse(response);
+      return;
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+    const opened = window.open(url, "_blank", "noopener");
+    if (!opened) {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "wellness_report.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setStatus(statusId, "PDF downloaded.", "ok");
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
   async function health(statusId = "status") {
@@ -422,14 +468,18 @@ const Demo = (() => {
     if (node) node.textContent = JSON.stringify(payload || {}, null, 2);
   }
 
+  setupApiKeyField();
+
   return {
     $,
     apiBase,
+    apiKey,
     setStatus,
     setBusy,
     apiGet,
     apiPost,
     apiPatch,
+    openPdf,
     health,
     labelize,
     empty,

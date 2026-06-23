@@ -196,12 +196,19 @@ Important response fields:
   "report_id": "report_...",
   "draft_id": "draft_...",
   "status": "approved",
-  "generated_report": "http://localhost:8001/api/v1/wellness/reports/report_.../pdf",
+  "links": {
+    "report_json": "/api/v1/wellness/reports/report_...",
+    "report_summary": "/api/v1/wellness/reports/report_.../summary",
+    "pdf_download": "/api/v1/wellness/reports/report_.../pdf"
+  },
+  "download_requires": "X-API-Key header",
   "report": {},
   "summary": {},
   "history": {}
 }
 ```
+
+Use `links.pdf_download` for the PDF request. It is an authenticated API path, so send `X-API-Key`.
 
 Calling approve again on the same draft is idempotent. It returns the existing approved report instead of generating a duplicate.
 

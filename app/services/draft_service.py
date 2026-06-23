@@ -39,6 +39,20 @@ def _bounded_limit(limit: int, *, default: int = 20, maximum: int = 100) -> int:
     return max(1, min(value, maximum))
 
 
+def _fetch_rows_by_ids(ids: list[int]) -> list[dict]:
+    """Fetch full workflow rows and preserve the caller's ID order."""
+    if not ids:
+        return []
+
+    placeholders = ", ".join(["%s"] * len(ids))
+    rows = execute_query(
+        f"SELECT * FROM wellness_report_workflow WHERE id IN ({placeholders})",
+        tuple(ids),
+    )
+    rows_by_id = {row["id"]: row for row in rows}
+    return [rows_by_id[row_id] for row_id in ids if row_id in rows_by_id]
+
+
 # ── Lookups ──────────────────────────────────────────────────────────
 
 def find_draft_by_source_hash(
@@ -167,31 +181,37 @@ def get_patient_drafts(
     limit: int = 20,
 ) -> list[dict]:
     """Return workflow rows for a patient, optionally filtered by status."""
+    limit = _bounded_limit(limit)
     if status:
-        rows = execute_query(
-            "SELECT * FROM wellness_report_workflow "
+        id_rows = execute_query(
+            "SELECT id FROM wellness_report_workflow "
+            "FORCE INDEX (idx_wf_patient_status_created_at) "
             "WHERE patient_id = %s AND status = %s "
-            "ORDER BY created_at DESC LIMIT %s",
+            "ORDER BY created_at DESC, id DESC LIMIT %s",
             (patient_id, status, limit),
         )
     else:
-        rows = execute_query(
-            "SELECT * FROM wellness_report_workflow "
+        id_rows = execute_query(
+            "SELECT id FROM wellness_report_workflow "
+            "FORCE INDEX (idx_wf_patient_created_at) "
             "WHERE patient_id = %s "
-            "ORDER BY created_at DESC LIMIT %s",
+            "ORDER BY created_at DESC, id DESC LIMIT %s",
             (patient_id, limit),
         )
+    rows = _fetch_rows_by_ids([row["id"] for row in id_rows])
     return [_serialize_row(r) for r in rows]
 
 
 def get_active_draft(patient_id: str) -> dict | None:
     """Return the latest draft with status='draft' for a patient."""
-    rows = execute_query(
-        "SELECT * FROM wellness_report_workflow "
+    id_rows = execute_query(
+        "SELECT id FROM wellness_report_workflow "
+        "FORCE INDEX (idx_wf_patient_status_created_at) "
         "WHERE patient_id = %s AND status = 'draft' "
-        "ORDER BY created_at DESC LIMIT 1",
+        "ORDER BY created_at DESC, id DESC LIMIT 1",
         (patient_id,),
     )
+    rows = _fetch_rows_by_ids([row["id"] for row in id_rows])
     return _serialize_row(rows[0]) if rows else None
 
 
@@ -209,15 +229,5 @@ def get_approved_reports(
         "ORDER BY approved_at DESC, id DESC LIMIT %s",
         (patient_id, limit),
     )
-    ids = [row["id"] for row in id_rows]
-    if not ids:
-        return []
-
-    placeholders = ", ".join(["%s"] * len(ids))
-    rows = execute_query(
-        f"SELECT * FROM wellness_report_workflow WHERE id IN ({placeholders})",
-        tuple(ids),
-    )
-    rows_by_id = {row["id"]: row for row in rows}
-    ordered_rows = [rows_by_id[row_id] for row_id in ids if row_id in rows_by_id]
-    return [_serialize_row(r) for r in ordered_rows]
+    rows = _fetch_rows_by_ids([row["id"] for row in id_rows])
+    return [_serialize_row(r) for r in rows]

@@ -25,6 +25,7 @@ log = logging.getLogger(__name__)
 # Paths that never require an API key
 PUBLIC_PATHS = frozenset({
     "/",
+    "/favicon.ico",
     "/docs",
     "/redoc",
     "/openapi.json",
@@ -41,6 +42,10 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
+        # Let CORS middleware answer browser preflight requests.
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         # Skip if no API key is configured (dev mode)
         if not API_KEY:
             return await call_next(request)

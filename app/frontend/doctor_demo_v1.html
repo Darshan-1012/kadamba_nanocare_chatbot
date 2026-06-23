@@ -271,6 +271,7 @@
         </header>
         <div class="body">
           <label>API Base <input id="apiBase" value="http://localhost:8001/api/v1/wellness"></label>
+          <label>API Key <input id="apiKey" type="password" placeholder="X-API-Key" autocomplete="off"></label>
           <label>Doctor ID <input id="doctorId" value="doc_001" placeholder="X-Doctor-Id"></label>
           <div class="stepper">
             <button class="step-button active" data-step="1" type="button">
@@ -874,10 +875,15 @@
       Demo.$("finalDraftStatus").textContent = draftStatus === "approved" ? "Approved" : "Draft ready for approval";
     }
 
-    function openFinalPdf() {
+    async function openFinalPdf() {
       const reportId = Demo.$("reportId").value.trim();
       if (!reportId) return setWorkflow("No final report ID yet.", "err");
-      window.open(`${Demo.apiBase()}/reports/${encodeURIComponent(reportId)}/pdf`, "_blank", "noopener");
+      try {
+        await Demo.openPdf(`/reports/${encodeURIComponent(reportId)}/pdf`, "workflowStatus");
+        setWorkflow(`PDF opened: ${reportId}`, "ok");
+      } catch (error) {
+        setWorkflow(error.message, "err");
+      }
     }
 
     function openCustomerView() {

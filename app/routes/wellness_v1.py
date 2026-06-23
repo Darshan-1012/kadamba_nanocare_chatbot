@@ -12,7 +12,7 @@ import shutil
 from copy import deepcopy
 from pathlib import Path
 
-from fastapi import APIRouter, Body, File, Form, Header, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Body, File, Form, Header, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
 from app.config import REPORTS_DIR
@@ -60,11 +60,18 @@ async def v1_health():
     return {"service": "Nanocare Wellness Report Engine", "api_version": "v1", **info}
 
 
-# ── URL builders (v1 route names) ────────────────────────────────────
+def _v1_report_links(report_id: str) -> dict:
+    """Build relative v1 resource links that clients can call with auth headers."""
+    base = f"/api/v1/wellness/reports/{report_id}"
+    return {
+        "report_json": base,
+        "report_summary": f"{base}/summary",
+        "pdf_download": f"{base}/pdf",
+    }
 
-def _v1_pdf_url(request: Request, report_id: str) -> str:
-    """Build the PDF download URL using v1 route names."""
-    return str(request.url_for("v1_get_report_pdf", report_id=report_id))
+
+def _v1_download_requires() -> str:
+    return "X-API-Key header"
 
 
 def _v1_body_systems(report_data: dict) -> dict:
@@ -180,14 +187,15 @@ def _v1_public_report(report_data: dict) -> dict:
     return public_report
 
 
-def _v1_summary_payload(request: Request, report_id: str, report_data: dict) -> dict:
+def _v1_summary_payload(report_id: str, report_data: dict) -> dict:
     """Build a compact summary payload for user/customer dashboards."""
     patient = report_data.get("patient", {})
     return {
         "report_id": report_id,
         "patient_id": patient.get("id") or patient.get("patient_id") or "",
         "date": patient.get("date", ""),
-        "generated_report": _v1_pdf_url(request, report_id),
+        "links": _v1_report_links(report_id),
+        "download_requires": _v1_download_requires(),
         "summary": domain_scores(report_data),
         "dimensions": report_data.get("dimensions", {}),
         "metrics": key_metrics(report_data),
@@ -228,7 +236,6 @@ def _v1_report_id(draft_id: str, source_hash: str) -> str:
 
 @router.post("/reports/drafts", summary="Create a wellness report draft")
 async def v1_create_draft(
-    request: Request,
     ecg: UploadFile = File(..., description="ECG PDF report"),
     hrv: UploadFile = File(..., description="HRV PDF report"),
     nadi: UploadFile = File(..., description="Nadi Tarangini PDF report"),
@@ -444,7 +451,6 @@ async def v1_patch_draft(
 
 @router.post("/reports/drafts/{draft_id}/approve", summary="Approve a draft report")
 async def v1_approve_draft(
-    request: Request,
     draft_id: str,
     x_doctor_id: str | None = Header(None, alias="X-Doctor-Id"),
 ):
@@ -483,9 +489,10 @@ async def v1_approve_draft(
                 "status": "approved",
                 "created_by_doctor_id": (wf or {}).get("doctor_id") or file_meta.get("doctor_id", ""),
                 "approved_by_doctor_id": (wf or {}).get("approved_by") or approving_doctor,
-                "generated_report": _v1_pdf_url(request, report_id),
+                "links": _v1_report_links(report_id),
+                "download_requires": _v1_download_requires(),
                 "report": _v1_public_report(approved_json),
-                "summary": _v1_summary_payload(request, report_id, approved_json),
+                "summary": _v1_summary_payload(report_id, approved_json),
                 "history": {},
             }
         raise HTTPException(409, f"Draft {draft_id} cannot be approved")
@@ -520,9 +527,10 @@ async def v1_approve_draft(
                 "status": "approved",
                 "created_by_doctor_id": (wf or {}).get("doctor_id") or file_meta.get("doctor_id", ""),
                 "approved_by_doctor_id": approving_doctor,
-                "generated_report": _v1_pdf_url(request, report_id),
+                "links": _v1_report_links(report_id),
+                "download_requires": _v1_download_requires(),
                 "report": _v1_public_report(report_data),
-                "summary": _v1_summary_payload(request, report_id, report_data),
+                "summary": _v1_summary_payload(report_id, report_data),
                 "history": history_data,
             }
     else:
@@ -590,9 +598,10 @@ async def v1_approve_draft(
         "status": "approved",
         "created_by_doctor_id": creating_doctor,
         "approved_by_doctor_id": approving_doctor,
-        "generated_report": _v1_pdf_url(request, report_id),
+        "links": _v1_report_links(report_id),
+        "download_requires": _v1_download_requires(),
         "report": _v1_public_report(report_data),
-        "summary": _v1_summary_payload(request, report_id, report_data),
+        "summary": _v1_summary_payload(report_id, report_data),
         "history": history_data,
     }
 
@@ -645,7 +654,6 @@ async def v1_patient_active_draft(patient_id: str):
 
 @router.get("/patients/{patient_id}/reports", summary="List approved reports")
 async def v1_patient_reports(
-    request: Request,
     patient_id: str,
     limit: int = 20,
 ):
@@ -659,13 +667,12 @@ async def v1_patient_reports(
         if approved_json:
             report_id = row.get("report_id") or ""
             if report_id:
-                reports.append(_v1_summary_payload(request, report_id, approved_json))
+                reports.append(_v1_summary_payload(report_id, approved_json))
     return {"patient_id": patient_id, "reports": reports, "total": len(reports)}
 
 
 @router.get("/patients/{patient_id}/dashboard", summary="Patient dashboard")
 async def v1_patient_dashboard(
-    request: Request,
     patient_id: str,
     limit: int = 10,
 ):
@@ -685,7 +692,7 @@ async def v1_patient_dashboard(
         report_id = row.get("report_id") or ""
         if not report_id:
             continue
-        payload = _v1_summary_payload(request, report_id, approved_json)
+        payload = _v1_summary_payload(report_id, approved_json)
         reports.append(payload)
         if not latest_payload:
             latest_payload = payload
@@ -712,7 +719,7 @@ async def v1_patient_dashboard(
 
 
 @router.get("/reports/{report_id}", summary="Get an approved report")
-async def v1_get_report(request: Request, report_id: str, detail: str = "full"):
+async def v1_get_report(report_id: str, detail: str = "full"):
     """Return the full approved report JSON."""
     wf = draft_service.get_by_report_id(report_id)
     if wf:
@@ -727,8 +734,9 @@ async def v1_get_report(request: Request, report_id: str, detail: str = "full"):
                 "status": "approved",
                 "created_by_doctor_id": wf.get("doctor_id") or "",
                 "approved_by_doctor_id": wf.get("approved_by") or "",
-                "generated_report": _v1_pdf_url(request, report_id),
-                "summary": _v1_summary_payload(request, report_id, approved_json),
+                "links": _v1_report_links(report_id),
+                "download_requires": _v1_download_requires(),
+                "summary": _v1_summary_payload(report_id, approved_json),
                 "detail": detail,
                 "report": _v1_public_report(approved_json),
             }
@@ -745,15 +753,16 @@ async def v1_get_report(request: Request, report_id: str, detail: str = "full"):
         "report_id": report_id,
         "patient_id": metadata.get("patient", {}).get("id", ""),
         "status": "approved",
-        "generated_report": _v1_pdf_url(request, report_id),
-        "summary": _v1_summary_payload(request, report_id, report_data),
+        "links": _v1_report_links(report_id),
+        "download_requires": _v1_download_requires(),
+        "summary": _v1_summary_payload(report_id, report_data),
         "detail": detail,
         "report": _v1_public_report(report_data),
     }
 
 
 @router.get("/reports/{report_id}/summary", summary="Get report summary")
-async def v1_get_report_summary(request: Request, report_id: str):
+async def v1_get_report_summary(report_id: str):
     """Compact summary for web/mobile dashboards."""
     wf = draft_service.get_by_report_id(report_id)
     if wf:
@@ -761,14 +770,14 @@ async def v1_get_report_summary(request: Request, report_id: str):
         if isinstance(approved_json, str):
             approved_json = json.loads(approved_json)
         if approved_json:
-            return _v1_summary_payload(request, report_id, approved_json)
+            return _v1_summary_payload(report_id, approved_json)
 
     # File-based fallback
     json_path = REPORTS_DIR / report_id / REPORT_JSON
     if not json_path.exists():
         raise HTTPException(404, f"Report {report_id} not found")
     report_data = apply_cached_recommendations(read_json(json_path))
-    return _v1_summary_payload(request, report_id, report_data)
+    return _v1_summary_payload(report_id, report_data)
 
 
 @router.get("/reports/{report_id}/pdf", summary="Download report PDF", name="v1_get_report_pdf")

@@ -202,12 +202,19 @@ curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts/draft_a1b2c3d4
   "status": "approved",
   "created_by_doctor_id": "doc_123",
   "approved_by_doctor_id": "doc_456",
-  "generated_report": "http://localhost:8001/api/v1/wellness/reports/report_.../pdf",
+  "links": {
+    "report_json": "/api/v1/wellness/reports/report_...",
+    "report_summary": "/api/v1/wellness/reports/report_.../summary",
+    "pdf_download": "/api/v1/wellness/reports/report_.../pdf"
+  },
+  "download_requires": "X-API-Key header",
   "report": { ... },
   "summary": { "report_id": "...", "summary": {...}, "metrics": {...}, ... },
   "history": { "visit_saved": true, ... }
 }
 ```
+
+Use `links.pdf_download` and send `X-API-Key` when downloading the PDF.
 
 **Idempotent**: Calling approve on an already-approved draft returns the existing approval (same `report_id`, no new PDF).
 

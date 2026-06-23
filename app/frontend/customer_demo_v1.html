@@ -27,6 +27,7 @@
       <div class="body">
         <div class="grid-4">
           <label>API Base <input id="apiBase" value="http://localhost:8001/api/v1/wellness"></label>
+          <label>API Key <input id="apiKey" type="password" placeholder="X-API-Key" autocomplete="off"></label>
           <label>Patient ID <input id="patientId" value="PAT-99120"></label>
           <label>Report ID <input id="reportId" placeholder="approved report_id"></label>
           <label>Detail
@@ -202,10 +203,15 @@
       }
     }
 
-    function openPdf() {
+    async function openPdf() {
       const reportId = Demo.$("reportId").value.trim();
       if (!reportId) return Demo.setStatus("customerStatus", "Enter report ID", "err");
-      window.open(`${Demo.apiBase()}/reports/${encodeURIComponent(reportId)}/pdf`, "_blank", "noopener");
+      try {
+        await Demo.openPdf(`/reports/${encodeURIComponent(reportId)}/pdf`, "customerStatus");
+        Demo.setStatus("customerStatus", `PDF opened: ${reportId}`, "ok");
+      } catch (error) {
+        Demo.setStatus("customerStatus", error.message, "err");
+      }
     }
 
     function initFromQuery() {

@@ -14,6 +14,12 @@ Avoid deprecated routes:
 /api/user/*
 ```
 
+When `NANOCARE_API_KEY` is set, every protected request must include:
+
+```http
+X-API-Key: your-secret-key
+```
+
 ## Roles
 
 Doctor/integration screens:
@@ -61,7 +67,7 @@ Customer/patient screens:
 Browser example:
 
 ```js
-async function createDraft(baseUrl, doctorId, formState, files) {
+async function createDraft(baseUrl, apiKey, doctorId, formState, files) {
   const form = new FormData();
   form.append("ecg", files.ecg);
   form.append("hrv", files.hrv);
@@ -79,6 +85,7 @@ async function createDraft(baseUrl, doctorId, formState, files) {
   const res = await fetch(`${baseUrl}/reports/drafts`, {
     method: "POST",
     headers: {
+      "X-API-Key": apiKey,
       "X-Doctor-Id": doctorId,
       "Idempotency-Key": crypto.randomUUID(),
     },
@@ -96,11 +103,12 @@ Do not set `Content-Type` manually for multipart uploads in the browser. Let `fe
 Send only changed fields. The API deep-merges them into the draft.
 
 ```js
-async function saveDraft(baseUrl, doctorId, draftId, patch) {
+async function saveDraft(baseUrl, apiKey, doctorId, draftId, patch) {
   const res = await fetch(`${baseUrl}/reports/drafts/${encodeURIComponent(draftId)}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      "X-API-Key": apiKey,
       "X-Doctor-Id": doctorId,
     },
     body: JSON.stringify({ report: patch }),
@@ -135,10 +143,13 @@ If `patient.dob` or `patient.date` changes, the API recalculates the biorhythm c
 ### Doctor Approve
 
 ```js
-async function approveDraft(baseUrl, doctorId, draftId) {
+async function approveDraft(baseUrl, apiKey, doctorId, draftId) {
   const res = await fetch(`${baseUrl}/reports/drafts/${encodeURIComponent(draftId)}/approve`, {
     method: "POST",
-    headers: { "X-Doctor-Id": doctorId },
+    headers: {
+      "X-API-Key": apiKey,
+      "X-Doctor-Id": doctorId,
+    },
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
@@ -153,13 +164,15 @@ Approval makes the report customer-visible.
 2. Use `latest_report` for the first screen.
 3. Use `reports` for approved report cards/history.
 4. When a user opens a specific report, call `GET /reports/{report_id}?detail=full`.
-5. Use `generated_report` or `/reports/{report_id}/pdf` for PDF viewing.
+5. Use `links.pdf_download` for PDF viewing, and send `X-API-Key`.
 
 ### Customer Dashboard
 
 ```js
-async function loadDashboard(baseUrl, patientId) {
-  const res = await fetch(`${baseUrl}/patients/${encodeURIComponent(patientId)}/dashboard?limit=10`);
+async function loadDashboard(baseUrl, apiKey, patientId) {
+  const res = await fetch(`${baseUrl}/patients/${encodeURIComponent(patientId)}/dashboard?limit=10`, {
+    headers: { "X-API-Key": apiKey },
+  });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -188,10 +201,25 @@ Use this shape:
 ### Customer Report Detail
 
 ```js
-async function loadReport(baseUrl, reportId) {
-  const res = await fetch(`${baseUrl}/reports/${encodeURIComponent(reportId)}?detail=full`);
+async function loadReport(baseUrl, apiKey, reportId) {
+  const res = await fetch(`${baseUrl}/reports/${encodeURIComponent(reportId)}?detail=full`, {
+    headers: { "X-API-Key": apiKey },
+  });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
+}
+```
+
+For PDF buttons, fetch the file with the same header:
+
+```js
+async function loadPdfBlob(baseUrl, apiKey, pdfPath) {
+  const url = new URL(pdfPath, baseUrl).toString();
+  const res = await fetch(url, {
+    headers: { "X-API-Key": apiKey },
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.blob();
 }
 ```
 
@@ -240,8 +268,8 @@ Biorhythm tab:
 
 PDF:
 
-- Use `generated_report` when present.
-- Otherwise build `${baseUrl}/reports/${reportId}/pdf`.
+- Prefer `links.pdf_download` from the report/summary payload.
+- Send `X-API-Key` when fetching the PDF.
 
 ## Mobile Notes
 
@@ -249,7 +277,7 @@ Recommended mobile loading strategy:
 
 1. Dashboard screen: call `/patients/{patient_id}/dashboard?limit=10`.
 2. Report detail screen: call `/reports/{report_id}?detail=full`.
-3. PDF button: open `/reports/{report_id}/pdf` in the platform PDF viewer.
+3. PDF button: fetch `links.pdf_download` with `X-API-Key`, then open the returned file/blob in the platform PDF viewer.
 4. Cache `report_id`, `patient_id`, and the latest dashboard response locally.
 5. Refresh dashboard after the doctor approves a draft.
 
@@ -294,4 +322,3 @@ Frontend behavior:
 - Treat report JSON as read-only on customer screens.
 - Use `PATCH` only from doctor review screens.
 - Use `Idempotency-Key` for draft creation retries.
-
