@@ -30,6 +30,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── API Key guard (disabled when NANOCARE_API_KEY is unset) ───────────
+from app.middleware.api_key import APIKeyMiddleware  # noqa: E402
+app.add_middleware(APIKeyMiddleware)
+
 
 # ── Startup: run idempotent migrations ────────────────────────────────
 @app.on_event("startup")

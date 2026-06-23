@@ -5,6 +5,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# ── API Security ──────────────────────────────────────────────────────
+# When set, all API requests must include: X-API-Key: <this value>
+# Leave empty/unset for local development (middleware is bypassed).
+API_KEY: str = os.getenv("NANOCARE_API_KEY", "")
+
 # ── Ollama ────────────────────────────────────────────────────────────
 OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
