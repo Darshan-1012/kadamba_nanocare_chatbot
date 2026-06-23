@@ -66,6 +66,32 @@ Idempotency-Key   →  "Have I seen this exact request before?" (Retry safety)
 6. Customer downloads PDF          → GET  /reports/{report_id}/pdf
 ```
 
+### Current Route Usage By Role
+
+Doctor side:
+
+| Step | Method | Endpoint | Meaning |
+|------|--------|----------|---------|
+| Upload | `POST` | `/reports/drafts` | Create temporary editable draft. |
+| Draft view/dashboard | `GET` | `/reports/drafts/{draft_id}` | Review draft content before approval. |
+| Edit draft | `PATCH` | `/reports/drafts/{draft_id}` | Save doctor edits. |
+| Approve draft | `POST` | `/reports/drafts/{draft_id}/approve` | Convert draft into final approved report. |
+| Final report | `GET` | `/reports/{report_id}?detail=full` | Read approved report JSON. |
+| Patient draft/workflow list | `GET` | `/patients/{patient_id}/drafts?limit=10` | Doctor-side workflow list. |
+| Patient approved reports | `GET` | `/patients/{patient_id}/reports?limit=20` | Approved report history for one patient. |
+
+Patient/customer side:
+
+| Step | Method | Endpoint | Meaning |
+|------|--------|----------|---------|
+| Dashboard | `GET` | `/patients/{patient_id}/dashboard?limit=10` | Latest approved report and chart history. |
+| History | `GET` | `/patients/{patient_id}/reports?limit=20` | Approved report list only. |
+| Final report | `GET` | `/reports/{report_id}?detail=full` | Same approved report JSON. |
+| Summary | `GET` | `/reports/{report_id}/summary` | Compact report payload. |
+| PDF | `GET` | `/reports/{report_id}/pdf` | Authenticated PDF download via `links.pdf_download`. |
+
+Patient/customer apps must never call draft endpoints.
+
 ---
 
 ## Endpoints

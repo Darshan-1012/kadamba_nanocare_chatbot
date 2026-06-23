@@ -12,6 +12,35 @@ In Postman, choose **Import -> Raw text**, paste any cURL below, and replace the
 
 Do not use deprecated routes under `/api/generate`, `/api/doctor/*`, or `/api/user/*` for new web/mobile work.
 
+## Which APIs To Use
+
+Use the current v1 endpoints this way. Draft APIs are doctor-only; patient/customer apps should only read approved reports.
+
+### Doctor Side
+
+| Screen / Action | Method | Endpoint | Use For |
+|-----------------|--------|----------|---------|
+| Upload | `POST` | `/reports/drafts` | Upload device files and create a temporary editable draft. |
+| Draft view | `GET` | `/reports/drafts/{draft_id}` | Reopen/review the draft JSON. |
+| Draft dashboard | `GET` | `/reports/drafts/{draft_id}` | Use the returned draft `report` sections: metrics, dimensions, body systems, DMIT, offerings, and biorhythm. |
+| Edit draft | `PATCH` | `/reports/drafts/{draft_id}` | Save doctor edits before approval. |
+| Approve draft | `POST` | `/reports/drafts/{draft_id}/approve` | Finalize the draft into an approved report. |
+| Final report | `GET` | `/reports/{report_id}?detail=full` | Read the final approved report after approval. |
+| Patient draft/workflow list | `GET` | `/patients/{patient_id}/drafts?limit=10` | Doctor-side list of draft workflow rows for one patient. |
+| Patient approved reports | `GET` | `/patients/{patient_id}/reports?limit=20` | Doctor can also use this to see a patient's approved report history. |
+
+### Patient / Customer Side
+
+| Screen / Action | Method | Endpoint | Use For |
+|-----------------|--------|----------|---------|
+| Patient dashboard | `GET` | `/patients/{patient_id}/dashboard?limit=10` | Latest approved report, chart history, cards, and dashboard sections. |
+| Patient history | `GET` | `/patients/{patient_id}/reports?limit=20` | Approved report list/history only. |
+| Final report | `GET` | `/reports/{report_id}?detail=full` | Same approved final report JSON. |
+| Report summary | `GET` | `/reports/{report_id}/summary` | Compact report payload for cards/previews. |
+| PDF download | `GET` | `/reports/{report_id}/pdf` | Download/open final PDF. Send `X-API-Key`; prefer `links.pdf_download` from report payloads. |
+
+Do not call `/reports/drafts/*` from patient/customer apps.
+
 ## Headers Reference
 
 This API uses **three separate headers** — each serves a different purpose:

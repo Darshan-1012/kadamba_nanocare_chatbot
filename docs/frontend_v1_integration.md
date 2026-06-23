@@ -37,20 +37,35 @@ Customer/patient screens:
 
 ## Route Map
 
+Health check:
+
 | Screen/Use Case | Method | Endpoint |
 |-----------------|--------|----------|
 | Health check | `GET` | `/health` |
-| Doctor creates draft | `POST` | `/reports/drafts` |
-| Doctor loads draft | `GET` | `/reports/drafts/{draft_id}` |
-| Doctor saves edits | `PATCH` | `/reports/drafts/{draft_id}` |
-| Doctor approves | `POST` | `/reports/drafts/{draft_id}/approve` |
-| Doctor active draft | `GET` | `/patients/{patient_id}/active-draft` |
-| Doctor draft list | `GET` | `/patients/{patient_id}/drafts?limit=10` |
-| Customer dashboard | `GET` | `/patients/{patient_id}/dashboard?limit=10` |
-| Customer report list | `GET` | `/patients/{patient_id}/reports?limit=20` |
-| Customer report detail | `GET` | `/reports/{report_id}?detail=full` |
-| Customer report summary | `GET` | `/reports/{report_id}/summary` |
-| Customer PDF | `GET` | `/reports/{report_id}/pdf` |
+
+Doctor side:
+
+| Screen/Use Case | Method | Endpoint | Render/Store |
+|-----------------|--------|----------|--------------|
+| Upload | `POST` | `/reports/drafts` | Store `draft_id`; render returned draft `report`. |
+| Draft view/dashboard | `GET` | `/reports/drafts/{draft_id}` | Render editable draft dashboard from `report`. |
+| Edit draft | `PATCH` | `/reports/drafts/{draft_id}` | Save changed draft fields. |
+| Approve draft | `POST` | `/reports/drafts/{draft_id}/approve` | Store `report_id`; draft becomes final report. |
+| Final report | `GET` | `/reports/{report_id}?detail=full` | Render approved read-only report. |
+| Patient draft/workflow list | `GET` | `/patients/{patient_id}/drafts?limit=10` | Doctor-only draft workflow list. |
+| Patient approved reports | `GET` | `/patients/{patient_id}/reports?limit=20` | Doctor can view approved patient history. |
+
+Patient/customer side:
+
+| Screen/Use Case | Method | Endpoint | Render/Store |
+|-----------------|--------|----------|--------------|
+| Patient dashboard | `GET` | `/patients/{patient_id}/dashboard?limit=10` | Latest approved report, history, charts, cards. |
+| Patient history | `GET` | `/patients/{patient_id}/reports?limit=20` | Approved report list only. |
+| Final report | `GET` | `/reports/{report_id}?detail=full` | Same approved read-only report. |
+| Report summary | `GET` | `/reports/{report_id}/summary` | Compact payload for cards/previews. |
+| PDF | `GET` | `/reports/{report_id}/pdf` | Fetch with `X-API-Key`; prefer `links.pdf_download`. |
+
+Patient/customer apps must not call `/reports/drafts/*`.
 
 ## Doctor Web Flow
 
