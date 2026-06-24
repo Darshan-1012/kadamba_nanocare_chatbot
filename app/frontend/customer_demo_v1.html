@@ -188,12 +188,14 @@
 
     async function loadReport() {
       const reportId = Demo.$("reportId").value.trim();
+      const patientId = Demo.$("patientId").value.trim();
       if (!reportId) return Demo.setStatus("customerStatus", "Enter report ID", "err");
+      if (!patientId) return Demo.setStatus("customerStatus", "Enter patient ID", "err");
       const button = Demo.$("loadReportBtn");
       Demo.setBusy(button, true);
       try {
         const detail = Demo.$("detail").value === "full" ? "full" : "compact";
-        const data = await Demo.apiGet(`/reports/${encodeURIComponent(reportId)}?detail=${encodeURIComponent(detail)}`);
+        const data = await Demo.apiGet(`/patients/${encodeURIComponent(patientId)}/reports/${encodeURIComponent(reportId)}?detail=${encodeURIComponent(detail)}`);
         Demo.setStatus("customerStatus", `Report loaded: ${reportId}`, "ok");
         showReport(data);
       } catch (error) {
@@ -205,9 +207,11 @@
 
     async function openPdf() {
       const reportId = Demo.$("reportId").value.trim();
+      const patientId = Demo.$("patientId").value.trim();
       if (!reportId) return Demo.setStatus("customerStatus", "Enter report ID", "err");
+      if (!patientId) return Demo.setStatus("customerStatus", "Enter patient ID", "err");
       try {
-        await Demo.openPdf(`/reports/${encodeURIComponent(reportId)}/pdf`, "customerStatus");
+        await Demo.openPdf(`/patients/${encodeURIComponent(patientId)}/reports/${encodeURIComponent(reportId)}/pdf`, "customerStatus");
         Demo.setStatus("customerStatus", `PDF opened: ${reportId}`, "ok");
       } catch (error) {
         Demo.setStatus("customerStatus", error.message, "err");

@@ -47,34 +47,40 @@ Doctor side:
 
 | Screen/Use Case | Method | Endpoint | Render/Store |
 |-----------------|--------|----------|--------------|
-| Upload | `POST` | `/reports/drafts` | Store `draft_id`; render returned draft `report`. |
-| Draft view/dashboard | `GET` | `/reports/drafts/{draft_id}` | Render editable draft dashboard from `report`. |
-| Edit draft | `PATCH` | `/reports/drafts/{draft_id}` | Save changed draft fields. |
-| Approve draft | `POST` | `/reports/drafts/{draft_id}/approve` | Store `report_id`; draft becomes final report. |
-| Final report | `GET` | `/reports/{report_id}?detail=full` | Render approved read-only report. |
-| Patient draft/workflow list | `GET` | `/patients/{patient_id}/drafts?limit=10` | Doctor-only draft workflow list. |
-| Patient approved reports | `GET` | `/patients/{patient_id}/reports?limit=20` | Doctor can view approved patient history. |
+| Upload | `POST` | `/doctor/drafts` | Store `draft_id`; render returned draft `report`. |
+| Draft view/dashboard | `GET` | `/doctor/drafts/{draft_id}/dashboard` | Render editable draft dashboard from `report`. |
+| Edit draft | `PATCH` | `/doctor/drafts/{draft_id}` | Save changed draft fields. |
+| Approve draft | `POST` | `/doctor/drafts/{draft_id}/approve` | Store `report_id`; draft becomes final report. |
+| Patient list | `GET` | `/doctor/patients?limit=100` | Show patients with workflow activity. |
+| Patient draft/workflow list | `GET` | `/doctor/patients/{patient_id}/drafts?limit=10` | Doctor-only draft workflow list. |
+| Patient approved reports | `GET` | `/doctor/patients/{patient_id}/reports?limit=20` | Doctor can view approved report list. |
+| Final report | `GET` | `/doctor/reports/{report_id}?detail=full` | Render approved read-only report. |
 
 Patient/customer side:
 
 | Screen/Use Case | Method | Endpoint | Render/Store |
 |-----------------|--------|----------|--------------|
 | Patient dashboard | `GET` | `/patients/{patient_id}/dashboard?limit=10` | Latest approved report, history, charts, cards. |
-| Patient history | `GET` | `/patients/{patient_id}/reports?limit=20` | Approved report list only. |
-| Final report | `GET` | `/reports/{report_id}?detail=full` | Same approved read-only report. |
-| Report summary | `GET` | `/reports/{report_id}/summary` | Compact payload for cards/previews. |
-| PDF | `GET` | `/reports/{report_id}/pdf` | Fetch with `X-API-Key`; prefer `links.pdf_download`. |
+| Patient report list | `GET` | `/patients/{patient_id}/reports?limit=20` | Approved report cards/list only. |
+| Patient history | `GET` | `/patients/{patient_id}/history?limit=20` | Chart/trend history only: dates, stats, dimensions, systems. |
+| Final report | `GET` | `/patients/{patient_id}/reports/{report_id}?detail=full` | Same approved read-only report, scoped to patient. |
+| Report summary | `GET` | `/patients/{patient_id}/reports/{report_id}/summary` | Compact payload for cards/previews. |
+| PDF | `GET` | `/patients/{patient_id}/reports/{report_id}/pdf` | Fetch with `X-API-Key`; prefer `links.patient_pdf_download`. |
 
-Patient/customer apps must not call `/reports/drafts/*`.
+Patient/customer apps must not call `/doctor/*` or draft endpoints.
+
+Older mixed v1 paths such as `/reports/drafts/*` and `/reports/{report_id}` still work as transitional aliases, but new integrations should use the role-based paths above.
+
+Link naming rule: approval responses can include both `doctor_*` and `patient_*` links. Patient dashboard/history/detail responses should use only `patient_*` links.
 
 ## Doctor Web Flow
 
 1. Collect patient details and files.
-2. `POST /reports/drafts` with multipart form data.
+2. `POST /doctor/drafts` with multipart form data.
 3. Store `draft_id`.
 4. Render editable sections from `response.report`.
-5. Save edits with `PATCH /reports/drafts/{draft_id}`.
-6. Approve with `POST /reports/drafts/{draft_id}/approve`.
+5. Save edits with `PATCH /doctor/drafts/{draft_id}`.
+6. Approve with `POST /doctor/drafts/{draft_id}/approve`.
 7. Store `report_id` and show PDF/customer links.
 
 ### Doctor Create Draft
@@ -97,7 +103,7 @@ async function createDraft(baseUrl, apiKey, doctorId, formState, files) {
   form.append("date", formState.reportDate);
   form.append("doctor_id", doctorId);
 
-  const res = await fetch(`${baseUrl}/reports/drafts`, {
+  const res = await fetch(`${baseUrl}/doctor/drafts`, {
     method: "POST",
     headers: {
       "X-API-Key": apiKey,
@@ -119,7 +125,7 @@ Send only changed fields. The API deep-merges them into the draft.
 
 ```js
 async function saveDraft(baseUrl, apiKey, doctorId, draftId, patch) {
-  const res = await fetch(`${baseUrl}/reports/drafts/${encodeURIComponent(draftId)}`, {
+  const res = await fetch(`${baseUrl}/doctor/drafts/${encodeURIComponent(draftId)}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -159,7 +165,7 @@ If `patient.dob` or `patient.date` changes, the API recalculates the biorhythm c
 
 ```js
 async function approveDraft(baseUrl, apiKey, doctorId, draftId) {
-  const res = await fetch(`${baseUrl}/reports/drafts/${encodeURIComponent(draftId)}/approve`, {
+  const res = await fetch(`${baseUrl}/doctor/drafts/${encodeURIComponent(draftId)}/approve`, {
     method: "POST",
     headers: {
       "X-API-Key": apiKey,
@@ -177,9 +183,10 @@ Approval makes the report customer-visible.
 
 1. Load dashboard with `GET /patients/{patient_id}/dashboard?limit=10`.
 2. Use `latest_report` for the first screen.
-3. Use `reports` for approved report cards/history.
-4. When a user opens a specific report, call `GET /reports/{report_id}?detail=full`.
-5. Use `links.pdf_download` for PDF viewing, and send `X-API-Key`.
+3. Use `reports` from dashboard or `GET /patients/{patient_id}/reports?limit=20` for approved report cards.
+4. Use `history` from dashboard or `GET /patients/{patient_id}/history?limit=20` for trend charts.
+5. When a user opens a specific report, call `GET /patients/{patient_id}/reports/{report_id}?detail=full`.
+6. Use `links.patient_pdf_download` for PDF viewing, and send `X-API-Key`.
 
 ### Customer Dashboard
 
@@ -216,8 +223,8 @@ Use this shape:
 ### Customer Report Detail
 
 ```js
-async function loadReport(baseUrl, apiKey, reportId) {
-  const res = await fetch(`${baseUrl}/reports/${encodeURIComponent(reportId)}?detail=full`, {
+async function loadReport(baseUrl, apiKey, patientId, reportId) {
+  const res = await fetch(`${baseUrl}/patients/${encodeURIComponent(patientId)}/reports/${encodeURIComponent(reportId)}?detail=full`, {
     headers: { "X-API-Key": apiKey },
   });
   if (!res.ok) throw new Error(await res.text());
@@ -283,7 +290,8 @@ Biorhythm tab:
 
 PDF:
 
-- Prefer `links.pdf_download` from the report/summary payload.
+- Prefer `links.patient_pdf_download` from patient report/summary payloads.
+- Prefer `links.doctor_pdf_download` from doctor report/summary payloads.
 - Send `X-API-Key` when fetching the PDF.
 
 ## Mobile Notes
@@ -291,10 +299,12 @@ PDF:
 Recommended mobile loading strategy:
 
 1. Dashboard screen: call `/patients/{patient_id}/dashboard?limit=10`.
-2. Report detail screen: call `/reports/{report_id}?detail=full`.
-3. PDF button: fetch `links.pdf_download` with `X-API-Key`, then open the returned file/blob in the platform PDF viewer.
-4. Cache `report_id`, `patient_id`, and the latest dashboard response locally.
-5. Refresh dashboard after the doctor approves a draft.
+2. Report list screen: call `/patients/{patient_id}/reports?limit=20`.
+3. Trend/history screen: call `/patients/{patient_id}/history?limit=20`.
+4. Report detail screen: call `/patients/{patient_id}/reports/{report_id}?detail=full`.
+5. PDF button: fetch `links.patient_pdf_download` with `X-API-Key`, then open the returned file/blob in the platform PDF viewer.
+6. Cache `report_id`, `patient_id`, and the latest dashboard response locally.
+7. Refresh dashboard after the doctor approves a draft.
 
 React Native multipart upload notes:
 
@@ -336,4 +346,5 @@ Frontend behavior:
 - Store `report_id` after approval.
 - Treat report JSON as read-only on customer screens.
 - Use `PATCH` only from doctor review screens.
-- Use `Idempotency-Key` for draft creation retries.
+- Use `Idempotency-Key` for draft creation retries; reuse it only for the same request payload.
+- Generate a new `Idempotency-Key` when files, name, DOB, patient ID, or report date changes.

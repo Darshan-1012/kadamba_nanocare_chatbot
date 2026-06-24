@@ -231,3 +231,20 @@ def get_approved_reports(
     )
     rows = _fetch_rows_by_ids([row["id"] for row in id_rows])
     return [_serialize_row(r) for r in rows]
+
+
+def list_patients(*, limit: int = 100) -> list[dict]:
+    """Return patients that have workflow activity, newest activity first."""
+    limit = _bounded_limit(limit, default=100, maximum=500)
+    rows = execute_query(
+        "SELECT patient_id, "
+        "COUNT(*) AS workflow_count, "
+        "SUM(status = 'draft') AS draft_count, "
+        "SUM(status = 'approved') AS approved_count, "
+        "MAX(created_at) AS latest_activity "
+        "FROM wellness_report_workflow "
+        "GROUP BY patient_id "
+        "ORDER BY latest_activity DESC LIMIT %s",
+        (limit,),
+    )
+    return [_serialize_row(r) for r in rows]

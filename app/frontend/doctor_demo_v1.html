@@ -787,7 +787,7 @@
         return false;
       }
       const patch = buildPatchPayload();
-      const data = await Demo.apiPatch(`/reports/drafts/${encodeURIComponent(draftId)}`, patch, Demo.$("doctorId").value.trim());
+      const data = await Demo.apiPatch(`/doctor/drafts/${encodeURIComponent(draftId)}`, patch, Demo.$("doctorId").value.trim());
       draftReport = data.report;
       setDraftState(data.status);
       hydrateEditors(draftReport);
@@ -800,7 +800,7 @@
       Demo.setBusy(button, true);
       setWorkflow("Creating draft. This may take a while...");
       try {
-        const data = await Demo.apiPost("/reports/drafts", buildUploadForm(), Demo.$("doctorId").value.trim());
+        const data = await Demo.apiPost("/doctor/drafts", buildUploadForm(), Demo.$("doctorId").value.trim());
         Demo.$("draftId").value = data.draft_id || "";
         draftReport = data.report;
         setDraftState(data.status);
@@ -820,7 +820,7 @@
       const button = Demo.$("loadDraftBtn");
       Demo.setBusy(button, true);
       try {
-        const data = await Demo.apiGet(`/reports/drafts/${encodeURIComponent(draftId)}`);
+        const data = await Demo.apiGet(`/doctor/drafts/${encodeURIComponent(draftId)}`);
         draftReport = data.report;
         setDraftState(data.status);
         hydrateEditors(draftReport);
@@ -841,7 +841,7 @@
       setWorkflow("Saving edits and generating final PDF...");
       try {
         await saveDraftEdits();
-        const data = await Demo.apiPost(`/reports/drafts/${encodeURIComponent(draftId)}/approve`, null, Demo.$("doctorId").value.trim());
+        const data = await Demo.apiPost(`/doctor/drafts/${encodeURIComponent(draftId)}/approve`, null, Demo.$("doctorId").value.trim());
         Demo.$("reportId").value = data.report_id || "";
         setDraftState(data.status);
         Demo.$("finalDraftStatus").textContent = "Approved and customer-visible";
@@ -879,7 +879,7 @@
       const reportId = Demo.$("reportId").value.trim();
       if (!reportId) return setWorkflow("No final report ID yet.", "err");
       try {
-        await Demo.openPdf(`/reports/${encodeURIComponent(reportId)}/pdf`, "workflowStatus");
+        await Demo.openPdf(`/doctor/reports/${encodeURIComponent(reportId)}/pdf`, "workflowStatus");
         setWorkflow(`PDF opened: ${reportId}`, "ok");
       } catch (error) {
         setWorkflow(error.message, "err");

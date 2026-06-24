@@ -18,8 +18,8 @@ This API uses **three separate headers** — each serves a different purpose:
 | Header | What It Does | Required? | When To Send |
 |--------|-------------|-----------|-------------|
 | `X-API-Key` | **Authentication** — proves you're an authorized integration partner | Every request (when `NANOCARE_API_KEY` is set in `.env`) | Always |
-| `X-Doctor-Id` | **Identity** — tells the system which doctor is creating/editing/approving | Recommended on doctor endpoints | `POST /reports/drafts`, `PATCH /reports/drafts/{id}`, `POST .../approve` |
-| `Idempotency-Key` | **Duplicate prevention** — ensures the same request isn't processed twice | Optional (source-hash also catches duplicates) | `POST /reports/drafts` only |
+| `X-Doctor-Id` | **Identity** — tells the system which doctor is creating/editing/approving | Recommended on doctor endpoints | `POST /doctor/drafts`, `PATCH /doctor/drafts/{id}`, `POST .../approve` |
+| `Idempotency-Key` | **Duplicate prevention** — ensures the same request isn't processed twice | Optional (source-hash also catches duplicates) | `POST /doctor/drafts` only |
 
 ### How They Work Together
 
@@ -46,7 +46,8 @@ Idempotency-Key   →  "Have I seen this exact request before?" (Retry safety)
 ### Idempotency-Key — Safe Retries
 
 - A unique UUID per request (e.g. `550e8400-e29b-41d4-a716-446655440000`)
-- If you send the same key twice, the second call returns the existing draft without re-processing
+- If you send the same key twice with the same files + patient inputs, the second call returns the existing draft without re-processing
+- If you reuse the same key after changing files, name, DOB, patient ID, or report date, the API returns `409 idempotency_key_conflict`
 - Even without this header, the **source file hash** also catches duplicate uploads
 
 > **Note**: Future versions will transition `X-Doctor-Id` to a verified JWT claim
@@ -58,12 +59,12 @@ Idempotency-Key   →  "Have I seen this exact request before?" (Retry safety)
 ## Workflow Overview
 
 ```
-1. Doctor uploads device files     → POST /reports/drafts
-2. Doctor reviews draft            → GET  /reports/drafts/{draft_id}
-3. Doctor edits draft (optional)   → PATCH /reports/drafts/{draft_id}
-4. Doctor approves draft           → POST /reports/drafts/{draft_id}/approve
+1. Doctor uploads device files     → POST /doctor/drafts
+2. Doctor reviews draft            → GET  /doctor/drafts/{draft_id}
+3. Doctor edits draft (optional)   → PATCH /doctor/drafts/{draft_id}
+4. Doctor approves draft           → POST /doctor/drafts/{draft_id}/approve
 5. Customer views dashboard        → GET  /patients/{patient_id}/dashboard
-6. Customer downloads PDF          → GET  /reports/{report_id}/pdf
+6. Customer downloads PDF          → GET  /patients/{patient_id}/reports/{report_id}/pdf
 ```
 
 ### Current Route Usage By Role
@@ -72,25 +73,31 @@ Doctor side:
 
 | Step | Method | Endpoint | Meaning |
 |------|--------|----------|---------|
-| Upload | `POST` | `/reports/drafts` | Create temporary editable draft. |
-| Draft view/dashboard | `GET` | `/reports/drafts/{draft_id}` | Review draft content before approval. |
-| Edit draft | `PATCH` | `/reports/drafts/{draft_id}` | Save doctor edits. |
-| Approve draft | `POST` | `/reports/drafts/{draft_id}/approve` | Convert draft into final approved report. |
-| Final report | `GET` | `/reports/{report_id}?detail=full` | Read approved report JSON. |
-| Patient draft/workflow list | `GET` | `/patients/{patient_id}/drafts?limit=10` | Doctor-side workflow list. |
-| Patient approved reports | `GET` | `/patients/{patient_id}/reports?limit=20` | Approved report history for one patient. |
+| Upload | `POST` | `/doctor/drafts` | Create temporary editable draft. |
+| Draft view/dashboard | `GET` | `/doctor/drafts/{draft_id}/dashboard` | Review draft content before approval. |
+| Edit draft | `PATCH` | `/doctor/drafts/{draft_id}` | Save doctor edits. |
+| Approve draft | `POST` | `/doctor/drafts/{draft_id}/approve` | Convert draft into final approved report. |
+| Patient list | `GET` | `/doctor/patients?limit=100` | Patients with workflow activity. |
+| Patient draft/workflow list | `GET` | `/doctor/patients/{patient_id}/drafts?limit=10` | Doctor-side workflow list. |
+| Patient approved reports | `GET` | `/doctor/patients/{patient_id}/reports?limit=20` | Approved report list for one patient. |
+| Final report | `GET` | `/doctor/reports/{report_id}?detail=full` | Read approved report JSON. |
 
 Patient/customer side:
 
 | Step | Method | Endpoint | Meaning |
 |------|--------|----------|---------|
 | Dashboard | `GET` | `/patients/{patient_id}/dashboard?limit=10` | Latest approved report and chart history. |
-| History | `GET` | `/patients/{patient_id}/reports?limit=20` | Approved report list only. |
-| Final report | `GET` | `/reports/{report_id}?detail=full` | Same approved report JSON. |
-| Summary | `GET` | `/reports/{report_id}/summary` | Compact report payload. |
-| PDF | `GET` | `/reports/{report_id}/pdf` | Authenticated PDF download via `links.pdf_download`. |
+| Report list | `GET` | `/patients/{patient_id}/reports?limit=20` | Approved report cards/list only. |
+| History | `GET` | `/patients/{patient_id}/history?limit=20` | Chart/trend history only: dates, stats, dimensions, systems. |
+| Final report | `GET` | `/patients/{patient_id}/reports/{report_id}?detail=full` | Same approved report JSON, scoped to patient. |
+| Summary | `GET` | `/patients/{patient_id}/reports/{report_id}/summary` | Compact report payload. |
+| PDF | `GET` | `/patients/{patient_id}/reports/{report_id}/pdf` | Authenticated PDF download via `links.patient_pdf_download`. |
 
 Patient/customer apps must never call draft endpoints.
+
+Older mixed v1 paths such as `/reports/drafts/*` and `/reports/{report_id}` still work as transitional aliases, but new integrations should use the role-based paths above.
+
+Link naming rule: approval responses can include both `doctor_*` and `patient_*` links. Patient dashboard/history/detail responses should use only `patient_*` links.
 
 ---
 
@@ -111,7 +118,7 @@ Use this to confirm the v1 base URL before testing draft/report flows.
 Upload the core device files to generate a wellness report draft. DMIT is optional but recommended when available.
 
 ```bash
-curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts \
+curl -X POST http://localhost:8001/api/v1/wellness/doctor/drafts \
   -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_123" \
   -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
@@ -150,7 +157,7 @@ curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts \
 }
 ```
 
-**Idempotency**: Sending the same files + patient inputs returns the existing draft (`"cached": true`). No re-extraction occurs.
+**Idempotency**: Sending the same files + patient inputs returns the existing draft (`"cached": true`). No re-extraction occurs. Reusing an `Idempotency-Key` with changed files or patient inputs returns `409 idempotency_key_conflict`; generate a new key for a new draft request.
 
 `dmit` is optional. When supplied, v1 draft/report responses include `report.dmit_summary` for doctor/customer views.
 
@@ -159,7 +166,7 @@ curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts \
 ### 2. Get Draft (Doctor Review)
 
 ```bash
-curl http://localhost:8001/api/v1/wellness/reports/drafts/draft_a1b2c3d4 \
+curl http://localhost:8001/api/v1/wellness/doctor/drafts/draft_a1b2c3d4 \
   -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_123"
 ```
@@ -184,7 +191,7 @@ Deep-merge updates into the draft. Only changed fields are required.
 No re-extraction, no re-synthesis, no PDF generation.
 
 ```bash
-curl -X PATCH http://localhost:8001/api/v1/wellness/reports/drafts/draft_a1b2c3d4 \
+curl -X PATCH http://localhost:8001/api/v1/wellness/doctor/drafts/draft_a1b2c3d4 \
   -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_123" \
   -H "Content-Type: application/json" \
@@ -215,7 +222,7 @@ curl -X PATCH http://localhost:8001/api/v1/wellness/reports/drafts/draft_a1b2c3d
 Generates the final PDF, persists to history, and returns the full approved report.
 
 ```bash
-curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts/draft_a1b2c3d4/approve \
+curl -X POST http://localhost:8001/api/v1/wellness/doctor/drafts/draft_a1b2c3d4/approve \
   -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_456"
 ```
@@ -229,9 +236,12 @@ curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts/draft_a1b2c3d4
   "created_by_doctor_id": "doc_123",
   "approved_by_doctor_id": "doc_456",
   "links": {
-    "report_json": "/api/v1/wellness/reports/report_...",
-    "report_summary": "/api/v1/wellness/reports/report_.../summary",
-    "pdf_download": "/api/v1/wellness/reports/report_.../pdf"
+    "doctor_report": "/api/v1/wellness/doctor/reports/report_...",
+    "doctor_report_summary": "/api/v1/wellness/doctor/reports/report_.../summary",
+    "doctor_pdf_download": "/api/v1/wellness/doctor/reports/report_.../pdf",
+    "patient_report": "/api/v1/wellness/patients/PAT001/reports/report_...",
+    "patient_report_summary": "/api/v1/wellness/patients/PAT001/reports/report_.../summary",
+    "patient_pdf_download": "/api/v1/wellness/patients/PAT001/reports/report_.../pdf"
   },
   "download_requires": "X-API-Key header",
   "report": { ... },
@@ -240,7 +250,7 @@ curl -X POST http://localhost:8001/api/v1/wellness/reports/drafts/draft_a1b2c3d4
 }
 ```
 
-Use `links.pdf_download` and send `X-API-Key` when downloading the PDF.
+Use `links.doctor_pdf_download` on doctor screens and `links.patient_pdf_download` on patient screens. Both require `X-API-Key`.
 
 **Idempotent**: Calling approve on an already-approved draft returns the existing approval (same `report_id`, no new PDF).
 
@@ -251,7 +261,7 @@ Use `links.pdf_download` and send `X-API-Key` when downloading the PDF.
 Find the latest unfinished draft for a patient.
 
 ```bash
-curl http://localhost:8001/api/v1/wellness/patients/PAT001/active-draft \
+curl http://localhost:8001/api/v1/wellness/doctor/patients/PAT001/active-draft \
   -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_123"
 ```
@@ -263,7 +273,7 @@ Returns `404` if no active draft exists.
 ### 6. List Patient Drafts (Doctor)
 
 ```bash
-curl http://localhost:8001/api/v1/wellness/patients/PAT001/drafts?limit=10 \
+curl http://localhost:8001/api/v1/wellness/doctor/patients/PAT001/drafts?limit=10 \
   -H "X-API-Key: your-secret-key" \
   -H "X-Doctor-Id: doc_123"
 ```
@@ -312,30 +322,54 @@ curl http://localhost:8001/api/v1/wellness/patients/PAT001/reports?limit=20 \
 
 ---
 
-### 9. Get Approved Report
+### 9. Get Chart History (Customer/User)
 
 ```bash
-curl http://localhost:8001/api/v1/wellness/reports/report_a1b2c3d4 \
+curl http://localhost:8001/api/v1/wellness/patients/PAT001/history?limit=20 \
+  -H "X-API-Key: your-secret-key"
+```
+
+Response shape:
+
+```json
+{
+  "patient_id": "PAT001",
+  "history": {
+    "dates": [],
+    "stats": {},
+    "dimensions": {},
+    "systems": {},
+    "visit_count": 0
+  }
+}
+```
+
+---
+
+### 10. Get Approved Report
+
+```bash
+curl http://localhost:8001/api/v1/wellness/patients/PAT001/reports/report_a1b2c3d4 \
   -H "X-API-Key: your-secret-key"
 ```
 
 ---
 
-### 10. Get Report Summary
+### 11. Get Report Summary
 
 Compact payload for mobile/web cards.
 
 ```bash
-curl http://localhost:8001/api/v1/wellness/reports/report_a1b2c3d4/summary \
+curl http://localhost:8001/api/v1/wellness/patients/PAT001/reports/report_a1b2c3d4/summary \
   -H "X-API-Key: your-secret-key"
 ```
 
 ---
 
-### 11. Download PDF
+### 12. Download PDF
 
 ```bash
-curl http://localhost:8001/api/v1/wellness/reports/report_a1b2c3d4/pdf \
+curl http://localhost:8001/api/v1/wellness/patients/PAT001/reports/report_a1b2c3d4/pdf \
   -H "X-API-Key: your-secret-key" \
   -o wellness_report.pdf
 ```
@@ -368,12 +402,12 @@ The following routes still work but are deprecated in OpenAPI:
 
 | Legacy Route | v1 Replacement |
 |-------------|----------------|
-| `POST /api/generate` | `POST /api/v1/wellness/reports/drafts` + `.../approve` |
-| `POST /api/doctor/reports/draft` | `POST /api/v1/wellness/reports/drafts` |
-| `GET /api/doctor/reports/{id}` | `GET /api/v1/wellness/reports/drafts/{id}` |
-| `PATCH /api/doctor/reports/{id}` | `PATCH /api/v1/wellness/reports/drafts/{id}` |
-| `POST /api/doctor/reports/{id}/approve` | `POST /api/v1/wellness/reports/drafts/{id}/approve` |
+| `POST /api/generate` | `POST /api/v1/wellness/doctor/drafts` + `.../approve` |
+| `POST /api/doctor/reports/draft` | `POST /api/v1/wellness/doctor/drafts` |
+| `GET /api/doctor/reports/{id}` | `GET /api/v1/wellness/doctor/drafts/{id}` |
+| `PATCH /api/doctor/reports/{id}` | `PATCH /api/v1/wellness/doctor/drafts/{id}` |
+| `POST /api/doctor/reports/{id}/approve` | `POST /api/v1/wellness/doctor/drafts/{id}/approve` |
 | `GET /api/user/patient/{id}/dashboard` | `GET /api/v1/wellness/patients/{id}/dashboard` |
-| `GET /api/user/patient/{id}/reports` | `GET /api/v1/wellness/patients/{id}/reports` |
-| `GET /api/user/report/{id}/summary` | `GET /api/v1/wellness/reports/{id}/summary` |
-| `GET /api/user/report/{id}/pdf` | `GET /api/v1/wellness/reports/{id}/pdf` |
+| `GET /api/user/patient/{id}/reports` | `GET /api/v1/wellness/patients/{id}/history` |
+| `GET /api/user/report/{id}/summary` | `GET /api/v1/wellness/patients/{patient_id}/reports/{id}/summary` |
+| `GET /api/user/report/{id}/pdf` | `GET /api/v1/wellness/patients/{patient_id}/reports/{id}/pdf` |

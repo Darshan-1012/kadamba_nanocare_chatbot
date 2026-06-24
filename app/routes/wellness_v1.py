@@ -60,14 +60,26 @@ async def v1_health():
     return {"service": "Nanocare Wellness Report Engine", "api_version": "v1", **info}
 
 
-def _v1_report_links(report_id: str) -> dict:
+def _v1_report_links(report_id: str, patient_id: str = "", audience: str = "doctor") -> dict:
     """Build relative v1 resource links that clients can call with auth headers."""
-    base = f"/api/v1/wellness/reports/{report_id}"
-    return {
-        "report_json": base,
-        "report_summary": f"{base}/summary",
-        "pdf_download": f"{base}/pdf",
+    doctor_links = {
+        "doctor_report": f"/api/v1/wellness/doctor/reports/{report_id}",
+        "doctor_report_summary": f"/api/v1/wellness/doctor/reports/{report_id}/summary",
+        "doctor_pdf_download": f"/api/v1/wellness/doctor/reports/{report_id}/pdf",
     }
+    patient_links = {}
+    if patient_id:
+        patient_base = f"/api/v1/wellness/patients/{patient_id}/reports/{report_id}"
+        patient_links = {
+            "patient_report": patient_base,
+            "patient_report_summary": f"{patient_base}/summary",
+            "patient_pdf_download": f"{patient_base}/pdf",
+        }
+    if audience == "patient":
+        return patient_links
+    if audience == "all":
+        return {**doctor_links, **patient_links}
+    return doctor_links
 
 
 def _v1_download_requires() -> str:
@@ -187,14 +199,15 @@ def _v1_public_report(report_data: dict) -> dict:
     return public_report
 
 
-def _v1_summary_payload(report_id: str, report_data: dict) -> dict:
+def _v1_summary_payload(report_id: str, report_data: dict, audience: str = "doctor") -> dict:
     """Build a compact summary payload for user/customer dashboards."""
     patient = report_data.get("patient", {})
+    patient_id = patient.get("id") or patient.get("patient_id") or ""
     return {
         "report_id": report_id,
-        "patient_id": patient.get("id") or patient.get("patient_id") or "",
+        "patient_id": patient_id,
         "date": patient.get("date", ""),
-        "links": _v1_report_links(report_id),
+        "links": _v1_report_links(report_id, patient_id, audience),
         "download_requires": _v1_download_requires(),
         "summary": domain_scores(report_data),
         "dimensions": report_data.get("dimensions", {}),
@@ -234,7 +247,8 @@ def _v1_report_id(draft_id: str, source_hash: str) -> str:
 # DOCTOR / INTEGRATION ENDPOINTS
 # ═════════════════════════════════════════════════════════════════════
 
-@router.post("/reports/drafts", summary="Create a wellness report draft")
+@router.post("/doctor/drafts", summary="Doctor upload: create a wellness draft")
+@router.post("/reports/drafts", summary="Create a wellness report draft", include_in_schema=False)
 async def v1_create_draft(
     ecg: UploadFile = File(..., description="ECG PDF report"),
     hrv: UploadFile = File(..., description="HRV PDF report"),
@@ -260,23 +274,6 @@ async def v1_create_draft(
     if not patient_id:
         raise HTTPException(400, "patient_id is required")
 
-    # ── Idempotency-Key check ────────────────────────────────────────
-    if idempotency_key:
-        existing = draft_service.find_by_idempotency_key(idempotency_key)
-        if existing:
-            draft_json = existing.get("draft_json")
-            if isinstance(draft_json, str):
-                draft_json = json.loads(draft_json)
-            return {
-                "draft_id": existing["draft_id"],
-                "patient_id": existing["patient_id"],
-                "status": existing["status"],
-                "created_by_doctor_id": existing.get("doctor_id") or "",
-                "report": _v1_public_report(apply_cached_recommendations(draft_json or {})),
-                "cached": True,
-                "extraction_summary": existing.get("extraction_summary") or {},
-            }
-
     # ── Read + hash uploads ──────────────────────────────────────────
     normalized_dob = normalize_date_value(dob)
     normalized_date = normalize_date_value(date)
@@ -289,6 +286,37 @@ async def v1_create_draft(
         "patient_id": patient_id, "date": normalized_date,
     }
     file_hash = compute_file_hash(files, patient_inputs)
+
+    # ── Idempotency-Key check ────────────────────────────────────────
+    if idempotency_key:
+        existing = draft_service.find_by_idempotency_key(idempotency_key)
+        if existing:
+            existing_source_hash = existing.get("source_hash") or ""
+            if existing_source_hash != file_hash:
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": "idempotency_key_conflict",
+                        "message": (
+                            "Idempotency-Key was already used for a different draft request. "
+                            "Use a new Idempotency-Key when files or patient inputs change."
+                        ),
+                        "existing_draft_id": existing.get("draft_id", ""),
+                    },
+                )
+            draft_json = existing.get("draft_json")
+            if isinstance(draft_json, str):
+                draft_json = json.loads(draft_json)
+            return {
+                "draft_id": existing["draft_id"],
+                "patient_id": existing["patient_id"],
+                "status": existing["status"],
+                "created_by_doctor_id": existing.get("doctor_id") or "",
+                "report": _v1_public_report(apply_cached_recommendations(draft_json or {})),
+                "cached": True,
+                "idempotency_replay": True,
+                "extraction_summary": existing.get("extraction_summary") or {},
+            }
 
     # ── Source-hash idempotency (DB) ─────────────────────────────────
     existing_wf = draft_service.find_draft_by_source_hash(file_hash)
@@ -370,7 +398,9 @@ async def v1_create_draft(
     }
 
 
-@router.get("/reports/drafts/{draft_id}", summary="Get a draft report")
+@router.get("/doctor/drafts/{draft_id}/dashboard", summary="Doctor draft dashboard")
+@router.get("/doctor/drafts/{draft_id}", summary="Doctor draft detail")
+@router.get("/reports/drafts/{draft_id}", summary="Get a draft report", include_in_schema=False)
 async def v1_get_draft(draft_id: str):
     """Return the full draft report JSON + metadata for doctor review."""
     # Try DB first, fall back to file system
@@ -404,7 +434,8 @@ async def v1_get_draft(draft_id: str):
     }
 
 
-@router.patch("/reports/drafts/{draft_id}", summary="Edit a draft report")
+@router.patch("/doctor/drafts/{draft_id}", summary="Doctor edit draft")
+@router.patch("/reports/drafts/{draft_id}", summary="Edit a draft report", include_in_schema=False)
 async def v1_patch_draft(
     draft_id: str,
     payload: dict = Body(...),
@@ -449,7 +480,8 @@ async def v1_patch_draft(
     }
 
 
-@router.post("/reports/drafts/{draft_id}/approve", summary="Approve a draft report")
+@router.post("/doctor/drafts/{draft_id}/approve", summary="Doctor approve draft")
+@router.post("/reports/drafts/{draft_id}/approve", summary="Approve a draft report", include_in_schema=False)
 async def v1_approve_draft(
     draft_id: str,
     x_doctor_id: str | None = Header(None, alias="X-Doctor-Id"),
@@ -489,10 +521,10 @@ async def v1_approve_draft(
                 "status": "approved",
                 "created_by_doctor_id": (wf or {}).get("doctor_id") or file_meta.get("doctor_id", ""),
                 "approved_by_doctor_id": (wf or {}).get("approved_by") or approving_doctor,
-                "links": _v1_report_links(report_id),
+                "links": _v1_report_links(report_id, patient_identity(approved_json).get("id", ""), audience="all"),
                 "download_requires": _v1_download_requires(),
                 "report": _v1_public_report(approved_json),
-                "summary": _v1_summary_payload(report_id, approved_json),
+                "summary": _v1_summary_payload(report_id, approved_json, audience="all"),
                 "history": {},
             }
         raise HTTPException(409, f"Draft {draft_id} cannot be approved")
@@ -527,10 +559,10 @@ async def v1_approve_draft(
                 "status": "approved",
                 "created_by_doctor_id": (wf or {}).get("doctor_id") or file_meta.get("doctor_id", ""),
                 "approved_by_doctor_id": approving_doctor,
-                "links": _v1_report_links(report_id),
+                "links": _v1_report_links(report_id, patient_identity(report_data).get("id", ""), audience="all"),
                 "download_requires": _v1_download_requires(),
                 "report": _v1_public_report(report_data),
-                "summary": _v1_summary_payload(report_id, report_data),
+                "summary": _v1_summary_payload(report_id, report_data, audience="all"),
                 "history": history_data,
             }
     else:
@@ -598,10 +630,10 @@ async def v1_approve_draft(
         "status": "approved",
         "created_by_doctor_id": creating_doctor,
         "approved_by_doctor_id": approving_doctor,
-        "links": _v1_report_links(report_id),
+        "links": _v1_report_links(report_id, patient_identity(report_data).get("id", ""), audience="all"),
         "download_requires": _v1_download_requires(),
         "report": _v1_public_report(report_data),
-        "summary": _v1_summary_payload(report_id, report_data),
+        "summary": _v1_summary_payload(report_id, report_data, audience="all"),
         "history": history_data,
     }
 
@@ -610,7 +642,15 @@ async def v1_approve_draft(
 # DOCTOR — PATIENT DRAFT QUERIES
 # ═════════════════════════════════════════════════════════════════════
 
-@router.get("/patients/{patient_id}/drafts", summary="List drafts for a patient")
+@router.get("/doctor/patients", summary="Doctor patient list")
+async def v1_doctor_patients(limit: int = 100):
+    """Doctor-only: list patients with workflow activity."""
+    patients = draft_service.list_patients(limit=limit)
+    return {"patients": patients, "total": len(patients)}
+
+
+@router.get("/doctor/patients/{patient_id}/drafts", summary="Doctor patient draft/workflow list")
+@router.get("/patients/{patient_id}/drafts", summary="List drafts for a patient", include_in_schema=False)
 async def v1_patient_drafts(patient_id: str, limit: int = 20):
     """Doctor-only: list all drafts (any status) for a patient."""
     rows = draft_service.get_patient_drafts(patient_id, limit=limit)
@@ -630,7 +670,8 @@ async def v1_patient_drafts(patient_id: str, limit: int = 20):
     return {"patient_id": patient_id, "drafts": drafts, "total": len(drafts)}
 
 
-@router.get("/patients/{patient_id}/active-draft", summary="Get active draft for a patient")
+@router.get("/doctor/patients/{patient_id}/active-draft", summary="Doctor patient active draft")
+@router.get("/patients/{patient_id}/active-draft", summary="Get active draft for a patient", include_in_schema=False)
 async def v1_patient_active_draft(patient_id: str):
     """Doctor-only: return the latest draft with status='draft'."""
     row = draft_service.get_active_draft(patient_id)
@@ -652,12 +693,8 @@ async def v1_patient_active_draft(patient_id: str):
 # USER / CUSTOMER ENDPOINTS (approved only — no drafts exposed)
 # ═════════════════════════════════════════════════════════════════════
 
-@router.get("/patients/{patient_id}/reports", summary="List approved reports")
-async def v1_patient_reports(
-    patient_id: str,
-    limit: int = 20,
-):
-    """Return approved reports for a patient. Drafts are never included."""
+def _v1_patient_report_list(patient_id: str, limit: int, audience: str) -> dict:
+    """Build an approved report list. Drafts are never included."""
     rows = draft_service.get_approved_reports(patient_id, limit=limit)
     reports = []
     for row in rows:
@@ -667,8 +704,31 @@ async def v1_patient_reports(
         if approved_json:
             report_id = row.get("report_id") or ""
             if report_id:
-                reports.append(_v1_summary_payload(report_id, approved_json))
+                reports.append(_v1_summary_payload(report_id, approved_json, audience=audience))
     return {"patient_id": patient_id, "reports": reports, "total": len(reports)}
+
+
+@router.get("/doctor/patients/{patient_id}/reports", summary="Doctor patient approved reports")
+async def v1_doctor_patient_reports(patient_id: str, limit: int = 20):
+    """Doctor-side approved report list for one patient."""
+    return _v1_patient_report_list(patient_id, limit, audience="doctor")
+
+
+@router.get("/patients/{patient_id}/reports", summary="Patient report list")
+async def v1_patient_reports(patient_id: str, limit: int = 20):
+    """Patient-side approved report list."""
+    return _v1_patient_report_list(patient_id, limit, audience="patient")
+
+
+@router.get("/patients/{patient_id}/history", summary="Patient chart history")
+async def v1_patient_history(patient_id: str, limit: int = 20):
+    """Return chart/trend history only. No report cards or draft data."""
+    try:
+        history = get_chart_data(patient_id, limit=limit)
+    except Exception as e:
+        log.warning(f"[v1] Patient history unavailable for {patient_id}: {e}")
+        history = {"dates": [], "stats": {}, "dimensions": {}, "systems": {}, "visit_count": 0}
+    return {"patient_id": patient_id, "history": history}
 
 
 @router.get("/patients/{patient_id}/dashboard", summary="Patient dashboard")
@@ -692,7 +752,7 @@ async def v1_patient_dashboard(
         report_id = row.get("report_id") or ""
         if not report_id:
             continue
-        payload = _v1_summary_payload(report_id, approved_json)
+        payload = _v1_summary_payload(report_id, approved_json, audience="patient")
         reports.append(payload)
         if not latest_payload:
             latest_payload = payload
@@ -718,7 +778,14 @@ async def v1_patient_dashboard(
     }
 
 
-@router.get("/reports/{report_id}", summary="Get an approved report")
+def _assert_patient_report(patient_id: str, payload: dict):
+    payload_patient_id = payload.get("patient_id") or payload.get("summary", {}).get("patient_id", "")
+    if not payload_patient_id or payload_patient_id != patient_id:
+        raise HTTPException(404, f"Approved report {payload.get('report_id', '')} not found for patient {patient_id}")
+
+
+@router.get("/doctor/reports/{report_id}", summary="Doctor final report")
+@router.get("/reports/{report_id}", summary="Get an approved report", include_in_schema=False)
 async def v1_get_report(report_id: str, detail: str = "full"):
     """Return the full approved report JSON."""
     wf = draft_service.get_by_report_id(report_id)
@@ -734,7 +801,7 @@ async def v1_get_report(report_id: str, detail: str = "full"):
                 "status": "approved",
                 "created_by_doctor_id": wf.get("doctor_id") or "",
                 "approved_by_doctor_id": wf.get("approved_by") or "",
-                "links": _v1_report_links(report_id),
+                "links": _v1_report_links(report_id, wf.get("patient_id", "")),
                 "download_requires": _v1_download_requires(),
                 "summary": _v1_summary_payload(report_id, approved_json),
                 "detail": detail,
@@ -753,7 +820,7 @@ async def v1_get_report(report_id: str, detail: str = "full"):
         "report_id": report_id,
         "patient_id": metadata.get("patient", {}).get("id", ""),
         "status": "approved",
-        "links": _v1_report_links(report_id),
+        "links": _v1_report_links(report_id, metadata.get("patient", {}).get("id", "")),
         "download_requires": _v1_download_requires(),
         "summary": _v1_summary_payload(report_id, report_data),
         "detail": detail,
@@ -761,7 +828,19 @@ async def v1_get_report(report_id: str, detail: str = "full"):
     }
 
 
-@router.get("/reports/{report_id}/summary", summary="Get report summary")
+@router.get("/patients/{patient_id}/reports/{report_id}", summary="Patient final report")
+async def v1_get_patient_report(patient_id: str, report_id: str, detail: str = "full"):
+    """Return one approved report for a specific patient."""
+    payload = await v1_get_report(report_id, detail=detail)
+    _assert_patient_report(patient_id, payload)
+    payload["links"] = _v1_report_links(report_id, patient_id, audience="patient")
+    if isinstance(payload.get("summary"), dict):
+        payload["summary"]["links"] = _v1_report_links(report_id, patient_id, audience="patient")
+    return payload
+
+
+@router.get("/doctor/reports/{report_id}/summary", summary="Doctor report summary")
+@router.get("/reports/{report_id}/summary", summary="Get report summary", include_in_schema=False)
 async def v1_get_report_summary(report_id: str):
     """Compact summary for web/mobile dashboards."""
     wf = draft_service.get_by_report_id(report_id)
@@ -780,7 +859,17 @@ async def v1_get_report_summary(report_id: str):
     return _v1_summary_payload(report_id, report_data)
 
 
-@router.get("/reports/{report_id}/pdf", summary="Download report PDF", name="v1_get_report_pdf")
+@router.get("/patients/{patient_id}/reports/{report_id}/summary", summary="Patient report summary")
+async def v1_get_patient_report_summary(patient_id: str, report_id: str):
+    """Return one compact approved report summary for a specific patient."""
+    payload = await v1_get_report_summary(report_id)
+    _assert_patient_report(patient_id, payload)
+    payload["links"] = _v1_report_links(report_id, patient_id, audience="patient")
+    return payload
+
+
+@router.get("/doctor/reports/{report_id}/pdf", summary="Doctor report PDF download")
+@router.get("/reports/{report_id}/pdf", summary="Download report PDF", include_in_schema=False)
 async def v1_get_report_pdf(report_id: str):
     """Download the approved report PDF."""
     p = pdf_path(report_id)
@@ -791,3 +880,10 @@ async def v1_get_report_pdf(report_id: str):
         media_type="application/pdf",
         filename=f"wellness_report_{report_id}.pdf",
     )
+
+
+@router.get("/patients/{patient_id}/reports/{report_id}/pdf", summary="Patient report PDF download")
+async def v1_get_patient_report_pdf(patient_id: str, report_id: str):
+    """Download one approved report PDF for a specific patient."""
+    await v1_get_patient_report_summary(patient_id, report_id)
+    return await v1_get_report_pdf(report_id)
